@@ -1,7 +1,7 @@
 
 ; You may customize this and other start-up templates; 
 ; The location of this template is c:\emu8086\inc\0_com_template.txt
-
+         include mymacro.inc
 		.MODEL SMALL
 		.STACK 64
 		.DATA   
@@ -37,55 +37,22 @@
   
      	.CODE
 
-		;-------------------------------------Macros--------------------------------------------------------;
-         showmes macro str
-			mov ah,09h
-			lea dx,str
-			int 21h  
-		endm showmes  
-        
-		 endlst macro  start     ; give it the start of the vertical cordinate (X-axis)
-			; newline
-			mov ah,02h
-			mov dl,10
-			int 21h
-			
-			mov ah,3
-			mov bh,0h
-			int 10h
-			
-			mov ah,2
-			mov dl,start
-			int 10h 
-		
-	    endm endlst
-
-         clear macro 
-			mov ah, 0       ; AH=0 is the function for setting video mode
-			mov al, 3       ; AL=3 sets 80x25 text mode (standard text mode)
-			int 10h         ; BIOS interrupt for video services
-		 endm clear 
-
-		 clearline macro
-		    mov ah,9
-			mov bh,0
-			mov al, 0h
-			mov cx,79
-			mov bl,SCREEN_ATTR
-			int 10h
-		endm cearline
-        ;------------------------------------------------------------------------------------------------;
 
 MAIN 	PROC FAR
      	MOV AX , @DATA
       	MOV DS , AX  
 
       	clear
-
-
+        
+		; Remove Blinking from the screen and allowing to use 16 colors as background
+        mov AX , 1003h
+		mov BL ,00h  ; 00h background intensity enabled , 01h blink enabled
+		mov BH , 00h ; to avoid problems on some adapters
+        int 10h
+		
 		;---------------------------------------Screen Coloring------------------------------------------------
             MOV AH, 09h          ; Set text background and foreground color
-			MOV AL, ' '          ; Space character to clear the screen
+			MOV AL, 0         ; Space character to clear the screen
 			MOV BL, SCREEN_ATTR  ; Set text attribute
 			MOV CX, 2000h        ; Clear entire screen (80x25)
 			MOV BH, 0            ; Page number (0 for default)
@@ -181,6 +148,3 @@ MAIN 	PROC FAR
 
 MAIN ENDP
 END MAIN
-
-
-

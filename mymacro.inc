@@ -74,6 +74,15 @@ clear macro
     int 10h         ; BIOS interrupt for video services
 endm clear 
 
+clearline macro
+    mov ah,9
+    mov bh,0
+    mov al, 0h
+    mov cx,79
+    mov bl,SCREEN_ATTR
+    int 10h
+endm cearline
+
 moveup macro  
     local skip
     mov ah,3h
