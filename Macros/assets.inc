@@ -127,6 +127,83 @@ reset macro
    int 10h
 endm reset 
 
+colorNamePosition macro ;changes the foreground color of each char place in the second line
+    local loop1
+    ;set cursor to second line char 8
+    mov ah, 02h
+    mov dh, 1
+    mov dl, 8
+    int 10h
+
+    mov bl,00h
+    mov ah,9 
+    mov bh,0 
+    mov al,00h
+    mov dx,16
+    loop1:
+    mov cx,1
+    int 10h
+    inc bh
+    dec dx
+    cmp dx,0
+    jnz loop1
+
+    mov ah, 02h
+    mov dh, 1
+    mov dl, 8
+    int 10h
+endm colorNamePosition
+
+checkIfAllNumbers macro buffer, error
+    local valid
+    local notValid
+    local finish
+    local invalid
+    invalid:
+    mov si, offset buffer+2
+    mov cx, 0
+    mov cl, buffer+1
+    cmp cl, 0
+    je notValid
+    inc cx
+    valid:
+        dec cx
+        cmp cx, 0
+        je finish
+        lodsb
+        cmp al, '0'
+        jl notValid
+        cmp al, '9'
+        jle valid
+    notValid:
+        ;move cursor to middle of screen
+        mov ah, 02h
+        mov dh, 12
+        mov dl, 40
+        int 10h
+        showMsgClr error, 0ch
+
+        mov dh, 5 ; line to be cleared
+        clearLine
+        mov ah, 02h
+        mov dh, 5
+        mov dl, 8
+        int 10h
+        getstr buffer
+        jmp invalid
+    finish:
+        mov ah, 02h
+        mov dh, 12
+        mov dl, 40
+        int 10h
+        clearLine
+        mov ah, 02h
+        mov dh, 3
+        mov dl, 8
+        int 10h
+endm checkIfAllNumbers
+
+
 checkFirstChar macro buffer, error
     local valid
     local notValid
