@@ -64,6 +64,11 @@ MAIN 	PROC FAR
     ; ------------------this loop is like while(true) until the user press esc to exit the program---------;
 		again:
 
+		mov ax, 8600H ; AH = 86h (Delay function), AL = 00h (not used)
+		xor cx, cx ; CH = high order byte of delay count, CL = not used
+		mov dx, 0F0FFH ; DL = low order byte of delay count, DH = not used
+		int 15H ; Call BIOS delay function
+
     in al, 60H ; put the scan code of the pressed or unpressed
 
 		cmp al, 1h ; pressing the esc key
