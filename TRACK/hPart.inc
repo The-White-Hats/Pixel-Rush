@@ -12,29 +12,12 @@ horizontalPart macro Xpos, Ypos, dir
     local next
     local mid1
     local mid2
+    local mid3
+    local ender
+    local boundaryOuter
+    local boundary
+    
 
-    ; ; Check if out of bounds
-    ; cmp dir, 1 
-    ; jnz leftCheck
-    ; sub Xpos, LINE_LENGTH
-    ; cmp Xpos, MIN_X
-    ; jg start
-    ; jmp ender
-    ; leftCheck:
-    ; add Xpos, LINE_LENGTH
-    ; cmp Xpos, MAX_X
-    ; jl start
-    ; jmp ender
-
-    ; Reset Xpos and Ypos
-    start:
-    cmp dir, 1
-    jnz leftCorrect
-    add Xpos, LINE_LENGTH
-    jmp start2
-    leftCorrect:
-    sub Xpos, LINE_LENGTH
-    start2:
 
     mov ah, 0ch
     mov si, LINE_WIDTH + 2*BOUNDARY_WIDTH ; Outer loop counter
@@ -174,9 +157,17 @@ horizontalPart macro Xpos, Ypos, dir
 
     exec:
     mov si, BOUNDARY_WIDTH
+
     open1:
-        mov cx, Xpos
+    
         mov di, LINE_WIDTH
+        mov cx, Xpos
+        cmp dir,1
+        jnz addd
+        dec cx
+        jmp open11
+        addd:
+        inc cx
         open11:
         int 10h
         cmp dir,0
@@ -196,21 +187,3 @@ horizontalPart macro Xpos, Ypos, dir
 
     final:
 endm horizontalPart
-
-deletePart macro posX1, posY1, posX2, posY2
-mov ah, 0ch
-mov al, GREEN
-mov si, posY2
-mov di, posX2
-mov dx, posY1
-delete1:
-    mov cx, posX1
-    delete:
-        int 10h
-        inc cx
-        cmp cx, di
-        jle delete
-    inc dx
-    cmp dx, si
-    jle delete1
-endm deletePart
