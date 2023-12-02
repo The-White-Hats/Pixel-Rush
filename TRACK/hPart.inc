@@ -13,17 +13,27 @@ horizontalPart macro Xpos, Ypos, dir
     local mid1
     local mid2
 
-    cmp dir, 0 
+    cmp dir, 1
     jnz leftCheck
-    cmp Xpos + LINE_LENGTH, MAX_X
+    sub Xpos, LINE_LENGTH
+    cmp Xpos, MIN_X
     jg start
     jmp ender
     leftCheck:
-    cmp Xpos - LINE_LENGTH, MIN_X
+    add Xpos, LINE_LENGTH
+    cmp Xpos, MAX_X
     jl start
     jmp ender
 
     start:
+    cmp dir, 1
+    jnz leftCorrect
+    add Xpos, LINE_LENGTH
+    jmp start2
+    leftCorrect:
+    sub Xpos, LINE_LENGTH
+    start2:
+
     mov ah, 0ch
     mov si, LINE_WIDTH + 2*BOUNDARY_WIDTH
     mov dx, Ypos

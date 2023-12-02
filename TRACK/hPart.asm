@@ -1,4 +1,5 @@
 include hPart.inc
+include circSect.inc
 .model small
 .stack 64
 .data
@@ -15,7 +16,7 @@ include hPart.inc
          BLACK equ 00h
          DASHESCOLOR equ 07h
          ;----------------------------------Positions-------------------------------------------------;      
-         START_X dw 150
+         START_X dw 70
          START_Y dw 150
          END_X dw ?
          END_Y dw ?
@@ -30,6 +31,13 @@ include hPart.inc
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
          DASHEDLINE_LENGTH equ 6
+         RADIUS dw 20
+         p0x dw 0
+         p1x dw 0
+         p2x dw 0
+         p0y dw 0
+         p1y dw 0
+         p2y dw 0
          direction db 1
 
 .code
@@ -40,19 +48,9 @@ main proc far
     mov al, 13h
     int 10h
     ;draw two horizontal roads with different directions
-    mov cx, 3
-    loop1:
-    push cx
+    
     horizontalPart START_X, START_Y, direction
-    pop cx
-    xor direction, 1
-    dec cx
-    cmp cx,0
-    jne loop11
-    jmp lbl
-    loop11:
-    jmp far ptr loop1
-    lbl:
+
     mov ax, START_X
     add ax, LINE_LENGTH
     mov END_X, ax
@@ -60,7 +58,7 @@ main proc far
     add ax, LINE_WIDTH
     add ax, 2*BOUNDARY_WIDTH
     mov END_Y, ax
-    deletePart START_X, START_Y, END_X, END_Y
+    ;deletePart START_X, START_Y, END_X, END_Y
     mov ah, 4ch        
     INT 21h         
 
