@@ -1,8 +1,7 @@
 
 ; You may customize this and other start-up templates; 
 ; The location of this template is c:\emu8086\inc\0_com_template.txt
-include car_macro.inc
-.386
+include car_m.inc
 .MODEL SMALL
 .STACK 64
 .DATA   
@@ -13,12 +12,16 @@ include car_macro.inc
     user1_posX db 10 ; Position X
     user1_posY db 10 ; Position Y
     user1_dir_bools db 4 dup(0) ; up, right, down, left
-    flag1 db 0
+		user1_dir_arr db 48h, 4dh, 50H, 4BH
+    prev_user1_posX db 0
+		prev_user1_posY db 0
 
     user2_posX db 30 ; Position X
     user2_posY db 10 ; Position Y         
     user2_dir_bools db 4 dup(0) ; up, right, down, left
-    flag2 db 0
+		user2_dir_arr db 11h, 20h, 1fH, 1eH
+    prev_user2_posX db 0
+		prev_user2_posY db 0
 .CODE
 
 
@@ -63,25 +66,33 @@ MAIN 	PROC FAR
 
     in al, 60H ; put the scan code of the pressed or unpressed
 
+		cmp al, 1h ; pressing the esc key
+    jz midKill
+		jnz midKillnot
+		midKill: jmp far ptr kill
+		midKillnot:
 
+		check_user1_dir
+		check_user2_dir
 
-
-
-
-
-
-
-
-    ; clear the previous location
-		mov cl,user1_posX
-		mov dl,user1_posY
-		mov al,0Fh
-		mov ah,0ch
-		int 10h
 
     ; update the location
+		mov al, user1_posX
+		mov prev_user1_posX, al
+		mov al, user1_posY
+		mov prev_user1_posY, al
     update_user1_pos
 
+		; check if there is a change or not
+		mov al, prev_user1_posX
+		cmp al, user1_posX
+		jnz update1 ; jump to the update if there is a change
+		mov al, prev_user1_posY
+		cmp al, user1_posY
+		jz label1 ; jump away if there is no change
+
+		update1:
+		clear_prev_location prev_user1_posX, prev_user1_posY
 		; draw the first user        
 		mov cl,user1_posX 
 		mov dl,user1_posY
@@ -89,15 +100,24 @@ MAIN 	PROC FAR
 		mov ah,0ch
 		int 10h
 
-    ; clear the previous location
-		mov cl,user2_posX
-		mov dl,user2_posY
-		mov al,0Fh
-		mov ah,0ch
-		int 10h
-
+		label1:
     ; update the second user location
+		mov al, user2_posX
+		mov prev_user2_posX, al
+		mov al, user2_posY
+		mov prev_user2_posY, al
     update_user2_pos
+
+		; check if there is a change or not
+		mov al, prev_user2_posX
+		cmp al, user2_posX
+		jnz update2 ; jump to the update if there is a change
+		mov al, prev_user2_posY
+		cmp al, user2_posY
+		jz label2 ; jump away if there is no change
+
+		update2:
+		clear_prev_location prev_user2_posX, prev_user2_posY
 
 		; draw the second user
     mov cl,user2_posX
@@ -106,15 +126,11 @@ MAIN 	PROC FAR
 		mov ah,0ch
 		int 10h
 
-
-		;------------------------------------------------checking key pressing--------------------------------------      
-    
-    
+		label2:
     jmp again
 
-    exit:
+    kill:
     MOV AH, 4CH         ; Function to exit program
     INT 21H             ; Call DOS interrupt to exit
-
 MAIN ENDP
 END MAIN
