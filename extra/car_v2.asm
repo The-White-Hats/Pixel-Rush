@@ -12,13 +12,15 @@ include car_m.inc
     user1_posX db 10 ; Position X
     user1_posY db 10 ; Position Y
     user1_dir_bools db 4 dup(0) ; up, right, down, left
+		margin1 dw 0
 		user1_dir_arr db 48h, 4dh, 50H, 4BH
     prev_user1_posX db 0
 		prev_user1_posY db 0
 
     user2_posX db 30 ; Position X
-    user2_posY db 10 ; Position Y         
+    user2_posY db 10 ; Position Y
     user2_dir_bools db 4 dup(0) ; up, right, down, left
+		margin3 dw 0
 		user2_dir_arr db 11h, 20h, 1fH, 1eH
     prev_user2_posX db 0
 		prev_user2_posY db 0
