@@ -55,8 +55,8 @@ check_user2_dir MACRO
 ENDM
 
 clear_prev_location MACRO xpos, ypos
-  mov cl, xpos
-  mov dl, ypos
+  mov cx, xpos
+  mov dx, ypos
   mov al,0Fh
   mov ah,0ch
   int 10h   
@@ -66,22 +66,22 @@ update_user1_pos MACRO
     up1:
     cmp user1_dir_bools, 00H
     jz right1
-    dec byte ptr user1_posY
+    dec word ptr user1_posY
 
     right1:
     cmp user1_dir_bools[1], 00H
     jz down1
-    inc byte ptr user1_posX
+    inc word ptr user1_posX
 
     down1:
     cmp user1_dir_bools[2], 00H
     jz left1
-    inc byte ptr user1_posY
+    inc word ptr user1_posY
 
     left1:
     cmp user1_dir_bools[3], 00H
     jz finish_update1
-    dec byte ptr user1_posX
+    dec word ptr user1_posX
     
     finish_update1:
 ENDM
@@ -90,22 +90,22 @@ update_user2_pos MACRO
     up2:
     cmp user2_dir_bools, 00H
     jz right2
-    dec byte ptr user2_posY
+    dec word ptr user2_posY
 
     right2:
     cmp user2_dir_bools[1], 00H
     jz down2
-    inc byte ptr user2_posX
+    inc word ptr user2_posX
 
     down2:
     cmp user2_dir_bools[2], 00H
     jz left2
-    inc byte ptr user2_posY
+    inc word ptr user2_posY
 
     left2:
     cmp user2_dir_bools[3], 00H
     jz finish_update2
-    dec byte ptr user2_posX
+    dec word ptr user2_posX
 
     finish_update2:
 ENDM

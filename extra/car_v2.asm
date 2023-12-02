@@ -9,21 +9,21 @@ include car_m.inc
     SCREEN_ATTR equ 020h ; White background (high nibble) and black text (low nibble)
     DASHEDLINEATTR equ 0F0h ; 
 
-    user1_posX db 10 ; Position X
-    user1_posY db 10 ; Position Y
+    user1_posX dw 10 ; Position X
+    user1_posY dw 10 ; Position Y
     user1_dir_bools db 4 dup(0) ; up, right, down, left
-		margin1 dw 0
+			db 0 ; margin
 		user1_dir_arr db 48h, 4dh, 50H, 4BH
-    prev_user1_posX db 0
-		prev_user1_posY db 0
+    prev_user1_posX dw 0
+		prev_user1_posY dw 0
 
-    user2_posX db 30 ; Position X
-    user2_posY db 10 ; Position Y
+    user2_posX dw 30 ; Position X
+    user2_posY dw 10 ; Position Y
     user2_dir_bools db 4 dup(0) ; up, right, down, left
-		margin3 dw 0
+			dw 0 ; margin
 		user2_dir_arr db 11h, 20h, 1fH, 1eH
-    prev_user2_posX db 0
-		prev_user2_posY db 0
+    prev_user2_posX dw 0
+		prev_user2_posY dw 0
 .CODE
 
 
@@ -52,15 +52,15 @@ MAIN 	PROC FAR
 
     ; ------------------------------draw the intial position of the players--------------------------;
     ; draw the first user        
-		mov cl,user1_posX 
-		mov dl,user1_posY
+		mov cx,user1_posX 
+		mov dx,user1_posY
 		mov al,SCREEN_ATTR
 		mov ah,0ch
 		int 10h
 
     ; draw the second user
-    mov cl,user2_posX
-		mov dl,user2_posY
+    mov cx,user2_posX
+		mov dx,user2_posY
 		int 10h
 
     ; ------------------this loop is like while(true) until the user press esc to exit the program---------;
@@ -84,51 +84,53 @@ MAIN 	PROC FAR
 
 
     ; update the location
-		mov al, user1_posX
-		mov prev_user1_posX, al
-		mov al, user1_posY
-		mov prev_user1_posY, al
+		; copy the current postions into prev_postions
+		mov ax, user1_posX
+		mov prev_user1_posX, ax
+		mov ax, user1_posY
+		mov prev_user1_posY, ax
     update_user1_pos
 
 		; check if there is a change or not
-		mov al, prev_user1_posX
-		cmp al, user1_posX
+		mov ax, prev_user1_posX
+		cmp ax, user1_posX
 		jnz update1 ; jump to the update if there is a change
-		mov al, prev_user1_posY
-		cmp al, user1_posY
+		mov ax, prev_user1_posY
+		cmp ax, user1_posY
 		jz label1 ; jump away if there is no change
 
 		update1:
 		clear_prev_location prev_user1_posX, prev_user1_posY
 		; draw the first user        
-		mov cl,user1_posX 
-		mov dl,user1_posY
+		mov cx,user1_posX 
+		mov dx,user1_posY
 		mov al,SCREEN_ATTR
 		mov ah,0ch
 		int 10h
 
 		label1:
     ; update the second user location
-		mov al, user2_posX
-		mov prev_user2_posX, al
-		mov al, user2_posY
-		mov prev_user2_posY, al
+		; copy the current postions into prev_postions
+		mov ax, user2_posX
+		mov prev_user2_posX, ax
+		mov ax, user2_posY
+		mov prev_user2_posY, ax
     update_user2_pos
 
 		; check if there is a change or not
-		mov al, prev_user2_posX
-		cmp al, user2_posX
+		mov ax, prev_user2_posX
+		cmp ax, user2_posX
 		jnz update2 ; jump to the update if there is a change
-		mov al, prev_user2_posY
-		cmp al, user2_posY
+		mov ax, prev_user2_posY
+		cmp ax, user2_posY
 		jz label2 ; jump away if there is no change
 
 		update2:
 		clear_prev_location prev_user2_posX, prev_user2_posY
 
 		; draw the second user
-    mov cl,user2_posX
-		mov dl,user2_posY
+    mov cx,user2_posX
+		mov dx,user2_posY
 		mov al,SCREEN_ATTR
 		mov ah,0ch
 		int 10h
