@@ -1,5 +1,3 @@
-PUBLIC drawCar
-
 .MODEL SMALL
 .STACK 64
 
@@ -7,8 +5,8 @@ PUBLIC drawCar
 
 .DATA
 
-    CAR_HEIGHT equ 16
-    CAR_WIDTH equ 8
+    CAR_HEIGHT equ 10
+    CAR_WIDTH equ 5
 
     SCREEN_WIDTH equ 320
     SCREEN_HEIGHT equ 200
@@ -19,8 +17,8 @@ PUBLIC drawCar
     centery dw ?
     currentx dw ?
     currenty dw ?
-    oldCarPlace db 2*CAR_HEIGHT*CAR_WIDTH dup (?)
-    newCarPlace db 2*CAR_HEIGHT*CAR_WIDTH dup (?)
+    carPlaceX dw CAR_HEIGHT*CAR_WIDTH dup (?)
+    carPlaceY dw CAR_HEIGHT*CAR_WIDTH dup (?)
 
 ;-----------------------
 
@@ -46,22 +44,39 @@ PUBLIC drawCar
         mov centery, SCREEN_HEIGHT/2
         mov currentx, SCREEN_WIDTH/2 - CAR_WIDTH/2
         mov currenty, SCREEN_HEIGHT/2 - CAR_HEIGHT/2
-        ; pixel => SCREEN_WIDTH*centery + centerx
-        mov di, SCREEN_WIDTH
-        mov ax, centery
-        mul di
-        add ax, centerx
-        mov di, ax
 
-        ; save coordinates
-        call save
+        ; Initialize car
+        call initCar
+        mov cx, 20
 
-        ; Draw car
-        call draw
+        again:
+            push cx
 
-        ; Wait for key
-        mov ah,0
-        int 16h
+            ; clear car
+            mov bp, 0Ah ; black color
+            call draw
+
+            pop cx
+            cmp cx, 20
+            push cx
+            jz skip
+
+            ; save new coordinates
+            call save
+
+            skip:
+
+            ; Draw car
+            mov bp, 4h ; red color
+            call draw
+
+            ; Wait for key
+            mov ah,0
+            int 16h
+
+            pop cx
+
+        loop again
 
         mov ah, 4Ch
         int 21h
@@ -70,23 +85,57 @@ PUBLIC drawCar
 
 ;-----------------------
 
-    save PROC
+    initCar PROC
 
         mov cx, CAR_HEIGHT
-        lea si, oldCarPlace
-        back:
+        lea di, carPlaceX
+        lea si, carPlaceY
+        back_init:
             mov dx, CAR_WIDTH
             mov currentx, SCREEN_WIDTH/2 - CAR_WIDTH/2
-            back2:
-                call getNewPoint
+            back2_init:
+                mov ax, currentx
+                mov [di], ax
+                mov ax, currenty
                 mov [si], ax
-                inc si
-                inc si
+                add di, 2
+                add si, 2
                 inc currentx
                 dec dx
                 cmp dx, 0
-                jnz back2
+                jnz back2_init
             inc currenty
+            dec cx
+            cmp cx, 0
+            jnz back_init
+
+        ret
+
+    initCar ENDP
+
+;-----------------------
+
+
+    save PROC
+
+        mov cx, CAR_HEIGHT
+        lea di, carPlaceX
+        lea si, carPlaceY
+        back:
+            mov dx, CAR_WIDTH
+            back2:
+                mov ax, [di]
+                mov currentx, ax
+                mov ax, [si]
+                mov currenty, ax
+                call getNewPoint
+                mov [di], ax
+                mov [si], bx
+                add di, 2
+                add si, 2
+                dec dx
+                cmp dx, 0
+                jnz back2
             dec cx
             cmp cx, 0
             jnz back
@@ -140,11 +189,8 @@ PUBLIC drawCar
         Idiv cx
         add si, ax
 
-        ; pixel => SCREEN_WIDTH*currenty + currentx
-        mov bx, SCREEN_WIDTH
-        mov ax, si
-        mul bx
-        add ax, di
+        mov ax, di
+        mov bx, si
 
         pop dx
         pop cx
@@ -160,15 +206,26 @@ PUBLIC drawCar
     draw Proc
 
         mov cx, CAR_HEIGHT
-        lea si, oldCarPlace
+        lea di, carPlaceX
+        lea si, carPlaceY
         back_draw:
             mov dx, CAR_WIDTH
             back2_draw:
-                mov al, 04h
-                mov di, [si]
-                mov es:[di], al
-                inc si
-                inc si
+                ; pixel => SCREEN_WIDTH*currenty + currentx
+                push dx
+
+                mov bx, SCREEN_WIDTH
+                mov ax, [si]
+                mul bx
+                add ax, [di]
+                mov bx, ax
+
+                pop dx
+
+                mov ax, bp
+                mov es:[bx], al
+                add di, 2
+                add si, 2
                 dec dx
                 cmp dx, 0
                 jnz back2_draw
