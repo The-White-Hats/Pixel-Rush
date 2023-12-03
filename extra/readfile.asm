@@ -112,4 +112,4 @@ drawImage PROC
 
 drawImage ENDP
 
-     END MAIN
+END MAIN

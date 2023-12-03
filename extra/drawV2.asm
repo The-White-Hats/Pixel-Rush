@@ -5,7 +5,7 @@
 
 .DATA
 
-    buffer_size equ 85*120
+    BUFF_SIZE equ 85*120
 
     CAR_HEIGHT equ 120
     CAR_WIDTH equ 85
@@ -19,8 +19,25 @@
     COS_ANGLE equ 985d ; 10 degrees
     SIN_ANGLE equ 174d ; 10 degrees
 
-    filename db 'Car_Blue.bin', 0
-    buffer db buffer_size dup(?)
+    ;----------car movement----------;
+    carImage    db 'Car_Blue0.bin', 0
+                db 'Car_Blue1.bin', 0
+                db 'Car_Blue2.bin', 0
+                db 'Car_Blue3.bin', 0
+                db 'Car_Blue4.bin', 0
+                db 'Car_Blue5.bin', 0
+                db 'Car_Blue6.bin', 0
+                db 'Car_Blue7.bin', 0
+                db 'Car_Blue8.bin', 0
+                db 'Car_Blue9.bin', 0
+                db 'Car_Blue10.bin', 0
+                db 'Car_Blue11.bin', 0
+                db 'Car_Blue12.bin', 0
+                db 'Car_Blue13.bin', 0
+                db 'Car_Blue14.bin', 0
+                db 'Car_Blue15.bin', 0
+    
+    buffer db BUFF_SIZE dup(?)
     errtext db "Error", 10, "$"
 
     currentx db ?
@@ -33,16 +50,40 @@
 .CODE
 
     MAIN PROC FAR
-        MOV AX,@DATA
-        MOV DS,AX
+        mov ax, @DATA
+        mov DS, ax
 
+        mov dx, offset carImage[0] ; filename to open
+        call inputFile
+        
+        mov di, SCREEN_WIDTH/2 - CAR_WIDTH/2 ;STARTING PIXEL
+        ;call drawCar
+
+        mov ah, 0
+        int 16h
+
+        error_exit:
+        mov ah, 9
+        mov dx, offset errtext
+        int 21h
+
+        mov AH,4ch
+        int 21h
+
+    MAIN ENDP
+
+;-----------------------
+
+    inputFile PROC
+
+        ; Open file
         mov ah, 03Dh
         mov al, 0 ; open attribute: 0 - read-only, 1 - write-only, 2 -read&write
-        mov dx, offset filename ; ASCIIZ filename to open
         int 21h
 
         jc error_exit       ; Jump if carry flag set (error)
 
+        ; Read file
         mov bx, AX
         mov ah, 03Fh
         mov cx, buffer_size ; number of bytes to read
@@ -54,23 +95,10 @@
         jc error_exit       ; Jump if carry flag set (error)
 
         mov ah, 3Eh         ; DOS function: close file
-        INT 21H
-
-        MOV DI,320/2 - CAR_WIDTH/2 ;STARTING PIXEL
-        CALL drawCar
-
-        MOV AH, 0
-        INT 16h
-
-        error_exit:
-        mov ah, 9
-        mov dx, offset errtext
         int 21h
 
-        MOV AH,4CH
-        INT 21H
 
-    MAIN ENDP
+    inputFile ENDP
 
 ;-----------------------
 
