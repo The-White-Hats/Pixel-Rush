@@ -7,7 +7,7 @@
 ;---------------------------------------
 .DATA
 
-filename db 'Car_Blue.bin', 0
+filename db 'Car_B0.bin', 0
 buffer_size equ 85*120
 buffer db buffer_size dup(?)
 errtext db "Error", 10, "$"

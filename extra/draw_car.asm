@@ -5,23 +5,17 @@
 
 .DATA
 
-    buffer_size equ 85*120
-
     CAR_HEIGHT equ 120
     CAR_WIDTH equ 85
 
     SCREEN_WIDTH equ 320
     SCREEN_HEIGHT equ 200
 
-    centerx equ SCREEN_WIDTH/2
-    centery equ SCREEN_HEIGHT/2
-
     COS_ANGLE equ 985d ; 10 degrees
     SIN_ANGLE equ 174d ; 10 degrees
-
-    filename db 'Car_Blue.bin', 0
-    buffer db buffer_size dup(?)
-    errtext db "Error", 10, "$"
+    
+    centerx equ SCREEN_WIDTH/2
+    centery equ SCREEN_HEIGHT/2
 
     currentx db ?
     currenty db ?
@@ -32,49 +26,9 @@
 
 .CODE
 
-    MAIN PROC FAR
-        MOV AX,@DATA
-        MOV DS,AX
-
-        mov ah, 03Dh
-        mov al, 0 ; open attribute: 0 - read-only, 1 - write-only, 2 -read&write
-        mov dx, offset filename ; ASCIIZ filename to open
-        int 21h
-
-        jc error_exit       ; Jump if carry flag set (error)
-
-        mov bx, AX
-        mov ah, 03Fh
-        mov cx, buffer_size ; number of bytes to read
-        mov dx, offset buffer ; were to put read data
-        int 21h
-
-
-        ; Check for errors
-        jc error_exit       ; Jump if carry flag set (error)
-
-        mov ah, 3Eh         ; DOS function: close file
-        INT 21H
-
-        MOV DI,320/2 - CAR_WIDTH/2 ;STARTING PIXEL
-        CALL drawCar
-
-        MOV AH, 0
-        INT 16h
-
-        error_exit:
-        mov ah, 9
-        mov dx, offset errtext
-        int 21h
-
-        MOV AH,4CH
-        INT 21H
-
-    MAIN ENDP
-
-;-----------------------
-
-    drawCar PROC
+    drawCar PROC FAR
+        mov ax, @data
+        mov ds, ax
 
         ; Set video mode
         mov ah,0
@@ -150,7 +104,8 @@
 
         loop again
 
-        ret
+        mov ah, 4ch
+        int 21h
 
     drawCar ENDP
 
@@ -284,4 +239,4 @@
 
     draw ENDP
 
-END MAIN
+END drawCar
