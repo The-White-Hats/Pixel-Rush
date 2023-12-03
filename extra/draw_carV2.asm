@@ -100,25 +100,55 @@ PUBLIC drawCar
     getNewPoint Proc
 
         push di
+        push si
         push cx
         push dx
 
-        ; x_rotated = (x_original - center_x) * cos(angle) + center_x - (y_original - center_y) * sin(angle)
+        ; x_rotated (di) = (x_original - center_x) * cos(angle) + center_x - (y_original - center_y) * sin(angle)
 
         mov ax, currentx
         sub ax, centerx
         mov cx, COS_ANGLE
-        mul cx
+        Imul cx
+        mov cx, 1000d ; because cosine is fraction
+        Idiv cx
         add ax, centerx
-        mov dx, 
+        mov di, ax
+        mov ax, currenty
+        sub ax, centery
+        mov cx, SIN_ANGLE
+        Imul cx
+        mov cx, 1000d ; because cosine is fraction
+        Idiv cx
+        sub di, ax
 
-        mov di, SCREEN_WIDTH
-        mov ax, centery
-        mul di
-        add ax, centerx
+        ; y_rotated (si) = (x_original - center_x) * sin(angle) + center_y + (y_original - center_y) * cos(angle)
+
+        mov ax, currentx
+        sub ax, centerx
+        mov cx, SIN_ANGLE
+        Imul cx
+        mov cx, 1000d ; because cosine is fraction
+        Idiv cx
+        add ax, centery
+        mov si, ax
+        mov ax, currenty
+        sub ax, centery
+        mov cx, COS_ANGLE
+        Imul cx
+        mov cx, 1000d ; because cosine is fraction
+        Idiv cx
+        add si, ax
+
+        ; pixel => SCREEN_WIDTH*currenty + currentx
+        mov bx, SCREEN_WIDTH
+        mov ax, si
+        mul bx
+        add ax, di
 
         pop dx
         pop cx
+        pop si
         pop di
 
         ret
