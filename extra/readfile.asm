@@ -1,39 +1,38 @@
+;AUTHOR : SHEHAB KHALED
 
+;---------------------------------------
 .MODEL SMALL
-.STACK 64
-;------------------------------------------
+.STACK 32
 
+;---------------------------------------
 .DATA
+
 filename db 'Car_Blue.bin', 0
-buffer_size equ 500h
+buffer_size equ 85*120
 buffer db buffer_size dup(?)
-
-errtext db "Something Went Wrong!!!", 10, "$"
-
-IMAGE_HEIGHT equ 50h
-IMAGE_WIDTH equ 30h
-
+errtext db "Error", 10, "$"
+IMAGE_HEIGHT equ 120
+IMAGE_WIDTH equ 85
 SCREEN_WIDTH equ 320
 SCREEN_HEIGHT equ 200
+;---------------------------------------
+.code
 
-;------------------------------------------
-
-.CODE
-readFile PROC
-    mov ax,@DATA
-    mov DS,ax
+MAIN PROC FAR
+    MOV AX,@DATA
+    MOV DS,AX
 
     mov ah, 03Dh
-    mov al, 0               ; open attribute: 0 - read-only, 1 - write-only, 2 -read&write
-    mov dx, offset filename ; ASCII filename to open
+    mov al, 0 ; open attribute: 0 - read-only, 1 - write-only, 2 -read&write
+    mov dx, offset filename ; ASCIIZ filename to open
     int 21h
 
-    jc error_exit           ; Jump if carry flag set (error)
+    jc error_exit       ; Jump if carry flag set (error)
 
     mov bx, AX
     mov ah, 03Fh
-    mov cx, buffer_size     ; number of bytes to read
-    mov dx, offset buffer   ; were to put read data
+    mov cx, buffer_size ; number of bytes to read
+    mov dx, offset buffer ; were to put read data
     int 21h
 
 
@@ -44,51 +43,51 @@ readFile PROC
     INT 21H
 
     MOV DI,320/2 - IMAGE_WIDTH/2 ;STARTING PIXEL
-    CALL drawCar
+    CALL drawImage
 
-    MOV ah, 0
+    MOV AH, 0
     INT 16h
-    jmp exit
 
     error_exit:
     mov ah, 9
     mov dx, offset errtext
     int 21h
 
-    exit:
-    MOV ah,4ch
-    INT 21h
-readFile ENDP
+    MOV AH,4CH
+    INT 21H
 
-drawCar PROC
+MAIN ENDP
 
-    ; Set video mode
+drawImage PROC
+
     mov ah,0
     mov al,13h
     int 10h
 
-    push di ; save starting position
+    PUSH DI
+    PUSH DX
 
-    ; Draw car
-    mov ax,0A000h
-    mov es,ax
-    mov di,0
-    mov cx, 64000
-    mov al, 0Ah
+    MOV AX, 0A000h 
+    MOV ES, AX
 
-    rep stosb ; Fill screen with color
+    XOR DI, DI
+    MOV CX, 320 * 200 ; Total pixels in the screen (320x200)
+    MOV AL, 0fH ; Set color to black
 
-    pop di
+    REP STOSB
 
-    mov si, offset buffer
-    mov dx, IMAGE_HEIGHT
+    POP DX
+    POP DI
+
+    MOV SI,offset buffer
+    
+    MOV DX,IMAGE_HEIGHT
 
     REPEAT:
-    mov cx, IMAGE_WIDTH
-
+    MOV CX,IMAGE_WIDTH
     DRAW_PIXELS:
-        ; Check if the byte at [SI] is 250 TO SKIP IT
-        mov ah, BYTE PTR [SI]
+        ; Check if the byte at [SI] is 0
+        mov AH,BYTE PTR [SI]
         CMP BYTE PTR [SI], 250
         JE SKIP_DRAW
 
@@ -105,12 +104,12 @@ drawCar PROC
 
         JNZ DRAW_PIXELS
 
-    ADD DI, SCREEN_WIDTH - IMAGE_WIDTH
+    ADD DI,SCREEN_WIDTH - IMAGE_WIDTH
     DEC DX
     JNZ REPEAT
 
     RET
 
-drawCar ENDP
+drawImage ENDP
 
-END readFile
+     END MAIN

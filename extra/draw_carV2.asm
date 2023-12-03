@@ -76,16 +76,17 @@ PUBLIC drawCar
         lea si, oldCarPlace
         back:
             mov dx, CAR_WIDTH
+            mov currentx, SCREEN_WIDTH/2 - CAR_WIDTH/2
             back2:
                 call getNewPoint
                 mov [si], ax
                 inc si
                 inc si
-                inc di
+                inc currentx
                 dec dx
                 cmp dx, 0
                 jnz back2
-            add di, SCREEN_WIDTH - CAR_WIDTH
+            inc currenty
             dec cx
             cmp cx, 0
             jnz back
