@@ -22,7 +22,11 @@
 		user2_dir_arr db 11h, 20h, 1fH, 1eH
     prev_user2_posX dw 0
 		prev_user2_posY dw 0
+			db 0
 		killSignal db 0
+			dw 0
+		origInt9Offset dw 0
+    origInt9Segment dw 0
 .CODE
 
 include car_m.inc
@@ -62,6 +66,12 @@ MAIN 	PROC FAR
 
     ; Disable interrupts
     CLI
+		; Save the original interrupt vector for int 9h
+    mov ax, 3509h
+    int 21h
+    mov origInt9Offset, bx
+    mov origInt9Segment, es
+
 		push ds
 		mov ax, cs
 		mov ds, ax
@@ -171,6 +181,20 @@ MAIN 	PROC FAR
     jmp again
 
 		kill:
+		; Restore the original interrupt vector for int 9h
+    CLI
+    mov ax, origInt9Segment
+    mov dx, origInt9Offset
+    
+    push ds
+    mov ds, ax
+
+    mov ax, 2509h
+    int 21h
+    ; Re-enable interrupts
+    pop ds
+    STI
+
     MOV AH, 4CH         ; Function to exit program
     INT 21H
 MAIN ENDP
