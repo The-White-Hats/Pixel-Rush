@@ -27,7 +27,7 @@ endlst macro  start     ; give it the start of the vertical cordinate (X-axis)
 endm endlst
   
 endl macro 
-       mov ah,02h
+    mov ah,02h
     mov dl,10
     int 21h 
     mov ah,02h

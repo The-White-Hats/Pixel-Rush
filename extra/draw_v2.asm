@@ -1,3 +1,5 @@
+include macros.inc
+
 .MODEL SMALL
 .STACK 64
 
@@ -33,7 +35,7 @@
             db '$'
     
     car db BUFF_SIZE dup(?)
-    errtext db "Error", 10, "$"
+    errorMsg db "Something went wrong with files !!", 10, "$"
 
 ;-----------------------
 
@@ -45,6 +47,12 @@
 
         mov ax,0A000h
         mov es,ax
+
+        ; clear and Set video mode
+        clear
+
+        ; Remove Blinking from the screen and allowing to use 16 colors as background
+        rmBlink
 
         mov bx, offset carFile ; filename to open
 
@@ -58,6 +66,7 @@
             ; draw car
             call drawCar
 
+            ; wait for key press
             mov ah, 0
             int 16h
 
@@ -88,32 +97,20 @@
     inputFile PROC
 
         ; Open file
-        mov ah, 03Dh
-        mov al, 0 ; open attribute: 0 - read-only, 1 - write-only, 2 -read&write
-        int 21h
-
-        jc error_exit       ; Jump if carry flag set (error)
+        openFile
+        jc error
 
         ; Read file
-        mov bx, ax
-        mov ah, 03Fh
-        mov cx, BUFF_SIZE ; number of bytes to read
-        mov dx, offset car ; were to put read data
-        int 21h
+        readFile BUFF_SIZE, car
+        jc error
 
-
-        ; Check for errors
-        jc error_exit       ; Jump if carry flag set (error)
-
-        mov ah, 3Eh         ; DOS function: close file
-        int 21h
+        ; Close file
+        closeFile
 
         ret
 
-        error_exit:
-        mov ah, 9
-        mov dx, offset errtext
-        int 21h
+        error:
+        showMsg errorMsg
 
         ret
 
@@ -122,11 +119,6 @@
 ;-----------------------
 
     drawCar PROC
-
-        ; Set video mode
-        mov ah,0
-        mov al,13h
-        int 10h
 
         ; Draw background
         mov di,0
