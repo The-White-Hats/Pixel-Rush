@@ -41,9 +41,36 @@ endm cearline
 
 
 
-showmes macro str
+showmes macro str2
     mov ah,09h
-    lea dx,str
+    lea dx,str2
     int 21h  
 endm showmes  
   
+shownum macro str
+    local l1     
+    local l2
+     lea bx, str
+     mov cx,10
+     mov dx,0
+     l1:
+       mov dx,0
+       div cx     
+       add dl,30h
+       mov [bx],dl
+       inc bx 
+       cmp ax,0
+     jnz l1     
+     mov [bx],'$' 
+     mov cx, bx
+     lea dx,str
+     sub cx,dx  
+     dec bx
+     l2:
+         mov ah,2
+         mov dl,[bx]
+         int 21h
+         dec bx
+         cmp dh,0
+     loop l2      
+endm shownum
