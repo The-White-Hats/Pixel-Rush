@@ -1,5 +1,5 @@
-include hPart.inc
-include circSect.inc
+;include hPart.inc
+;include circSect.inc
 include draw.inc
 .model small
 .stack 64
@@ -31,7 +31,7 @@ include draw.inc
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
          LINE_WIDTH equ 20
-         LINE_LENGTH equ 30
+         LINE_LENGTH equ 20
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
          DASHEDLINE_LENGTH equ 6
@@ -49,9 +49,9 @@ include draw.inc
          horizontalDirection db 1 ;! 1 left 0 right
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 15
+        MAX_PARTS equ 5
 
-		WRONGTHRESHOLD equ 12
+		WRONGTHRESHOLD equ 20
 
 		prev_start_x dw ?
 		prev_start_y dw ?
@@ -91,17 +91,35 @@ include draw.inc
 		startoffsetprevstart dw 0 
 
         ;*----------------------------------Track Generation Variables------------------------------------------------
-        CurrentDirection dw 0 
+        CurrentCase dw 0 
         
         ;*----------------------------------Random Proc Variables------------------------------------------------
         seed DW 1234H       ; Initial seed value
 		multiplier Dw 1d51H
 		increment Dw 8c45H
 		modulus DW 0F4bFh 
-		random_seed db 0 ; 4 bytes of memory to store the random seed
+		random_part db 0 ; 4 bytes of memory to store the random seed
 
 		str db ?
 		str2 db 'yes$'
+		
+		;------------------------------------------- CASES -------------------------------------------; 
+		lastRandom db 0
+        currentRandom db 0
+		validationFlag db 0
+
+		casse0 db 0,5,7
+		casse1 db 8,10,1
+		casse2 db 2,6,11
+		casse3 db 3,4,9
+		casse4 db 1,8,10
+		casse5 db 2,6,11
+		casse6 db 1,9,11
+		casse7 db 3,4,9
+		casse8 db 2,6,11
+		casse9 db 0,5,7
+		casse10 db 3,4,9
+		casse11 db 0,5,7
 
 .code
 main proc far
@@ -140,7 +158,7 @@ main proc far
 	call GenerateTrackDirections
 
 	clear
-
+    
 	lea si,Directions
 	mov cx,MAX_PARTS
 	l1321:
@@ -149,14 +167,208 @@ main proc far
 		shownum str
 		endl
 		pop  cx
-		inc  si
-		inc  si
+		add si,2
+       	; jmp ja55sl
+        ;      GenerateTrackDir_mid688:
+		; 	 jmp  l1321
+		; ja55sl:
+		; mov ax,[si]	
+		; push cx
+		; shownum str
+		; endl
+		; pop  cx
+		;add si,2
+
 	loop l1321
+
+    call Draw
 
     mov ah, 4ch        
     INT 21h         
 
 main endp
+
+
+SelectType PROC
+	 cmp CurrentCase , 0 
+		jnz casee1
+		;*-------------------------------Case0--------------------------------;
+            mov verticaldirection,0
+			call  GenerateVerticalTrack
+			jmp Done
+        ;*--------------------------------------------------------------------;
+		casee1:
+		cmp CurrentCase , 1
+		jnz casee2
+		;*-------------------------------Case1--------------------------------;
+            mov verticaldirection,1
+			call  GenerateVerticalTrack 
+			jmp Done
+        ;*--------------------------------------------------------------------;
+        casee2:
+		cmp CurrentCase , 2
+		jnz casee3
+		;*-------------------------------Case2--------------------------------;
+            mov horizontalDirection,0
+			mov cornerFlag,0
+			call  GenerateHorizontalTrack 
+			jmp Done
+        ;*--------------------------------------------------------------------;
+		casee3:
+		cmp CurrentCase , 3
+		jnz casee4
+		;*-------------------------------Case3--------------------------------;
+            mov horizontalDirection,1
+			mov cornerFlag,0
+			call  GenerateHorizontalTrack 
+			jmp Done
+        ;*--------------------------------------------------------------------;
+		casee4:
+		cmp CurrentCase , 4
+		jz exe4
+		cmp CurrentCase , 5
+		jnz casee6
+		;*-------------------------------Case4/5--------------------------------;
+         exe4:	
+			mov horizontalDirection,0
+			mov cornerFlag,1
+			mov cornerType,0
+			call  GenerateHorizontalTrack 
+			jmp Done
+		;*--------------------------------------------------------------------;
+		casee6:
+		cmp CurrentCase , 6
+		jz exe6
+		cmp CurrentCase , 7
+		jnz casee8
+		;*-------------------------------Case6/7--------------------------------;
+		 exe6:
+			mov horizontalDirection,1
+			mov cornerFlag,1
+			mov cornerType,0
+			call  GenerateHorizontalTrack 
+			jmp Done	
+		;*--------------------------------------------------------------------;
+		casee8:
+		cmp CurrentCase , 8
+		jz exe8
+		cmp CurrentCase , 9
+		jnz casee10
+		;*-------------------------------Case8/9--------------------------------;
+         exe8:	
+			mov horizontalDirection,0
+			mov cornerFlag,1
+			mov cornerType,1
+			call  GenerateHorizontalTrack 
+			jmp Done
+		;*--------------------------------------------------------------------;
+		;*-------------------------------Case10/11--------------------------------;
+        casee10:
+		    mov horizontalDirection,1
+			mov cornerFlag,1
+			mov cornerType,1
+			call  GenerateHorizontalTrack 
+	    Done:
+		ret
+SelectType ENDP
+
+Draw PROC
+	lea si,Directions
+    lea bx,PrevStart
+	
+	mov ax,[bx]
+	mov START_X,ax
+	mov ax,[bx+2]
+	mov START_Y,ax
+    add bx,4
+
+    mov cx,MAX_PARTS
+	iterate:
+
+	   mov ax,[si]
+	   mov CurrentCase ,ax
+
+       push bx
+	   push cx
+	   push si
+	   call SelectType
+	   pop si
+	   pop cx
+	   pop bx
+
+	   mov ax,[bx]
+	   mov START_X,ax
+	   mov ax,[bx+2]
+	   mov START_Y,ax
+	   add bx,4
+
+       add si,2 
+       mov dx,[si]
+
+	   cmp dx,4d
+	   jnz nextCase
+	   		inc START_X
+			jmp ClearToGo
+	   nextCase:
+	   cmp dx,6d
+	   jnz nextCase2
+	   		dec START_X
+			jmp ClearToGo
+	   nextCase2:
+       cmp dx,7d
+	   jnz nextCase3
+			mov ax,START_X
+			add ax,LINE_WIDTH
+			add ax,BOUNDARY_WIDTH*2
+			dec ax
+			mov START_X,ax
+			jmp ClearToGo
+			iterate_mid:
+			jmp iterate
+       nextCase3:
+	   cmp dx,8d
+	   jnz nextCase4
+			mov ax,START_Y
+			add ax,LINE_WIDTH
+			add ax,BOUNDARY_WIDTH*2
+			dec ax
+			mov START_Y,ax
+			jmp ClearToGo
+	   nextCase4:
+	   cmp dx,9d
+	   jnz nextCase5
+			inc START_X
+			jmp ClearToGo
+	   nextCase5:
+        cmp dx,10d
+	   jnz nextCase6
+	        mov ax,0
+			
+	        mov ax,START_X
+			add ax,LINE_WIDTH
+			add ax,BOUNDARY_WIDTH*2
+			dec ax
+			mov START_X,ax
+            
+			mov ax,START_Y
+			add ax,LINE_WIDTH
+			add ax,BOUNDARY_WIDTH*2
+			dec ax
+
+			mov START_Y,ax	
+			jmp ClearToGo
+		nextCase6:	
+        cmp dx,11d
+	    jnz ClearToGo
+		  dec START_X
+
+        ClearToGo: 
+		dec cx
+		cmp cx,0 
+		jg iterate_mid 
+
+	ret
+Draw ENDP
 
 GenerateTrackDirections PROC 
 	mov cx,0
@@ -186,47 +398,35 @@ GenerateTrackDirections PROC
 		mov ax,START_Y
 		mov prev_start_y,ax
 
-		 
         push bx
     	call rndm
 		pop bx
         
-        ; push  si
-		; lea si,Directions
-		; mov cx,4
-		; l1321:
-		; 	mov ax,[si]	
-		; 	push cx
-		; 	shownum str
-			
-		; 	pop  cx
-		; 	add si,2
-		; 	cmp cx,0
-		; 	jnz outdf
-		; jmp l1321
-		; outdf:
-		; endl
-		; pop si
-		; mov ax,0
-	    ; mov al,TrackCheckFlag
-		; push bx
-		; shownum str
-		; pop bx
-		; push dx		
-		; endl
-		; pop dx
-		; mov  ax,TotalParts
-		; push bx
-		; shownum str
-		; pop bx
-		; push dx		
-		; endl
-		; pop dx
-		; push dx		
-		; endl
-		; pop dx
+		cmp si,startoffsetdirection
+		jz movelastrandom0
+		mov ax,[si-2]
+		mov lastRandom,al
+		jmp skipmove
+
+		movelastrandom0:
+		mov lastRandom,0
+
+		skipmove:
+		mov ax,0
+        mov al,random_part
+		mov currentRandom,al
+
+        push bx
+        call checkCases
+        pop bx
+
+		cmp validationFlag,1
+		jz friends
+        jmp GenerateTrackDir_loop
+		friends:
+
   
-        cmp random_seed , 0 
+        cmp random_part , 0 
 		jnz case1
 		;*-------------------------------Case0--------------------------------;
 			mov ax,START_X
@@ -252,7 +452,7 @@ GenerateTrackDirections PROC
 			jmp GenerateTrackDir_FlagCheck
         ;*--------------------------------------------------------------------;
 		case1:
-		cmp random_seed , 1
+		cmp random_part , 1
 		jnz case2
 		;*-------------------------------Case1--------------------------------;
          	mov ax,START_X
@@ -278,7 +478,7 @@ GenerateTrackDirections PROC
 			jmp GenerateTrackDir_FlagCheck    
         ;*--------------------------------------------------------------------;
         case2:
-		cmp random_seed , 2
+		cmp random_part , 2
 		jnz case3
 		;*-------------------------------Case2--------------------------------;
          	mov ax,START_X
@@ -303,7 +503,7 @@ GenerateTrackDirections PROC
 			jmp GenerateTrackDir_FlagCheck
         ;*--------------------------------------------------------------------;
 		case3:
-		cmp random_seed , 3
+		cmp random_part , 3
 		jnz case4
 		;*-------------------------------Case3--------------------------------;
             mov ax,START_X
@@ -328,7 +528,7 @@ GenerateTrackDirections PROC
 			jmp GenerateTrackDir_FlagCheck
         ;*--------------------------------------------------------------------;
 		case4:
-		cmp random_seed , 4
+		cmp random_part , 4
 		jnz case5
 		;*-------------------------------Case4--------------------------------;
          	mov ax,[di-2]
@@ -350,7 +550,7 @@ GenerateTrackDirections PROC
 			jmp SkipValidation
 		;*--------------------------------------------------------------------;
 		case5:
-		cmp random_seed , 5
+		cmp random_part , 5
 		jnz case6
 		;*-------------------------------Case5--------------------------------;
          	mov ax,START_X
@@ -375,7 +575,7 @@ GenerateTrackDirections PROC
 			jmp GenerateTrackDir_FlagCheck
 		;*--------------------------------------------------------------------;
 		case6:
-		cmp random_seed , 6
+		cmp random_part , 6
 		jnz case7
 		;*-------------------------------Case6--------------------------------;
 			mov ax,[di-2]
@@ -404,7 +604,7 @@ GenerateTrackDirections PROC
 			jmp GenerateTrackDir_loop
 		;*--------------------------------------------------------------------;
 		case7:
-		cmp random_seed , 7
+		cmp random_part , 7
 		jnz case8
 		;*-------------------------------Case7--------------------------------;
             mov ax,START_X
@@ -433,7 +633,7 @@ GenerateTrackDirections PROC
 		 	jmp GenerateTrackDir_FlagCheck   
 		;*--------------------------------------------------------------------;
 		case8:
-		cmp random_seed , 8
+		cmp random_part , 8
 		jnz case9
 		;*-------------------------------Case8--------------------------------;
          	mov ax,START_X
@@ -462,7 +662,7 @@ GenerateTrackDirections PROC
 			jmp GenerateTrackDir_FlagCheck
 		;*--------------------------------------------------------------------;
 		case9:
-		cmp random_seed , 9
+		cmp random_part , 9
 		jnz case10
 		;*-------------------------------Case9--------------------------------;
             mov ax,[di-2]
@@ -488,7 +688,7 @@ GenerateTrackDirections PROC
 
 		;*--------------------------------------------------------------------;
 		case10:
-		cmp random_seed , 10
+		cmp random_part , 10
 		jnz case11
 		;*-------------------------------Case10--------------------------------;
          	mov ax,START_X
@@ -522,7 +722,7 @@ GenerateTrackDirections PROC
 
 		;*---------------------------------------------------------------------;
 		case11:
-		cmp random_seed , 11 
+		cmp random_part , 11 
 		jnz GenerateTrackDir_FlagCheck
 		;*-------------------------------Case11--------------------------------;
 			mov ax,[di-2]
@@ -578,8 +778,8 @@ GenerateTrackDirections PROC
 			add di,8
 
             
-            xor ax,ax
-			mov al,random_seed
+            mov ax,0
+			mov al,random_part
 			mov [si],ax
 			add si,2
 
@@ -649,106 +849,8 @@ GenerateTrackDirections PROC
 
 		cmp TotalParts,MAX_PARTS
 	jnz GenerateTrackDir_mid6
-
 	ret
 GenerateTrackDirections ENDP	
-
-
-SelectType PROC
-	 cmp CurrentDirection , 0 
-		jnz case1
-		;*-------------------------------Case0--------------------------------;
-            
-			jmp Done
-        ;*--------------------------------------------------------------------;
-		case1:
-		cmp CurrentDirection , 1
-		jnz case2
-		;*-------------------------------Case1--------------------------------;
-
-			jmp Done
-        ;*--------------------------------------------------------------------;
-        case2:
-		cmp CurrentDirection , 2
-		jnz case3
-		;*-------------------------------Case2--------------------------------;
-         
-
-			jmp Done
-        ;*--------------------------------------------------------------------;
-		case3:
-		cmp CurrentDirection , 3
-		jnz case4
-		;*-------------------------------Case3--------------------------------;
-         
-			jmp Done
-        ;*--------------------------------------------------------------------;
-		case4:
-		cmp CurrentDirection , 4
-		jnz case5
-		;*-------------------------------Case4--------------------------------;
-         	
-			jmp Done
-		;*--------------------------------------------------------------------;
-		case5:
-		cmp CurrentDirection , 5
-		jnz case6
-		;*-------------------------------Case5--------------------------------;
-         	
-
-			jmp Done
-		;*--------------------------------------------------------------------;
-		case6:
-		cmp CurrentDirection , 6
-		jnz case7
-		;*-------------------------------Case6--------------------------------;
-			
-			jmp Done
-		;*--------------------------------------------------------------------;
-		case7:
-		cmp CurrentDirection , 7
-		jnz case8
-		;*-------------------------------Case7--------------------------------;
-           
-		 	jmp Done   
-		;*--------------------------------------------------------------------;
-		case8:
-		cmp CurrentDirection , 8
-		jnz case9
-		;*-------------------------------Case8--------------------------------;
-         	
-			jmp Done
-		;*--------------------------------------------------------------------;
-		case9:
-		cmp CurrentDirection , 9
-		jnz case10
-		;*-------------------------------Case9--------------------------------;
-          
-			jmp Done
-		;*--------------------------------------------------------------------;
-		case10:
-		cmp CurrentDirection , 10
-		jnz case11
-		;*-------------------------------Case10--------------------------------;
-         
-			jmp Done
-		;*---------------------------------------------------------------------;
-		case11:
-		cmp CurrentDirection , 11 
-		jnz Done
-		;*-------------------------------Case11--------------------------------;
-			
-		;*---------------------------------------------------------------------;
-	    Done:
-		ret
-SelectType ENDP
-
-
-
-Draw PROC
-	
-Draw ENDP
-
 ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values of x,y. they should be updated before calling this procedure
       
 	  mov cx,START_X
@@ -835,247 +937,6 @@ Validator PROC ;! Change Value of ax only and dependent on the old and new value
 Validator ENDP
 
 ;! ------------ all next Proc changes the values of all registeres--------------------------;
-
-CheckHorizontalTrack PROC  ;! Dependent on the START_X and START_Y and does not change them
-	    mov bx,0
-		mov cx, START_X
-		mov dx, START_Y
-        ;---------------------------check for bounadry conditions---------------------------------;
-		    ;--------------------------------put the final position of dx and check with it---------------------------------;
-	        cmp horizontalDirection ,1
-				jnz down4
-				sub cx,LINE_LENGTH ;dx
-				jmp skip4
-				down4:
-				add cx,LINE_LENGTH ;dx
-				skip4:
-
-				cmp dx,MAX_Y
-				jle Hcheck1
-				jmp return1
-            ;----------------------------------------------------------------------------------------------------------------;
-			Hcheck1: 
-				sub dx,LINE_WIDTH
-				sub dx,BOUNDARY_WIDTH*2
-				cmp dx,MIN_Y
-				jge Hcheck2
-				jmp return1
-
-			Hcheck2:
-				cmp cx,MAX_X ;dx
-				jle Hcheck3
-				jmp return1
-
-			Hcheck3:
-				cmp cx,MIN_X ;dx
-				jge checkcolor1
-				jmp return1
-
-		checkcolor1:
-		;-------------------------- horizontal line check = ---------------------------------;
-        mov bx,0
-        mov cx,START_X
-		checkHorizontal1:
-		    mov dx,START_Y
-
-
-		    cmp bx,LINE_LENGTH
-			jz checkVertical_pre1
-			inc bx ; inc counter untill reach the length of the line
-
-             ;-----------------------------update dx according to horizontalDirection -----------------------------------------;
-			cmp horizontalDirection ,1
-			jnz down5
-			dec cx
-			jmp skip5
-			down5:
-			inc cx
-			skip5:
-             ;----------------------------------------------------------------------------------------------------------------;
-			
-			mov ah,0dh
-			int 10h
-			cmp al,DefaultBackground  
-            
-		jz checkHorizontalparallel1 ;if not DefaultBackground return
-		ret
-
-		checkHorizontalparallel1:
-
-			sub dx,LINE_WIDTH  
-			sub dx,BOUNDARY_WIDTH*2 ;same y-axis but x-axis is increased by the width of the line and the boundary
-            inc dx
-
-			mov ah,0dh
-			int 10h  
-			cmp al,DefaultBackground
-          
-		jz checkHorizontal1  ;if not DefaultBackground return
-		ret 
-        
-		;--------------------------vertical line check | | ---------------------------------;
-		checkVertical_pre1:
-		mov bx,0
-        mov dx,START_Y
-		checkVertical1:
-            mov cx,LINE_WIDTH
-            add cx,BOUNDARY_WIDTH*2
-		    cmp bx,cx
-			jz break1
-			inc bx
-
-            mov cx,START_X
-
-			dec dx
-
-			mov ah,0dh
-			int 10h 
-			cmp al,DefaultBackground
-           
-		jz checkVerticalparallel1
-		ret
-
-		checkVerticalparallel1:
-
-			cmp horizontalDirection ,1
-			jnz down6
-			sub cx ,LINE_LENGTH
-			jmp skip6
-			down6:
-			add cx ,LINE_LENGTH
-			skip6:
-
-			mov ah,0dh
-			int 10h
-			cmp al,DefaultBackground
-		jz checkVertical1
-         ret 
-		 
-		 return1:
-		 ret
-         break1:
-		horizontalPart START_X, START_Y, horizontalDirection
-        ret 
-CheckHorizontalTrack ENDP
-
-CheckVerticalTrack PROC ;! Dependent on the START_X and START_Y and does not change them
-	    mov bx,0
-		mov cx,START_X
-		mov dx,START_Y
-        ;---------------------------check for bounadry conditions---------------------------------;
-		    ;--------------------------------put the final position of dx and check with it---------------------------------;
-	        cmp verticaldirection ,0
-				jnz down3
-				sub dx,LINE_LENGTH
-				jmp skip3
-				down3:
-				add dx,LINE_LENGTH
-				skip3:
-
-				cmp cx,MIN_X
-				jge check1
-				jmp return
-            ;----------------------------------------------------------------------------------------------------------------;
-			check1: 
-				add cx,LINE_WIDTH
-				add cx,BOUNDARY_WIDTH*2
-				cmp cx,MAX_X
-				jle check2
-				jmp return
-
-			check2:
-				cmp dx,MIN_Y
-				jge check3
-				jmp return
-
-			check3:
-				cmp dx,MAX_Y
-				jle checkcolor
-				jmp return 
-
-		checkcolor:
-		;-------------------------- vertical line check | | ---------------------------------;
-        mov bx,1
-		mov dx,START_Y
-		checkvertical:
-		    mov cx,START_X
-
-		    cmp bx,LINE_LENGTH
-			jz checkhorizontal_pre
-			inc bx ; inc counter untill reach the length of the line
-
-             ;-----------------------------update dx according to verticaldirection -----------------------------------------;
-			cmp verticaldirection ,0
-			jnz down1
-			dec dx 
-			jmp skip1
-			down1:
-			inc dx
-			skip1:
-             ;----------------------------------------------------------------------------------------------------------------;
-			
-			mov ah,0dh
-			int 10h
-			cmp al,DefaultBackground
-		jz checkverticalparallel ;if not DefaultBackground return
-		ret
-
-		checkverticalparallel:
-
-			add cx,LINE_WIDTH  
-			add cx,BOUNDARY_WIDTH*2 ;same y-axis but x-axis is increased by the width of the line and the boundary
-            dec cx
-			mov ah,0dh
-			int 10h
-			cmp al,DefaultBackground
-
-		jz checkvertical  ;if not DefaultBackground return
-		ret 
-        
-		;--------------------------horizontal line check = ---------------------------------;
-		checkhorizontal_pre:
-		mov bx,0
-		mov cx,START_X
-		checkhorizontal:
-
-		    mov dx,START_Y
-		    cmp bx,LINE_WIDTH
-			jz break
-			inc bx
-
-			inc cx
-
-			mov ah,0dh
-			int 10
-			cmp al,DefaultBackground
-
-		jz checkhorizontalparallel
-		ret
-
-		checkhorizontalparallel:
-
-			cmp verticaldirection ,0
-			jnz down2
-			sub dx ,LINE_LENGTH
-            inc dx
-			jmp skip2
-			down2:
-			add dx ,LINE_LENGTH
-            dec dx
-			skip2:
-
-			mov ah,0dh
-			int 10h
-			cmp al,DefaultBackground
-		jz checkhorizontal
-         ret 
-		 
-		 return:
-		 ret
-         break:
-		call GenerateVerticalTrack
-        ret
-CheckVerticalTrack ENDP
 
 GenerateVerticalTrack PROC ;! Dependent on the START_X and START_Y  and does not change them
 
@@ -1219,6 +1080,177 @@ GenerateVerticalTrack PROC ;! Dependent on the START_X and START_Y  and does not
 		RET
 	GenerateVerticalTrack endp
 
+GenerateHorizontalTrack PROC
+      mov ah, 0ch
+    mov si, LINE_WIDTH + 2*BOUNDARY_WIDTH ; Outer loop counter
+    mov dx, START_Y
+    drawRoad:
+            mov cx, START_X
+            mov di, LINE_LENGTH ; Inner loop counter
+            mov bl, BOUNDARY_LENGTH
+            mov bh, 2*DASHEDLINE_LENGTH
+            mov al, GRAY 
+            cmp si, LINE_WIDTH + BOUNDARY_WIDTH ;check if upper bound
+            jle check123
+            mov al, RED
+        check123:
+            cmp si, 2 ;check if lower bound
+            jge check25
+            mov al, RED 
+        check25:
+            cmp si, LINE_WIDTH/2 +BOUNDARY_WIDTH+1 ;check if middle 
+            jnz drawLine
+            mov al , DASHESCOLOR ;anything but white or gray or red
+        drawLine:
+            cmp al, GRAY ;check if normal road
+            jnz drawRed
+            int 10h
+            jmp next_horizontal
+            drawRed:
+                cmp al, RED ;check if red boundary
+                jnz drawWhite
+                int 10h
+                dec bl
+                cmp bl, 0
+                jnz next_horizontal
+                mov bl, BOUNDARY_LENGTH
+                mov al, WHITE
+                jmp next_horizontal
+            mid1_horizontal:
+                jmp drawLine
+            mid2_horizontal:
+                jmp drawRoad
+            drawWhite:
+                cmp al, WHITE ;check if white boundary
+                jnz drawDashes
+                int 10h
+                dec bl
+                cmp bl, 0
+                jnz next_horizontal
+                mov bl, BOUNDARY_LENGTH
+                mov al, RED
+                jmp next_horizontal
+            drawDashes:
+                cmp bh, DASHEDLINE_LENGTH ;check if normal road or dashed line
+                jg alter
+                int 10h
+                dec bh
+                cmp bh, 0
+                jnz next_horizontal
+                mov bh, 2*DASHEDLINE_LENGTH
+                jmp next_horizontal
+                alter:
+                    mov al, GRAY
+                    int 10h
+                    dec bh
+                    mov al, DASHESCOLOR
+            next_horizontal:
+            cmp horizontalDirection, 0 ;check if right
+            jnz left
+            inc cx
+            jmp right
+            left:
+                dec cx
+            right:
+            dec di
+            cmp di, 0
+            jnz mid1_horizontal
+        dec dx
+        dec si
+        cmp si, 0
+        jnz mid2_horizontal
+    ender:
+    cmp cornerFlag, 1
+    jnz mid3
+    mov cx, START_X
+    mov dx, START_Y
+    mov si, BOUNDARY_WIDTH 
+    mov bl, BOUNDARY_LENGTH
+    mov al, RED
+    boundaryOuter:
+        mov dx, START_Y
+        sub dx, LINE_WIDTH
+        dec dx
+        mov di, LINE_WIDTH + 2*BOUNDARY_WIDTH 
+        boundary:
+        drawRed2:
+            cmp al, RED ;check if red boundary
+            jnz drawWhite2
+            int 10h
+            dec bl
+            cmp bl, 0
+            jnz boundaryNext
+            mov bl, BOUNDARY_LENGTH
+            mov al, WHITE
+            jmp boundaryNext
+        drawWhite2:
+            cmp al, WHITE ;check if white boundary
+            jnz drawDashes
+            int 10h
+            dec bl
+            cmp bl, 0
+            jnz boundaryNext
+            mov bl, BOUNDARY_LENGTH
+            mov al, RED
+            jmp boundaryNext
+            mid3:
+            jmp final
+    boundaryNext:
+        dec di
+        inc dx
+        cmp di, 0
+        jnz boundary
+    dec si
+    inc cx
+    cmp si, 0
+    jnz boundaryOuter
+
+    ;open a way 
+    mov al, GRAY
+    cmp cornerType, 0
+    jnz upOpened
+    mov dx, START_Y
+    jmp exec
+
+    upOpened:
+    mov dx, START_Y
+    sub dx, LINE_WIDTH
+    sub dx, BOUNDARY_WIDTH
+
+    exec:
+    mov si, BOUNDARY_WIDTH
+
+    open1:
+    
+        mov di, LINE_WIDTH
+        mov cx, START_X
+        cmp horizontalDirection,1
+        jnz addd
+        dec cx
+        jmp open11
+        addd:
+        inc cx
+        open11:
+        int 10h
+        cmp horizontalDirection,0
+        jz goRight
+        dec cx
+        jmp loopConds
+        goRight:
+        inc cx
+        loopConds:
+        dec di
+        cmp di,0
+        jnz open11
+    inc dx
+    dec si
+    cmp si,0
+    jnz open1
+
+    final:
+	ret
+ GenerateHorizontalTrack  ENDP
+
 rndm proc 
     
     mov cx, 1
@@ -1255,7 +1287,7 @@ inner_loop:
     DIV CX               ; AX = AX / CX, DX = AX % CX (remainder)
     mov bh, 12
     div bh
-    mov random_seed, ah
+    mov random_part, ah
         
     pop bx
     pop cx
@@ -1270,5 +1302,27 @@ inner_loop:
 
     ret
 rndm endp
+
+checkCases proc
+    mov validationFlag,0
+    mov al, lastRandom
+    mov bl, 3
+    mul bl
+    mov bh, 0
+    mov bl, al
+    mov al, casse0[bx]
+    mov cx,3
+    loop1:
+        mov al, casse0[bx]
+        cmp al, currentRandom
+        je valid
+        inc bx
+        loop loop1
+    jmp endCheckCases
+    valid:
+        mov validationFlag, 1
+    endCheckCases:
+    ret
+checkCases endp
 
 end main
