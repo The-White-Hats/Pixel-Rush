@@ -23,7 +23,7 @@ check_user1_dir MACRO
     notReleased:
 
     inc si
-    inc di
+    add di, 2h
     inc cx
     cmp cx, 4H
     jnz check_user1
@@ -48,7 +48,7 @@ check_user2_dir MACRO
     notReleased2:
 
     inc si
-    inc di
+    add di, 2h
     inc cx
     cmp cx, 4H
     jnz check_user2
@@ -69,17 +69,17 @@ update_user1_pos MACRO
     dec word ptr user1_posY
 
     right1:
-    cmp user1_dir_bools[1], 00H
+    cmp user1_dir_bools[2], 00H
     jz down1
     inc word ptr user1_posX
 
     down1:
-    cmp user1_dir_bools[2], 00H
+    cmp user1_dir_bools[4], 00H
     jz left1
     inc word ptr user1_posY
 
     left1:
-    cmp user1_dir_bools[3], 00H
+    cmp user1_dir_bools[6], 00H
     jz finish_update1
     dec word ptr user1_posX
     
@@ -93,17 +93,17 @@ update_user2_pos MACRO
     dec word ptr user2_posY
 
     right2:
-    cmp user2_dir_bools[1], 00H
+    cmp user2_dir_bools[2], 00H
     jz down2
     inc word ptr user2_posX
 
     down2:
-    cmp user2_dir_bools[2], 00H
+    cmp user2_dir_bools[4], 00H
     jz left2
     inc word ptr user2_posY
 
     left2:
-    cmp user2_dir_bools[3], 00H
+    cmp user2_dir_bools[6], 00H
     jz finish_update2
     dec word ptr user2_posX
 

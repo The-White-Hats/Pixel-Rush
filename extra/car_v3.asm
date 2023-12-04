@@ -11,7 +11,7 @@ include car_m.inc
 
     user1_posX dw 10 ; Position X
     user1_posY dw 10 ; Position Y
-    user1_dir_bools db 4 dup(0) ; up, right, down, left
+    user1_dir_bools db 7 dup(0) ; up, right, down, left
 			db 0 ; margin
 		user1_dir_arr db 48h, 4dh, 50H, 4BH
     prev_user1_posX dw 0
@@ -19,7 +19,7 @@ include car_m.inc
 
     user2_posX dw 30 ; Position X
     user2_posY dw 10 ; Position Y
-    user2_dir_bools db 4 dup(0) ; up, right, down, left
+    user2_dir_bools db 7 dup(0) ; up, right, down, left
 			dw 0 ; margin
 		user2_dir_arr db 11h, 20h, 1fH, 1eH
     prev_user2_posX dw 0
