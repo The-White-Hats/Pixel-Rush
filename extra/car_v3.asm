@@ -1,7 +1,5 @@
-
 ; You may customize this and other start-up templates; 
 ; The location of this template is c:\emu8086\inc\0_com_template.txt
-include car_m.inc
 .MODEL SMALL
 .STACK 64
 .DATA   
@@ -26,6 +24,8 @@ include car_m.inc
 		prev_user2_posY dw 0
 .CODE
 
+include car_m.inc
+
 my_isr PROC
 		in al, 60H ; put the scan code of the pressed or unpressed
 
@@ -35,8 +35,13 @@ my_isr PROC
 		midKill: jmp far ptr kill
 		midKillnot:
 
-		check_user1_dir
-		check_user2_dir
+		lea si, user1_dir_arr
+		lea di, user1_dir_bools
+		call CheckDir
+
+		lea si, user2_dir_arr
+		lea di, user2_dir_bools
+		call CheckDir
 
 		mov  al, 20h           ; The non specific EOI (End Of Interrupt)
     out  20h, al

@@ -4,12 +4,38 @@ clear macro
     int 10h         ; BIOS interrupt for video services
 endm clear 
 
-check_user1_dir MACRO
-    lea si, user1_dir_arr
-    lea di, user1_dir_bools
+; check_user1_dir MACRO
+;     lea si, user1_dir_arr
+;     lea di, user1_dir_bools
+;     mov cx, 0H
+;     xor ah, ah
+;     check_user1:
+;     ; check for the key arrow key
+;     cmp al, [si] 
+;     jnz notPressed
+;     mov [di], 1H
+;     notPressed:
+;     mov bl, [si]
+;     add bl, 80H
+;     cmp al, bl
+;     jnz notReleased
+;     mov [di], 0H
+;     notReleased:
+
+;     inc si
+;     add di, 2h
+;     inc cx
+;     cmp cx, 4H
+;     jnz check_user1
+; ENDM
+
+;description
+CheckDir PROC
+    ; move user_dir_arr offset into si
+    ; move user_dir_bools offset into di
     mov cx, 0H
     xor ah, ah
-    check_user1:
+    check_user:
     ; check for the key arrow key
     cmp al, [si] 
     jnz notPressed
@@ -26,33 +52,34 @@ check_user1_dir MACRO
     add di, 2h
     inc cx
     cmp cx, 4H
-    jnz check_user1
-ENDM
+    jnz check_user
+    ret
+CheckDir ENDP
 
-check_user2_dir MACRO
-    lea si, user2_dir_arr
-    lea di, user2_dir_bools
-    mov cx, 0H
-    xor ah, ah
-    check_user2:
-    ; check for the up arrow key
-    cmp al, [si]
-    jnz notPressed2
-    mov [di], 1H
-    notPressed2:
-    mov bl, [si]
-    add bl, 80H
-    cmp al, bl
-    jnz notReleased2
-    mov [di], 0H
-    notReleased2:
+; check_user2_dir MACRO
+;     lea si, user2_dir_arr
+;     lea di, user2_dir_bools
+;     mov cx, 0H
+;     xor ah, ah
+;     check_user2:
+;     ; check for the up arrow key
+;     cmp al, [si]
+;     jnz notPressed2
+;     mov [di], 1H
+;     notPressed2:
+;     mov bl, [si]
+;     add bl, 80H
+;     cmp al, bl
+;     jnz notReleased2
+;     mov [di], 0H
+;     notReleased2:
 
-    inc si
-    add di, 2h
-    inc cx
-    cmp cx, 4H
-    jnz check_user2
-ENDM
+;     inc si
+;     add di, 2h
+;     inc cx
+;     cmp cx, 4H
+;     jnz check_user2
+; ENDM
 
 clear_prev_location MACRO xpos, ypos
   mov cx, xpos
