@@ -7,16 +7,16 @@ include macros.inc
 
 .DATA
 
-    BUFF_SIZE equ 85*120
+    BUFF_SIZE equ 15*21
 
-    CAR_HEIGHT equ 120
-    CAR_WIDTH equ 85
+    CAR_HEIGHT equ 21
+    CAR_WIDTH equ 15
 
     SCREEN_WIDTH equ 320
     SCREEN_HEIGHT equ 200
 
     ;----------car movement----------;
-    carFile db 'Car_B0.bin', 0
+    carFile db 'Car_O.bin', 0
             db 'Car_B1.bin', 0
             db 'Car_B2.bin', 0
             db 'Car_B3.bin', 0
