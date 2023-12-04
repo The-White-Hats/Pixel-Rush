@@ -22,6 +22,7 @@
 		user2_dir_arr db 11h, 20h, 1fH, 1eH
     prev_user2_posX dw 0
 		prev_user2_posY dw 0
+		killSignal db 0
 .CODE
 
 include car_m.inc
@@ -31,9 +32,6 @@ my_isr PROC
 
 		cmp al, 1h ; pressing the esc key
     jz midKill
-		jnz midKillnot
-		midKill: jmp far ptr kill
-		midKillnot:
 
 		lea si, user1_dir_arr
 		lea di, user1_dir_bools
@@ -43,6 +41,13 @@ my_isr PROC
 		lea di, user2_dir_bools
 		call CheckDir
 
+		jmp dontKill
+
+		midKill:
+		mov al, 0ffH
+		mov killSignal, al		          ; Call DOS interrupt to exit
+
+		dontKill:
 		mov  al, 20h           ; The non specific EOI (End Of Interrupt)
     out  20h, al
     iret
@@ -158,12 +163,15 @@ MAIN 	PROC FAR
 		mov al,SCREEN_ATTR
 		mov ah,0ch
 		int 10h
+		
+		cmp killSignal, 0H
+		jnz kill
 
 		label2:
     jmp again
 
-    kill:
+		kill:
     MOV AH, 4CH         ; Function to exit program
-    INT 21H		          ; Call DOS interrupt to exit
+    INT 21H
 MAIN ENDP
 END MAIN
