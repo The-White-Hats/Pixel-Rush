@@ -1,8 +1,11 @@
 .model small
 .stack 64
 .data
-seed dw 1234H       ; Initial seed value
-random db ?         ; Random number
+seed DW 1234H       ; Initial seed value
+multiplier Dw 1d51H
+increment Dw 8c45H
+modulus DW 0F4bFh 
+random_seed db 0, 10, 13, '$' ; 4 bytes of memory to store the random seed
 
 .code   
 main proc far
@@ -16,7 +19,7 @@ main proc far
     call rndm
     
     mov ah,09h
-    lea dx,random
+    lea dx,random_seed
     int 21h 
     ; call delay interrupt to delay 211 ms
     
@@ -30,23 +33,40 @@ main proc far
 main endp
 
 rndm proc
-    mov ah, 2Ch
-    int 21h
-    add seed, dx
-    mov ax, seed
-    mov bx, 32749
-    mul bx
-    add ax, 32541
-    mov seed, ax
+    mov al, 0
+    mov ah, 86h
+    mov dx, 211
+    mov cx, 7
+    int 15h
 
-    ; Convert the result to a number between 0 and 11
+    mov ah, 2Ch
+    int 21h 
+    mov ax, dx
+    mov bl, 17
+    mul bl
+    mov bl, 137
+    div bl
+    mov al,ah
+    mov ah, 17
+    mov bx, ax
+
+    
+    mov al,dl
+    mov bl, 5
+    mul bl
+
+    MOV BX, multiplier
+    MUL BX               ; AX = seed * multiplier
+    ADD AX, increment    ; AX = AX + increment
+    MOV CX, modulus      ; CX = modulus (2^16)
+    DIV CX               ; AX = AX / CX, DX = AX % CX (remainder)
     mov bh, 12
-    div bh      ; Divide DX:AX by BL
-    mov random, ah
+    div bh
+    mov random_seed, ah
+    
 
     ret
 rndm endp
-
 
 
 end main

@@ -41,16 +41,16 @@ endm cearline
 
 
 
-showmes macro str2
+showmes macro str
     mov ah,09h
-    lea dx,str2
+    lea dx,str
     int 21h  
 endm showmes  
   
-shownum macro str
+shownum macro
     local l1     
     local l2
-     lea bx, str
+     lea bx, s
      mov cx,10
      mov dx,0
      l1:
@@ -63,7 +63,7 @@ shownum macro str
      jnz l1     
      mov [bx],'$' 
      mov cx, bx
-     lea dx,str
+     lea dx,s
      sub cx,dx  
      dec bx
      l2:

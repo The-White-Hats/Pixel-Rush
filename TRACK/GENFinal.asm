@@ -1,9 +1,8 @@
-;include hPart.inc
-;include circSect.inc
+
 include draw.inc
 .286
 .model small
-.stack 64
+.stack 128
 .data
     ;*----------------------------------COLORS------------------------------------------------------;
          TEXT_COLOR equ 0    ; DefaultBackground text on white background
@@ -16,13 +15,12 @@ include draw.inc
          GRAY equ 08h
          WHITE equ 0Fh
          BLACK equ 00h
-         DefaultBackground equ BLACK
+         DefaultBackground equ GREEN
          DASHESCOLOR equ LIGHT_GRAY
          ;*----------------------------------Positions-------------------------------------------------;      
-         dt ?
-		 START_X dw 150
-         START_Y dw 150
-		 dt ?
+		 START_X dw 310
+         START_Y dw 50
+         START_DIR equ 3
          END_X dw ?
          END_Y dw ?
          ;*----------------------------------BOUNDARY-------------------------------------------------;      
@@ -31,7 +29,7 @@ include draw.inc
          MIN_Y equ 0
          MAX_Y equ 200 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 15
+         LINE_WIDTH equ 10
          LINE_LENGTH equ 20
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
@@ -50,7 +48,7 @@ include draw.inc
          horizontalDirection db 1 ;! 1 left 0 right
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 70
+        MAX_PARTS equ 100
         TIME equ 6
 		WRONGTHRESHOLD equ 12
 
@@ -102,7 +100,7 @@ include draw.inc
 		random db 0
 		s db 0
 		;*------------------------------------------- CASES -------------------------------------------; 
-		lastRandom db 0
+		lastRandom db START_DIR
         currentRandom db 0
 		validationFlag db 0
 
@@ -131,51 +129,14 @@ main proc far
 		mov BL ,00h  ; 00h background intensity enabled , 01h blink enabled
 		mov BH , 00h ; to avoid problems on some adapters
         int 10h
-		
-
 	;---------------------------------------Screen Coloring------------------------------------------------;
-		;mov ax ,0600h
-;		mov bh,DefaultBackground
-;		mov cx,0h
-;		mov dx , 184fh
-;     	int 10h
+		mov ax ,0600h
+		mov bh,DefaultBackground
+		mov cx,0h
+		mov dx , 184fh
+    	int 10h
     ;-----------------------------------------------------------------------------------------------------;
 	call GenerateTrackDirections
-
-	clear
-    
-	; lea si,Directions
-	; mov cx,MAX_PARTS
-	; l1321:
-	; 	mov ax,[si]	
-	; 	push cx
-	; 	shownum 
-	; 	endl
-	; 	pop  cx
-	; 	add si,2
-	; loop l1321
-
-	; lea si,PrevStart
-	; mov cx,MAX_PARTS
-	; l1321f:
-	; 	mov ax,[si]	
-	; 	push cx
-	; 	shownum 
-	; 	endl
-	; 	pop  cx
-	; 	add si,2
-    ;    	jmp ja55slf
-    ;          GenerateTrackDir_mid688:
-	; 		 jmp  l1321f
-	; 	ja55slf:
-	; 	mov ax,[si]	
-	; 	push cx
-	; 	shownum 
-	; 	endl
-	; 	pop  cx
-	; 	add si,2
-
-	; loop GenerateTrackDir_mid688
 
     call Draw
 
@@ -184,9 +145,7 @@ main proc far
 
     mov ah, 4ch        
     INT 21h         
-
 main endp
-
 
 SelectType PROC
 	 cmp CurrentCase , 0 
@@ -346,15 +305,8 @@ Draw PROC
 
         ClearToGo: 
 
-       push bx
-	   push cx
-	   push si
 	   call SelectType
-	   pop si
-	   pop cx
-	   pop bx
-       
-
+	 
 	   mov ax,[bx]
 	   mov START_X,ax
 	   mov ax,[bx+2]
@@ -393,73 +345,24 @@ GenerateTrackDirections PROC
 
 	GenerateTrackDir_loop:
         
-	
-        
-		; MOV    AH,0               
-        ; INT    16H
-
-		
-		;call Delay
         mov ax,START_X
 		mov prev_start_x,ax
 		mov ax,START_Y
 		mov prev_start_y,ax
       
-        
 		cmp si,startoffsetdirection
-		jz movelastrandom0
+		jz resetlastrandom
 		mov ax,[si-2]
 		mov lastRandom,al
 		jmp skipmove
 
-		movelastrandom0:
-		mov lastRandom,0
+		resetlastrandom:
+		mov lastRandom,START_DIR
 
 		skipmove:  
-
-		push bx
+		
     	call specifiedrandom
-		pop bx
 
-		; mov ax,0
-        ; mov al,random_part
-		; mov currentRandom,al
-
-        ; push bx
-        ; call checkCases
-        ; pop bx
-
-		; cmp validationFlag,1
-		; jz friends
-        ; jmp GenerateTrackDir_loop
-		; friends:
-        
-	; 	mov ax,START_X
-	; 	push cx
-	; 	push bx
-	; 	shownum 
-	; 	endl
-	; 	pop bx
-	; 	pop  cx
-
-    ;    mov ax,START_Y
-	; 	push cx
-	; 	push bx
-	; 	shownum 
-	; 	endl
-	; 	pop bx
-	; 	pop  cx
-	; 	mov ax,0
-
-	; 	mov al,lastRandom
-	; 	push cx
-	; 	push bx
-	; 	shownum 
-	; 	endl
-	; 	pop bx
-	; 	pop  cx
-
-  
         cmp random_part , 0 
 		jnz case1
 		;*-------------------------------Case0--------------------------------;
@@ -669,7 +572,7 @@ GenerateTrackDirections PROC
 		case8:
 		cmp random_part , 8
 		jnz case9
-		;*-------------------------------Case8--------------------------------;
+	    ;*-------------------------------Case8--------------------------------;
          	mov ax,START_X
 			mov x_min_new,ax
 
@@ -690,9 +593,7 @@ GenerateTrackDirections PROC
 
             ;! updating
 			mov START_Y,ax
-
 			mov y_max_new,ax
-
 			jmp GenerateTrackDir_FlagCheck
 		;*--------------------------------------------------------------------;
 		case9:
@@ -719,7 +620,6 @@ GenerateTrackDirections PROC
 			sub ax,LINE_WIDTH
             mov START_Y,ax
 			jmp SkipValidation
-
 		;*--------------------------------------------------------------------;
 		case10:
 		cmp random_part , 10
@@ -730,7 +630,6 @@ GenerateTrackDirections PROC
 			add ax,BOUNDARY_WIDTH*2
 			dec ax
 			mov x_max_new,ax
-
 
 			sub ax,LINE_LENGTH
 
@@ -753,7 +652,6 @@ GenerateTrackDirections PROC
 			mov y_max_new,ax
 
 			jmp GenerateTrackDir_FlagCheck
-
 		;*---------------------------------------------------------------------;
 		case11:
 		cmp random_part , 11 
@@ -779,7 +677,6 @@ GenerateTrackDirections PROC
 
 			mov START_X,ax
             
-
 			mov ax,START_Y
 			sub ax,BOUNDARY_WIDTH*2					
 			sub ax,LINE_WIDTH
@@ -792,16 +689,12 @@ GenerateTrackDirections PROC
 		;*---------------------------------------------------------------------;
 	    GenerateTrackDir_FlagCheck:
         
-		push si
         call ValidateTrack ;? call ValidateTrack with new x,y
-        pop si
 
 		cmp TrackCheckFlag,1 ;? check if it is valid
         jnz GenerateTrackDir_wrong
 
             SkipValidation:
-
-			
 
 			mov ax,x_min_new
 			mov [di],ax
@@ -812,14 +705,12 @@ GenerateTrackDirections PROC
 			mov ax,y_max_new
 			mov [di+6],ax
 			add di,8
-
             
             mov ax,0
 			mov al,random_part
 			mov [si],ax
 			add si,2
-
-          
+        
 			mov ax,START_X
 			mov [bx],ax
 			mov ax,START_Y
@@ -828,7 +719,6 @@ GenerateTrackDirections PROC
 
 			inc TotalParts
 		    
-
 			jmp GenerateTrackDir_still
 			
             GenerateTrackDir_mid3:
@@ -847,7 +737,6 @@ GenerateTrackDirections PROC
              GenerateTrackDir_mid6:
 			 jmp  GenerateTrackDir_mid3
 			jadksl:
-
 
 			cmp WrongCounter,WRONGTHRESHOLD
 			jnz GenerateTrackDir_still
@@ -869,7 +758,6 @@ GenerateTrackDirections PROC
 				mov ax,[bx-2]
 				mov START_Y,ax
 	
-			
 				mov ax,[bx-4]
 				mov START_X,ax
 
@@ -882,11 +770,9 @@ GenerateTrackDirections PROC
 	jnz GenerateTrackDir_mid6
 	ret
 GenerateTrackDirections ENDP	
-ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values of x,y. they should be updated before calling this procedure
-      
-	  mov cx,START_X
-	  mov dx,START_Y
 
+ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values of x,y. they should be updated before calling this procedure
+	pusha
 	;---------------------------check for bounadry conditions---------------------------------;
 			cmp x_min_new,MIN_X
 			jge ValidateTrack_check1
@@ -936,10 +822,12 @@ ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values 
 	jle for1
 
     mov TrackCheckFlag,1
+	popa
 	ret 
    
     wrong:
     mov TrackCheckFlag,0
+	popa
 	ret
 ValidateTrack ENDP
 
@@ -971,7 +859,7 @@ Validator ENDP
 ;! ------------ all next Proc changes the values of all registeres--------------------------;
 
 GenerateVerticalTrack PROC ;! Dependent on the START_X and START_Y  and does not change them
-
+        pusha
         mov cx,START_X
         mov dx,START_Y
         mov posx,cx
@@ -1111,11 +999,12 @@ GenerateVerticalTrack PROC ;! Dependent on the START_X and START_Y  and does not
 			cmp posx,bx ;bx = LINE_WIDTH  + START_X +BOUNDARY_WIDTH*2 ->total width of the line
 
 		 jnz mid2  ;jmp to mid2 then to movehorizontal
-
-		RET
+        popa
+		ret
 	GenerateVerticalTrack endp
 
 GenerateHorizontalTrack PROC
+	pusha
     mov ah, 0ch
     mov si, LINE_WIDTH + 2*BOUNDARY_WIDTH ; Outer loop counter
     mov dx, START_Y
@@ -1284,60 +1173,9 @@ GenerateHorizontalTrack PROC
     jnz open1
 
     final:
+	popa
 	ret
  GenerateHorizontalTrack  ENDP
-
-rndm proc 
-    
-    mov cx, 1
-
-outer_loop: 
-    push cx
-    mov ah, 2Ch
-    int 21h 
-    pop cx
-    mov ax, dx
-    mov bl, 3
-    mul bl
-    mov bl, 137
-    div bl
-    mov al,ah
-    mov ah, 17
-    mov bx, ax
-
-
-inner_loop: 
-    push cx
-    push bx
-    mov ah, 2Ch
-    int 21h    
-    
-    mov al,dl
-    mov bl, 5
-    mul bl
-
-    MOV BX, multiplier
-    MUL BX               ; AX = seed * multiplier
-    ADD AX, increment    ; AX = AX + increment
-    MOV CX, modulus      ; CX = modulus (2^16)
-    DIV CX               ; AX = AX / CX, DX = AX % CX (remainder)
-    mov bh, 12
-    div bh
-    mov random_part, ah
-        
-    pop bx
-    pop cx
-
-    dec bx 
-    cmp bx, 0
-    jnz inner_loop
-
-    dec cx 
-    cmp cx, 0
-    jnz outer_loop
-
-    ret
-rndm endp
 
 randomizer PROC
   pusha
@@ -1361,6 +1199,7 @@ randomizer PROC
 randomizer ENDP
 
 specifiedrandom PROC
+	pusha
 	mov al, lastRandom
     mov bl, 3
     mul bl
@@ -1374,33 +1213,9 @@ specifiedrandom PROC
 	add bx,ax
 	mov al,casse0[bx]
 	mov random_part,al
+	popa
 	ret
 ENDP
-
-
-
-
-checkCases proc
-    mov validationFlag,0
-    mov al, lastRandom
-    mov bl, 3
-    mul bl
-    mov bh, 0
-    mov bl, al
-    mov al, casse0[bx]
-    mov cx,3
-    loop1:
-        mov al, casse0[bx]
-        cmp al, currentRandom
-        je valid
-        inc bx
-        loop loop1
-    jmp endCheckCases
-    valid:
-        mov validationFlag, 1
-    endCheckCases:
-    ret
-checkCases endp
 
 Delay PROC
 	    pusha
@@ -1411,5 +1226,4 @@ Delay PROC
 		popa
 		ret
 Delay ENDP
-
 end main
