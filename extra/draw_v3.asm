@@ -7,32 +7,16 @@ include macros.inc
 
 .DATA
 
-    BUFF_SIZE     equ 85*120
+    BUFF_SIZE     equ 40*23
 
-    CAR_HEIGHT    equ 120
-    CAR_WIDTH     equ 85
+    CAR_HEIGHT    equ 40
+    CAR_WIDTH     equ 23
 
     SCREEN_WIDTH  equ 320
     SCREEN_HEIGHT equ 200
 
     ;----------car movement----------;
-    carFile       db  'Car_B0.bin', 0
-                  db  'Car_B1.bin', 0
-                  db  'Car_B2.bin', 0
-                  db  'Car_B3.bin', 0
-                  db  'Car_B4.bin', 0
-                  db  'Car_B5.bin', 0
-                  db  'Car_B6.bin', 0
-                  db  'Car_B7.bin', 0
-                  db  'Car_B8.bin', 0
-                  db  'Car_B9.bin', 0
-                  db  'Car_B10.bin', 0
-                  db  'Car_B11.bin', 0
-                  db  'Car_B12.bin', 0
-                  db  'Car_B13.bin', 0
-                  db  'Car_B14.bin', 0
-                  db  'Car_B15.bin', 0
-                  db  '$'
+    carFile       db  'car5.bin', 0
     
     car           db  BUFF_SIZE dup(?)
     errorMsg      db  "Something went wrong with files !!", 10, "$"
