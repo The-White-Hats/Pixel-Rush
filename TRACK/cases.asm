@@ -1,8 +1,8 @@
 .model small
 .stack 100h
 .data
-    lastRandom db 0
-    currentRandom db 6
+    lastRandom db 4
+    currentRandom db 9
     validationFlag db 0 ,'$'
     ;------------------------------------------- CASES -------------------------------------------;
     case0 db 0,5,7

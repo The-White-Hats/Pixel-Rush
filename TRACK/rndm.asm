@@ -47,7 +47,7 @@ outer_loop:
     mov ah, 17
     mov bx, ax
 
-
+ 
 inner_loop: 
     push cx
     push bx

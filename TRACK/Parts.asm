@@ -18,7 +18,7 @@ include draw.inc
          DefaultBackground equ BLACK
          DASHESCOLOR equ LIGHT_GRAY
          ;*----------------------------------Positions-------------------------------------------------;      
-         START_X dw 150
+         START_X dw 171
          START_Y dw 150
          END_X dw ?
          END_Y dw ?
@@ -29,7 +29,7 @@ include draw.inc
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
          LINE_WIDTH equ 20
-         LINE_LENGTH equ 60
+         LINE_LENGTH equ 30
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
          DASHEDLINE_LENGTH equ 6
@@ -67,18 +67,17 @@ main proc far
 ;		mov dx , 184fh
 ;     	int 10h
     ;-----------------------------------------------------------------------------------------------------;    
-        mov START_X,210
-    call  CheckHorizontalTrack
+    mov cornerFlag,1
+	mov cornerType,0
+	mov horizontalDirection,1
+	call  CheckHorizontalTrack
     
     mov horizontalDirection,1
     mov cornerFlag,0
-    mov START_X,149
-  
-    ;call  CheckHorizontalTrack
-    mov START_X,189
-    mov START_Y,128
-    call  CheckVerticalTrack 
-
+    mov START_X,141
+    call  CheckHorizontalTrack 
+	mov START_X,111
+    call  CheckHorizontalTrack 
     mov ah, 4ch        
     INT 21h         
 

@@ -16,8 +16,8 @@
 		 LIGHT_GRAY equ 07h
 		 GRAY equ 08h
          ;----------------------------------Positions-------------------------------------------------;      
-         START_X dw 0
-		 START_Y dw 30
+         START_X dw 150
+		 START_Y dw 150
 		 ;----------------------------------BOUNDARY-------------------------------------------------;      
 		 MIN_X equ 0
 		 MAX_X equ 320
@@ -25,7 +25,7 @@
 		 MAX_Y equ 150 
          ;----------------------------------Dimensions-------------------------------------------------;
 		 LINE_WIDTH dw 20
-		 LINE_LENGTH dw 60
+		 LINE_LENGTH dw 30
 		 BOUNDARY_WIDTH equ 1
 		 BOUNDARY_LENGTH equ 4
 		 DASHEDLINE_LENGTH equ 6
@@ -38,7 +38,7 @@
 		 middletrackflag db 0
          verticaldirection db 0 ; 0 up 1 down
 		 Vertical_Track_Delete_Flag db 0
-
+         TIME equ 6
      	.CODE
 
 
@@ -56,25 +56,25 @@ MAIN 	PROC FAR
 		
 
 		;---------------------------------------Screen Coloring------------------------------------------------
-		; mov ax ,0600h
-		; mov bh,GREEN
-		; mov cx,0h
-		; mov dx , 184fh
-     	; int 10h
-		   xor cx,cx
-			xor dx,dx
-		    mov cl,0 ;x axis
-			mov dl,0 ;y axis
-			mov al,GREEN
-			mov ah,0ch
-		back:	int 10h
-		  inc cx
-		  cmp cx,320
-		  jnz back
-		  mov cx,0
-		  inc dl
-		  cmp dl,200
-		  jnz back
+		mov ax ,0600h
+		mov bh,GREEN
+		mov cx,0h
+		mov dx , 184fh
+     	int 10h
+		;    xor cx,cx
+		; 	xor dx,dx
+		;     mov cl,0 ;x axis
+		; 	mov dl,0 ;y axis
+		; 	mov al,GREEN
+		; 	mov ah,0ch
+		; back:	int 10h
+		;   inc cx
+		;   cmp cx,320
+		;   jnz back
+		;   mov cx,0
+		;   inc dl
+		;   cmp dl,200
+		;   jnz back
         ;------------------------------------Vertical Line-------------------------------------------;  
 			mov cx,START_X
 			mov dx,START_Y
@@ -87,13 +87,23 @@ MAIN 	PROC FAR
 			; mov START_Y,dx
 			; mov posx,cx
 			; mov posy,dx
-		    call  CheckVerticalTrack 
+
+		    call  GenerateVerticalTrack 
+            mov START_Y,120
+			call  GenerateVerticalTrack 
 			
         MOV AH, 4CH         ; Function to exit program
         INT 21H             ; Call DOS interrupt to exit
 
 MAIN ENDP
 
+Delay PROC
+		MOV AH, 86h ; BIOS delay function
+		XOR CX, CX ; High order word of delay
+		MOV DX, 10000*TIME ; Low order word of delay (1,000,000 microseconds = 1 second)
+		INT 15h ; Call BIOS delay
+		ret
+Delay ENDP
 
 CheckVerticalTrack PROC
 	    mov bx,0
@@ -213,8 +223,13 @@ CheckVerticalTrack PROC
 CheckVerticalTrack ENDP
 
 GenerateVerticalTrack PROC 
+	        mov cx,START_X
+			mov dx,START_Y
+			mov posx,cx
+			mov posy,dx
 		movehorizontal:      
 			mov boundaryflag ,  0
+			call Delay
 			drawvertical:
 			    mov cx,posx
 				mov dx,posy
@@ -251,7 +266,7 @@ GenerateVerticalTrack PROC
 				add bx,LINE_WIDTH
                 cmp posx,bx
                 jge boundarycoloring 
-
+                mov toggleboundarycolor,0
                 ;--------------- if it is not the middle track then jump to next ,equation  bx = START_X + BOUNDARY_WIDTH + LINE_WIDTH/2 ------------------------------;
 
 				push ax
