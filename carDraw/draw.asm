@@ -36,7 +36,14 @@ MAIN PROC FAR
               clear
 
     ; Remove Blinking from the screen and allowing to use 16 colors as background
-              rmBlink    
+              rmBlink
+
+    ; Draw background
+              mov       di,0
+              mov       cx,64000
+              mov       al,0Ah
+
+              rep       stosb
 
     ; get car image
               mov       dx, offset carFile                                                                  ; filename to open
@@ -81,13 +88,6 @@ inputFile ENDP
     ;-----------------------
 
 drawCar PROC
-
-    ; Draw background
-              mov       di,0
-              mov       cx,64000
-              mov       al,00h
-
-              rep       stosb
 
               mov       di, SCREEN_WIDTH*(SCREEN_HEIGHT/2 - CAR_HEIGHT/2) + SCREEN_WIDTH/2 - CAR_WIDTH/2    ; starting pixel of screen
               mov       si, offset car                                                                      ; starting byte of car
