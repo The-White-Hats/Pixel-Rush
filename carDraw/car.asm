@@ -1,7 +1,5 @@
-
 ; You may customize this and other start-up templates; 
 ; The location of this template is c:\emu8086\inc\0_com_template.txt
-include car_m.inc
 .MODEL SMALL
 .STACK 64
 .DATA   
@@ -11,7 +9,7 @@ include car_m.inc
 
     user1_posX dw 10 ; Position X
     user1_posY dw 10 ; Position Y
-    user1_dir_bools db 4 dup(0) ; up, right, down, left
+    user1_dir_bools db 7 dup(0) ; up, right, down, left
 			db 0 ; margin
 		user1_dir_arr db 48h, 4dh, 50H, 4BH
     prev_user1_posX dw 0
@@ -19,19 +17,72 @@ include car_m.inc
 
     user2_posX dw 30 ; Position X
     user2_posY dw 10 ; Position Y
-    user2_dir_bools db 4 dup(0) ; up, right, down, left
+    user2_dir_bools db 7 dup(0) ; up, right, down, left
 			dw 0 ; margin
 		user2_dir_arr db 11h, 20h, 1fH, 1eH
     prev_user2_posX dw 0
 		prev_user2_posY dw 0
+			db 0
+		killSignal db 0
+			dw 0
+		origInt9Offset dw 0
+    origInt9Segment dw 0
 .CODE
 
+include car_m.inc
+
+my_isr PROC
+		in al, 60H ; put the scan code of the pressed or unpressed
+
+		cmp al, 1h ; pressing the esc key
+    jz midKill
+
+		lea si, user1_dir_arr
+		lea di, user1_dir_bools
+		call CheckDir
+
+		lea si, user2_dir_arr
+		lea di, user2_dir_bools
+		call CheckDir
+
+		jmp dontKill
+
+		midKill:
+		mov al, 0ffH
+		mov killSignal, al		          ; Call DOS interrupt to exit
+
+		dontKill:
+		mov  al, 20h           ; The non specific EOI (End Of Interrupt)
+    out  20h, al
+    iret
+my_isr endp 
 
 MAIN 	PROC FAR
     MOV AX , @DATA
     MOV DS , AX  
     clear
-        
+
+		; ---------------------------------------override int 9h----------------------------------------------;
+
+    ; Disable interrupts
+    CLI
+		; Save the original interrupt vector for int 9h
+    mov ax, 3509h
+    int 21h
+    mov origInt9Offset, bx
+    mov origInt9Segment, es
+
+		push ds
+		mov ax, cs
+		mov ds, ax
+    ; Change the interrupt vector for int 9h
+    mov ax, 2509h
+		lea dx, my_isr
+		int 21h
+    ; Re-enable interrupts
+		pop ds
+    STI
+
 		; Remove Blinking from the screen and allowing to use 16 colors as background
     mov AX , 1003h
 		mov BL ,00h  ; 00h background intensity enabled , 01h blink enabled
@@ -70,18 +121,6 @@ MAIN 	PROC FAR
 		xor cx, cx ; CH = high order byte of delay count, CL = not used
 		mov dx, 0F0FFH ; DL = low order byte of delay count, DH = not used
 		int 15H ; Call BIOS delay function
-
-    in al, 60H ; put the scan code of the pressed or unpressed
-
-		cmp al, 1h ; pressing the esc key
-    jz midKill
-		jnz midKillnot
-		midKill: jmp far ptr kill
-		midKillnot:
-
-		check_user1_dir
-		check_user2_dir
-
 
     ; update the location
 		; copy the current postions into prev_postions
@@ -134,12 +173,29 @@ MAIN 	PROC FAR
 		mov al,SCREEN_ATTR
 		mov ah,0ch
 		int 10h
+		
+		cmp killSignal, 0H
+		jnz kill
 
 		label2:
     jmp again
 
-    kill:
+		kill:
+		; Restore the original interrupt vector for int 9h
+    CLI
+    mov ax, origInt9Segment
+    mov dx, origInt9Offset
+    
+    push ds
+    mov ds, ax
+
+    mov ax, 2509h
+    int 21h
+    ; Re-enable interrupts
+    pop ds
+    STI
+
     MOV AH, 4CH         ; Function to exit program
-    INT 21H             ; Call DOS interrupt to exit
+    INT 21H
 MAIN ENDP
 END MAIN
