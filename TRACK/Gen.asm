@@ -18,10 +18,10 @@ include draw.inc
          DefaultBackground equ BLACK
          DASHESCOLOR equ LIGHT_GRAY
          ;*----------------------------------Positions-------------------------------------------------;      
-         dt ?
+        
 		 START_X dw 150
          START_Y dw 150
-		 dt ?
+		
          END_X dw ?
          END_Y dw ?
          ;*----------------------------------BOUNDARY-------------------------------------------------;      
@@ -30,7 +30,7 @@ include draw.inc
          MIN_Y equ 0
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 20
+         LINE_WIDTH equ 10
          LINE_LENGTH equ 20
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
@@ -49,9 +49,9 @@ include draw.inc
          horizontalDirection db 1 ;! 1 left 0 right
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 5
-
-		WRONGTHRESHOLD equ 20
+        MAX_PARTS equ 7
+        TIME equ 6
+		WRONGTHRESHOLD equ 12
 
 		prev_start_x dw ?
 		prev_start_y dw ?
@@ -68,14 +68,10 @@ include draw.inc
         y_max_old dw ?
         y_min_old dw ?
 
-		dt ?
-
         Directions dw MAX_PARTS+1 dup(0)
-        
-		dt ?
 
         ClosedArea dw (MAX_PARTS+1)*4 dup(0) ;! Xmin, Xmax, Ymin, Ymax
-        dt ?
+        
 		PrevStart  dw (MAX_PARTS+1)*2 dup(0) ;! START_X,START_Y
 
         SingleCheckFlag db 1 ;? check for single part in track
@@ -103,7 +99,7 @@ include draw.inc
 		str db ?
 		str2 db 'yes$'
 		
-		;------------------------------------------- CASES -------------------------------------------; 
+		;*------------------------------------------- CASES -------------------------------------------; 
 		lastRandom db 0
         currentRandom db 0
 		validationFlag db 0
@@ -114,7 +110,7 @@ include draw.inc
 		casse3 db 3,4,9
 		casse4 db 1,8,10
 		casse5 db 2,6,11
-		casse6 db 1,9,11
+		casse6 db 1,8,10
 		casse7 db 3,4,9
 		casse8 db 2,6,11
 		casse9 db 0,5,7
@@ -143,18 +139,6 @@ main proc far
 ;     	int 10h
     ;-----------------------------------------------------------------------------------------------------;
 
-    ; mov START_X,210
-    ; call  CheckHorizontalTrack
-    
-    ; mov horizontalDirection,1
-    ; mov cornerFlag,0
-    ; mov START_X,149
-  
-    ; ;call  CheckHorizontalTrack
-    ; mov START_X,189
-    ; mov START_Y,128
-    ; call  CheckVerticalTrack 
-
 	call GenerateTrackDirections
 
 	clear
@@ -168,18 +152,29 @@ main proc far
 		endl
 		pop  cx
 		add si,2
-       	; jmp ja55sl
-        ;      GenerateTrackDir_mid688:
-		; 	 jmp  l1321
-		; ja55sl:
-		; mov ax,[si]	
-		; push cx
-		; shownum str
-		; endl
-		; pop  cx
-		;add si,2
-
 	loop l1321
+
+	lea si,PrevStart
+	mov cx,MAX_PARTS
+	l1321f:
+		mov ax,[si]	
+		push cx
+		shownum str
+		endl
+		pop  cx
+		add si,2
+       	jmp ja55slf
+             GenerateTrackDir_mid688:
+			 jmp  l1321f
+		ja55slf:
+		mov ax,[si]	
+		push cx
+		shownum str
+		endl
+		pop  cx
+		add si,2
+
+	loop GenerateTrackDir_mid688
 
     call Draw
 
@@ -288,34 +283,17 @@ Draw PROC
 	   mov ax,[si]
 	   mov CurrentCase ,ax
 
-       push bx
-	   push cx
-	   push si
-	   call SelectType
-	   pop si
-	   pop cx
-	   pop bx
-
-	   mov ax,[bx]
-	   mov START_X,ax
-	   mov ax,[bx+2]
-	   mov START_Y,ax
-	   add bx,4
-
-       add si,2 
-       mov dx,[si]
-
-	   cmp dx,4d
+	    cmp CurrentCase,4d
 	   jnz nextCase
 	   		inc START_X
 			jmp ClearToGo
 	   nextCase:
-	   cmp dx,6d
+	   cmp CurrentCase,6d
 	   jnz nextCase2
 	   		dec START_X
 			jmp ClearToGo
 	   nextCase2:
-       cmp dx,7d
+       cmp CurrentCase,7d
 	   jnz nextCase3
 			mov ax,START_X
 			add ax,LINE_WIDTH
@@ -326,7 +304,7 @@ Draw PROC
 			iterate_mid:
 			jmp iterate
        nextCase3:
-	   cmp dx,8d
+	   cmp CurrentCase,8d
 	   jnz nextCase4
 			mov ax,START_Y
 			add ax,LINE_WIDTH
@@ -335,12 +313,12 @@ Draw PROC
 			mov START_Y,ax
 			jmp ClearToGo
 	   nextCase4:
-	   cmp dx,9d
+	   cmp CurrentCase,9d
 	   jnz nextCase5
 			inc START_X
 			jmp ClearToGo
 	   nextCase5:
-        cmp dx,10d
+        cmp CurrentCase,10d
 	   jnz nextCase6
 	        mov ax,0
 			
@@ -358,11 +336,29 @@ Draw PROC
 			mov START_Y,ax	
 			jmp ClearToGo
 		nextCase6:	
-        cmp dx,11d
+        cmp CurrentCase,11d
 	    jnz ClearToGo
 		  dec START_X
 
         ClearToGo: 
+
+       push bx
+	   push cx
+	   push si
+	   call SelectType
+	   pop si
+	   pop cx
+	   pop bx
+       
+
+	   mov ax,[bx]
+	   mov START_X,ax
+	   mov ax,[bx+2]
+	   mov START_Y,ax
+	   add bx,4
+
+       add si,2 
+
 		dec cx
 		cmp cx,0 
 		jg iterate_mid 
@@ -397,6 +393,12 @@ GenerateTrackDirections PROC
         mov prev_start_x,ax
 		mov ax,START_Y
 		mov prev_start_y,ax
+        
+		; MOV    AH,0               
+        ; INT    16H
+
+		
+		;call Delay
 
         push bx
     	call rndm
@@ -424,6 +426,23 @@ GenerateTrackDirections PROC
 		jz friends
         jmp GenerateTrackDir_loop
 		friends:
+        
+		; mov ax,START_X
+		; push cx
+		; push bx
+		; shownum str
+		; endl
+		; pop bx
+		; pop  cx
+
+        ; mov ax,0
+		; mov al,lastRandom
+		; push cx
+		; push bx
+		; shownum str
+		; endl
+		; pop bx
+		; pop  cx
 
   
         cmp random_part , 0 
@@ -817,29 +836,21 @@ GenerateTrackDirections PROC
 			jnz GenerateTrackDir_still
 
 				mov WrongCounter,0
-				
-				cmp si,startoffsetdirection
+
+				cmp TotalParts,0
 				jz GenerateTrackDir_still
 
 				sub si,2
 
-				cmp di,startoffsetclosedarea
-				jz GenerateTrackDir_still
 				sub di,8
-				
-				
-				cmp bx,startoffsetprevstart
-				jz GenerateTrackDir_still 
 
-				sub bx,2
-				mov ax,[bx]
+                sub bx,4
+
+				mov ax,[bx-2]
 				mov START_Y,ax
-				
-				cmp bx,startoffsetprevstart
-				jz GenerateTrackDir_still
-				
-				sub bx,2
-				mov ax,[bx]
+	
+			
+				mov ax,[bx-4]
 				mov START_X,ax
 
 				dec TotalParts
@@ -944,9 +955,12 @@ GenerateVerticalTrack PROC ;! Dependent on the START_X and START_Y  and does not
         mov dx,START_Y
         mov posx,cx
         mov posy,dx
-
+        mov toggleboundarycolor , 0
+		mov toggletrackmiddle , 0
+		mov middletrackflag , 0
 		movehorizontal:      
 			mov boundaryflag ,  0
+			  call Delay
 			drawvertical:
 			    mov cx,posx
 				mov dx,posy
@@ -983,7 +997,7 @@ GenerateVerticalTrack PROC ;! Dependent on the START_X and START_Y  and does not
 				add bx,LINE_WIDTH
                 cmp posx,bx
                 jge boundarycoloring 
-
+                mov toggleboundarycolor,0
                 ;--------------- if it is not the middle track then jump to next ,equation  bx = START_X + BOUNDARY_WIDTH + LINE_WIDTH/2 ------------------------------;
 
 				push ax
@@ -1085,6 +1099,7 @@ GenerateHorizontalTrack PROC
     mov si, LINE_WIDTH + 2*BOUNDARY_WIDTH ; Outer loop counter
     mov dx, START_Y
     drawRoad:
+	        call Delay
             mov cx, START_X
             mov di, LINE_LENGTH ; Inner loop counter
             mov bl, BOUNDARY_LENGTH
@@ -1324,5 +1339,19 @@ checkCases proc
     endCheckCases:
     ret
 checkCases endp
+
+Delay PROC
+	    push cx
+		push dx
+		push ax
+		MOV AH, 86h ; BIOS delay function
+		XOR CX, CX ; High order word of delay
+		MOV DX, 10000*TIME ; Low order word of delay (1,000,000 microseconds = 1 second)
+		INT 15h ; Call BIOS delay
+		pop ax
+		pop dx
+		pop cx
+		ret
+Delay ENDP
 
 end main
