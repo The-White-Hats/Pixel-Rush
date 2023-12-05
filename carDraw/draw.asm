@@ -1,3 +1,5 @@
+include macros.inc
+
 .MODEL SMALL
 .STACK 64
 
@@ -5,238 +7,122 @@
 
 .DATA
 
-    CAR_HEIGHT equ 120
-    CAR_WIDTH equ 85
+    BUFF_SIZE     equ 40*23
 
-    SCREEN_WIDTH equ 320
+    CAR_HEIGHT    equ 40
+    CAR_WIDTH     equ 23
+
+    SCREEN_WIDTH  equ 320
     SCREEN_HEIGHT equ 200
 
-    COS_ANGLE equ 985d ; 10 degrees
-    SIN_ANGLE equ 174d ; 10 degrees
+    ;----------car movement----------;
+    carFile       db  'car5.bin', 0
     
-    centerx equ SCREEN_WIDTH/2
-    centery equ SCREEN_HEIGHT/2
+    car           db  BUFF_SIZE dup(?)
+    errorMsg      db  "Something went wrong with files !!", 10, "$"
 
-    currentx db ?
-    currenty db ?
-    carPlaceX db CAR_HEIGHT*CAR_WIDTH dup (?)
-    carPlaceY db CAR_HEIGHT*CAR_WIDTH dup (?)
-
-;-----------------------
+    ;-----------------------
 
 .CODE
 
-    drawCar PROC FAR
-        mov ax, @data
-        mov ds, ax
+MAIN PROC FAR
+              mov       ax, @DATA
+              mov       ds, ax
 
-        ; Set video mode
-        mov ah,0
-        mov al,13h
-        int 10h
+              mov       ax,0A000h
+              mov       es,ax
 
-        ; Draw background
-        mov ax,0A000h
-        mov es,ax
+    ; clear and Set video mode
+              clear
 
-        ; starting position
-        mov currentx, centerx - CAR_WIDTH/2
-        mov currenty, centery - CAR_HEIGHT/2
+    ; Remove Blinking from the screen and allowing to use 16 colors as background
+              rmBlink    
 
-        ; Initialize car
+    ; get car image
+              mov       dx, offset carFile                                                                  ; filename to open
+              call      inputFile
+            
+    ; draw car
+              call      drawCar
 
-        mov cx, CAR_HEIGHT
-        lea di, carPlaceX
-        lea si, carPlaceY
-        back_init:
-            mov dx, CAR_WIDTH
-            mov currentx, centerx - CAR_WIDTH/2
-            back2_init:
-                mov ah, 0
-                mov al, currentx
-                mov [di], al
-                mov al, currenty
-                mov [si], al
-                inc si
-                inc di
-                mov al, currentx
-                inc al
-                mov currentx, al
-                dec dx
-                cmp dx, 0
-                jnz back2_init
-            mov al, currenty
-            inc al
-            mov currenty, al
-            dec cx
-            cmp cx, 0
-            jnz back_init
+    ; wait for key press
+              mov       ah, 0
+              int       16h
 
+              mov       AH,4ch
+              int       21h
 
+MAIN ENDP
 
-        mov cx, 20
-        again:
-            push cx
+    ;-----------------------
 
-            ; clear car
-            mov bp, 00h ; black color
-            call draw
+inputFile PROC
 
-            pop cx
-            cmp cx, 20
-            push cx
-            jz skip
+    ; Open file
+              openFile
+              jc        error
 
-            ; save new coordinates
-            call save
+    ; Read file
+              readFile  BUFF_SIZE, car
+              jc        error
 
-            skip:
+    ; Close file
+              closeFile
 
-            ; Draw car
-            mov bp, 4h ; red color
-            call draw
+              ret
 
-            ; Wait for key
-            mov ah,0
-            int 16h
+    error:    
+              showMsg   errorMsg
 
-            pop cx
+              ret
 
-        loop again
+inputFile ENDP
 
-        mov ah, 4ch
-        int 21h
+    ;-----------------------
 
-    drawCar ENDP
+drawCar PROC
 
-;-----------------------
+    ; Draw background
+              mov       di,0
+              mov       cx,64000
+              mov       al,00h
 
-    save PROC
+              rep       stosb
 
-        mov cx, CAR_HEIGHT
-        lea di, carPlaceX
-        lea si, carPlaceY
-        back:
-            mov dx, CAR_WIDTH
-            back2:
-                mov al, [di]
-                mov currentx, al
-                mov al, [si]
-                mov currenty, al
-                call getNewPoint
-                mov [di], al
-                mov [si], bl
-                inc si
-                inc di
-                dec dx
-                cmp dx, 0
-                jnz back2
-            dec cx
-            cmp cx, 0
-            jnz back
+              mov       di, SCREEN_WIDTH*(SCREEN_HEIGHT/2 - CAR_HEIGHT/2) + SCREEN_WIDTH/2 - CAR_WIDTH/2    ; starting pixel of screen
+              mov       si, offset car                                                                      ; starting byte of car
 
-        ret
+              mov       cx, CAR_HEIGHT                                                                      ; number of lines to draw
 
-    save ENDP
+    outerLoop:
 
-;-----------------------
+              mov       dx, CAR_WIDTH                                                                       ; number of pixels to draw
 
-    getNewPoint Proc
+    innerLoop:
 
-        push di
-        push si
-        push cx
-        push dx
+              cmp       byte ptr [si], 250
+              jz        skip
 
-        ; x_rotated (di) = (x_original - center_x) * cos(angle) + center_x - (y_original - center_y) * sin(angle)
+              movsb                                                                                         ; copy byte from si to di (draw pixel)
+              jmp       continue
 
-        mov ah, 0
-        mov al, currentx
-        sub al, centerx
-        mov cx, COS_ANGLE
-        Imul cx
-        mov cx, 1000d ; because cosine is fraction
-        Idiv cx
-        add al, centerx
-        mov di, ax
-        mov ah, 0
-        mov al, currenty
-        sub al, centery
-        mov cx, SIN_ANGLE
-        Imul cx
-        mov cx, 1000d ; because cosine is fraction
-        Idiv cx
-        sub di, ax
+    skip:     
+              inc       si
+              inc       di
 
-        ; y_rotated (si) = (x_original - center_x) * sin(angle) + center_y + (y_original - center_y) * cos(angle)
+    continue: 
+              dec       dx
 
-        mov ah, 0
-        mov al, currentx
-        sub al, centerx
-        mov cx, SIN_ANGLE
-        Imul cx
-        mov cx, 1000d ; because cosine is fraction
-        Idiv cx
-        add al, centery
-        mov si, ax
-        mov ah, 0
-        mov al, currenty
-        sub al, centery
-        mov cx, COS_ANGLE
-        Imul cx
-        mov cx, 1000d ; because cosine is fraction
-        Idiv cx
-        add si, ax
+              jnz       innerLoop
 
-        mov ax, di
-        mov bx, si
+              add       di, SCREEN_WIDTH - CAR_WIDTH                                                        ; move to next line
 
-        pop dx
-        pop cx
-        pop si
-        pop di
+              loop      outerLoop
 
-        ret
+              ret
 
-    getNewPoint ENDP
+drawCar ENDP
 
-;-----------------------
+    ;-----------------------
 
-    draw Proc
-
-        mov cx, CAR_HEIGHT
-        lea di, carPlaceX
-        lea si, carPlaceY
-        back_draw:
-            mov dx, CAR_WIDTH
-            back2_draw:
-                ; pixel => SCREEN_WIDTH*currenty + currentx
-                push dx
-
-                mov bx, SCREEN_WIDTH
-                mov ah, 0
-                mov al, [si]
-                mov ah, 0
-                mul bx
-                mov bh, 0
-                mov bl, [di]
-                add bx, ax
-
-                pop dx
-
-                mov ax, bp
-                mov es:[bx], al
-                inc si
-                inc di
-                dec dx
-                cmp dx, 0
-                jnz back2_draw
-            dec cx
-            cmp cx, 0
-            jnz back_draw
-
-        ret
-
-    draw ENDP
-
-END drawCar
+END MAIN

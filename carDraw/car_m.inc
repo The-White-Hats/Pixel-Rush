@@ -1,8 +1,3 @@
-clear macro 
-    mov ah, 0       ; AH=0 is the function for setting video mode
-    mov al, 13h       ; AL=3 sets 80x25 text mode (standard text mode)
-    int 10h         ; BIOS interrupt for video services
-endm clear 
 
 ; check_user1_dir MACRO
 ;     lea si, user1_dir_arr
