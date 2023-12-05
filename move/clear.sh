@@ -1,4 +1,5 @@
-rm *.EXE
-rm *.MAP
-rm *.OBJ
-rm *.TD
+rm -f *.EXE
+rm -f *.MAP
+rm -f *.OBJ
+rm -f *.TD
+rm -f *.TR
