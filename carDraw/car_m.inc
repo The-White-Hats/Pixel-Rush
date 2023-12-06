@@ -51,12 +51,14 @@ setStartPixel MACRO
     mov     di, ax
 ENDM
 update_user1_pos MACRO
+    ; I am considering up as positive y and down as negative y
     mov ax, 0101h ; ah -> x, al -> y
+
     up1:
     cmp user1_dir_bools, 00H
     jz right1
     dec word ptr user1_posY
-    dec al
+    inc al
 
     right1:
     cmp user1_dir_bools[2], 00H
@@ -68,7 +70,7 @@ update_user1_pos MACRO
     cmp user1_dir_bools[4], 00H
     jz left1
     inc word ptr user1_posY
-    inc al
+    dec al
 
     left1:
     cmp user1_dir_bools[6], 00H

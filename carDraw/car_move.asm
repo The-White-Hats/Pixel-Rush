@@ -269,6 +269,7 @@ update_frame PROC
                  mov                 current_frame, bl
 
     done_frame:  
+    ret
 
 update_frame ENDP
 
