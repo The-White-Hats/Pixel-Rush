@@ -23,6 +23,7 @@ readFile macro BUFF_SIZE, car
     mov ah, 03Fh
     mov cx, BUFF_SIZE   ; number of bytes to read
     lea dx, car         ; were to put read data
+    add dx, bp          ; add offset to dx
     int 21h
 endm readFile
 
