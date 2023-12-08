@@ -18,19 +18,20 @@ include draw.inc
          DefaultBackground equ GREEN
          DASHESCOLOR equ LIGHT_GRAY
          ;*----------------------------------Positions-------------------------------------------------;      
-		 START_X dw 310
-         START_Y dw 50
+		 START_X dw 319
+         START_Y dw 16
          START_DIR equ 3
          END_X dw ?
          END_Y dw ?
          ;*----------------------------------BOUNDARY-------------------------------------------------;      
          MIN_X equ 0
-         MAX_X equ 320
+         MAX_X equ 319
          MIN_Y equ 0
-         MAX_Y equ 200 
+         MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 10
-         LINE_LENGTH equ 20
+         LINE_WIDTH equ 15
+         LINE_LENGTH equ 15
+		 HORIZONTAL_LINE_LENGTH equ 16
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
          DASHEDLINE_LENGTH equ 6
@@ -48,9 +49,9 @@ include draw.inc
          horizontalDirection db 1 ;! 1 left 0 right
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 100
-        TIME equ 6
-		WRONGTHRESHOLD equ 12
+        MAX_PARTS equ 80
+        TIME equ 0
+		WRONGTHRESHOLD equ 20
 
 		prev_start_x dw ?
 		prev_start_y dw ?
@@ -108,14 +109,14 @@ include draw.inc
 		casse1 db 8,10,1
 		casse2 db 2,6,11
 		casse3 db 3,4,9
-		casse4 db 1,8,10
+		casse4 db 1,1,1
 		casse5 db 2,2,2
-		casse6 db 1,8,10
+		casse6 db 1,1,1
 		casse7 db 3,3,3
 		casse8 db 2,2,2
-		casse9 db 0,5,7
+		casse9 db 0,0,0
 		casse10 db 3,3,3
-		casse11 db 0,5,7
+		casse11 db 0,0,0
 
 .code
 main proc far
@@ -421,7 +422,7 @@ GenerateTrackDirections PROC
          	mov ax,START_X
 			mov x_min_new,ax
 
-			add ax,LINE_LENGTH
+			add ax,HORIZONTAL_LINE_LENGTH
 
 			;! updating
 			mov START_X,ax
@@ -446,7 +447,7 @@ GenerateTrackDirections PROC
             mov ax,START_X
 			mov x_max_new,ax
 
-			sub ax,LINE_LENGTH
+			sub ax,HORIZONTAL_LINE_LENGTH
 
 	        ;! updating
 			mov START_X,ax
@@ -493,7 +494,7 @@ GenerateTrackDirections PROC
          	mov ax,START_X
 			mov x_min_new,ax
 
-			add ax,LINE_LENGTH
+			add ax,HORIZONTAL_LINE_LENGTH
 
 			;! updating
 			mov START_X,ax
@@ -551,7 +552,7 @@ GenerateTrackDirections PROC
 			mov x_max_new,ax
                
 
-			sub ax,LINE_LENGTH
+			sub ax,HORIZONTAL_LINE_LENGTH
 
 			;! updating
 			mov START_X,ax
@@ -576,7 +577,7 @@ GenerateTrackDirections PROC
          	mov ax,START_X
 			mov x_min_new,ax
 
-			add ax,LINE_LENGTH
+			add ax,HORIZONTAL_LINE_LENGTH
 
             ;! updating
 			mov START_X,ax
@@ -631,7 +632,7 @@ GenerateTrackDirections PROC
 			dec ax
 			mov x_max_new,ax
 
-			sub ax,LINE_LENGTH
+			sub ax,HORIZONTAL_LINE_LENGTH
 
 			;! updating
 			mov START_X,ax
@@ -1011,7 +1012,7 @@ GenerateHorizontalTrack PROC
     drawRoad:
 	        call Delay
             mov cx, START_X
-            mov di, LINE_LENGTH ; Inner loop counter
+            mov di, HORIZONTAL_LINE_LENGTH ; Inner loop counter
             mov bl, BOUNDARY_LENGTH
             mov bh, 2*DASHEDLINE_LENGTH
             mov al, GRAY 

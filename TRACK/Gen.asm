@@ -50,8 +50,8 @@ include draw.inc
          horizontalDirection db 1 ;! 1 left 0 right
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 70
-        TIME equ 6
+        MAX_PARTS equ 50
+        TIME equ 0
 		WRONGTHRESHOLD equ 12
 
 		prev_start_x dw ?
