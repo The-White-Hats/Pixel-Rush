@@ -30,11 +30,13 @@ include draw.inc
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
          LINE_WIDTH equ 15
-         LINE_LENGTH equ 15
-		 HORIZONTAL_LINE_LENGTH equ 16
+         LINE_LENGTH equ 25
+		 HORIZONTAL_LINE_LENGTH equ 25
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
          DASHEDLINE_LENGTH equ 6
+		 OBSTACLE_WIDTH equ 4
+		 OBSTACLE_LENGTH equ 4
           ;*----------------------------------Variables-------------------------------------------------;
 		 posx dw 0
 		 posy dw 0
@@ -49,7 +51,7 @@ include draw.inc
          horizontalDirection db 1 ;! 1 left 0 right
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 80
+        MAX_PARTS equ 50
         TIME equ 0
 		WRONGTHRESHOLD equ 20
 
@@ -117,7 +119,8 @@ include draw.inc
 		casse9 db 0,0,0
 		casse10 db 3,3,3
 		casse11 db 0,0,0
-
+		;*------------------------------------------- OBSTACLES -------------------------------------------;
+		latestPos db 0
 .code
 main proc far
     mov ax, @data
@@ -1175,6 +1178,7 @@ GenerateHorizontalTrack PROC
 
     final:
 	popa
+	call DrawObstaclesH
 	ret
  GenerateHorizontalTrack  ENDP
 
@@ -1227,4 +1231,109 @@ Delay PROC
 		popa
 		ret
 Delay ENDP
+
+DrawObstaclesH PROC
+	pusha
+	call randomizer ; randomize the existence of an obstacle
+	call randomizer ; randomize the position of the obstacle
+	call randomizer ; randomize the position of the obstacle
+	cmp random, 1
+	jz intrmediateJMP
+	call randomizer ; randomize the position of the obstacle
+	cmp random, 0
+	jnz secondPlace
+	mov cx, START_X
+	cmp horizontalDirection, 0
+	jnz leftDrawObs
+	add cx, LINE_LENGTH/4
+	jmp yPosition
+	leftDrawObs:
+	sub cx, LINE_LENGTH/4
+	jmp yPosition
+
+	secondPlace:
+	cmp random, 1
+	jnz thirdPlace
+	mov cx, START_X
+	cmp horizontalDirection, 0
+	jnz leftDrawObs2
+	add cx, LINE_LENGTH/2
+	jmp yPosition
+	leftDrawObs2:
+	sub cx, LINE_LENGTH/2
+	jmp yPosition
+
+
+	thirdPlace:
+	mov cx, START_X
+	cmp horizontalDirection, 0
+	jnz leftDrawObs3
+	add cx, 3*LINE_LENGTH/4
+	jmp yPosition
+	leftDrawObs3:
+	sub cx, 3*LINE_LENGTH/4
+	jmp yPosition
+
+	intrmediateJMP:
+	jmp noObs
+
+	yPosition:
+	mov dx, START_Y
+	sub dx, BOUNDARY_WIDTH
+	randomizerLoop:
+		call randomizer
+		mov ah, random
+		mov al, latestPos
+		cmp ah, al
+		jz randomizerLoop
+		mov latestPos, ah
+	
+	cmp random, 1
+	jnz secondYPlace
+	sub dx, 3  ; to make it above the track boundary
+	jmp drawObs
+
+	secondYPlace:
+	cmp random, 0
+	jnz thirdYPlace
+	sub dx, LINE_WIDTH/3
+	jmp drawObs
+
+	thirdYPlace:
+
+	sub dx, 2*LINE_WIDTH/3
+
+	drawObs:
+	mov ah, 0ch
+	mov al, BLACK
+	mov si, OBSTACLE_WIDTH
+	mov bx, cx
+	drawObsLoop:
+	mov di, OBSTACLE_LENGTH
+	mov cx, bx
+		drawObsLoop2:
+		int 10h
+		cmp horizontalDirection, 0
+		jnz leftDrawObs4
+		inc cx
+		jmp drawObsLoop3
+		leftDrawObs4:
+		dec cx
+		drawObsLoop3:
+		dec di
+		cmp di, 0
+		jnz drawObsLoop2
+		dec dx
+		dec si
+		cmp si, 0
+		jnz drawObsLoop
+
+	noObs:
+	popa
+	ret
+
+DrawObstaclesH ENDP
+	
+
+
 end main
