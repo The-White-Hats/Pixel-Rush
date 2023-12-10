@@ -15,8 +15,17 @@ include draw.inc
          GRAY equ 08h
          WHITE equ 0Fh
          BLACK equ 00h
+		 BLUE equ 01h
+		 LIGHT_BLUE equ 09h
+		 PURPLE equ 05h
+		 YELLOW equ 0Eh
          DefaultBackground equ GREEN
          DASHESCOLOR equ LIGHT_GRAY
+		 OBSTACLE_COLOR equ RED
+		 POWERUP1_COLOR equ LIGHT_BLUE
+		 POWERUP2_COLOR equ BLUE
+		 POWERUP3_COLOR equ PURPLE
+		 POWERUP4_COLOR equ YELLOW
          ;*----------------------------------Positions-------------------------------------------------;      
 		 START_X dw 319
          START_Y dw 16
@@ -119,8 +128,13 @@ include draw.inc
 		casse9 db 0,0,0
 		casse10 db 3,3,3
 		casse11 db 0,0,0
-		;*------------------------------------------- OBSTACLES -------------------------------------------;
+		;*------------------------------------------- OBSTACLES AND POWERUPS -------------------------------------------;
 		latestPos db 0
+		nowORthen db 0 ; 0 means now, 1 means then (POWERUPS)
+		lastType db POWERUP1_COLOR
+		latestType db POWERUP2_COLOR
+		
+		savedPowerups dw MAX_PARTS*3 dup(0)
 .code
 main proc far
     mov ax, @data
@@ -1234,11 +1248,53 @@ Delay ENDP
 
 DrawObstaclesH PROC
 	pusha
+	mov divider, 4H
 	call randomizer ; randomize the existence of an obstacle
 	call randomizer ; randomize the position of the obstacle
 	call randomizer ; randomize the position of the obstacle
 	cmp random, 1
-	jz intrmediateJMP
+	jg power1
+	mov al, OBSTACLE_COLOR
+	jmp initiateDraw
+	power1:
+
+	mov divider, 2H   ; randomize the powerup, draw or save for later
+	call randomizer 
+	mov al, random
+	mov nowORthen, al
+
+	typeRandomizer:
+	call randomizer ; randomize the type of the powerup
+	cmp random, 0
+	jnz power34
+	call randomizer
+	cmp random, 0
+	jnz power2
+	mov al, POWERUP1_COLOR
+	jmp initiateDraw
+	power2:
+	mov al, POWERUP2_COLOR
+	jmp initiateDraw
+	power34:
+	call randomizer
+	cmp random, 0
+	jnz power4
+	mov al, POWERUP3_COLOR
+	jmp initiateDraw
+	power4:
+	mov al, POWERUP4_COLOR
+
+
+
+	initiateDraw:
+	cmp al, lastType
+	jz typeRandomizer
+	cmp al, latestType
+	jz typeRandomizer
+	mov ah, lastType
+	mov latestType, ah
+	mov lastType, al
+	mov divider, 3H
 	call randomizer ; randomize the position of the obstacle
 	cmp random, 0
 	jnz secondPlace
@@ -1274,12 +1330,12 @@ DrawObstaclesH PROC
 	sub cx, 3*LINE_LENGTH/4
 	jmp yPosition
 
-	intrmediateJMP:
-	jmp noObs
+	
 
 	yPosition:
 	mov dx, START_Y
 	sub dx, BOUNDARY_WIDTH
+	push ax
 	randomizerLoop:
 		call randomizer
 		mov ah, random
@@ -1287,6 +1343,7 @@ DrawObstaclesH PROC
 		cmp ah, al
 		jz randomizerLoop
 		mov latestPos, ah
+	pop ax
 	
 	cmp random, 1
 	jnz secondYPlace
@@ -1304,10 +1361,11 @@ DrawObstaclesH PROC
 	sub dx, 2*LINE_WIDTH/3
 
 	drawObs:
-	mov ah, 0ch
-	mov al, BLACK
-	mov si, OBSTACLE_WIDTH
 	mov bx, cx
+	cmp nowORthen, 0
+	jnz savePosClr
+	mov ah, 0ch
+	mov si, OBSTACLE_WIDTH
 	drawObsLoop:
 	mov di, OBSTACLE_LENGTH
 	mov cx, bx
@@ -1328,7 +1386,15 @@ DrawObstaclesH PROC
 		cmp si, 0
 		jnz drawObsLoop
 
-	noObs:
+	savePosClr:
+	
+	
+
+
+
+
+
+
 	popa
 	ret
 
