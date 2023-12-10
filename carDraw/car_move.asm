@@ -14,6 +14,8 @@
     CAR_HEIGHT      equ 16
     CAR_WIDTH       equ 16
 
+    CAR_OFFSET      equ 5
+
     SCREEN_WIDTH    equ 320
     SCREEN_HEIGHT   equ 200
 
@@ -51,15 +53,16 @@
                     dw  0
     origInt9Offset  dw  0
     origInt9Segment dw  0
+                    dt  ?
 .CODE
 
                  include             car_m.inc
                  include             macros.inc
 
 my_isr PROC
-                 in                  al, 60H                             ; put the scan code of the pressed or unpressed
+                 in                  al, 60H                                       ; put the scan code of the pressed or unpressed
 
-                 cmp                 al, 1h                              ; pressing the esc key
+                 cmp                 al, 1h                                        ; pressing the esc key
                  jz                  midKill
 
                  lea                 si, user1_dir_arr
@@ -70,10 +73,10 @@ my_isr PROC
 
     midKill:     
                  mov                 al, 0ffH
-                 mov                 killSignal, al                      ; Call DOS interrupt to exit
+                 mov                 killSignal, al                                ; Call DOS interrupt to exit
 
     dontKill:    
-                 mov                 al, 20h                             ; The non specific EOI (End Of Interrupt)
+                 mov                 al, 20h                                       ; The non specific EOI (End Of Interrupt)
                  out                 20h, al
                  iret
 my_isr endp
@@ -140,15 +143,15 @@ MAIN PROC FAR
                  mov                 user1_posX, SCREEN_WIDTH/2
                  mov                 user1_posY, SCREEN_HEIGHT/2
                  setStartPixel
-                 mov                 bx, 1                               ; to draw
+                 mov                 bx, 1                                         ; to draw
                  call                drawCar
 
     ; ------------------this loop is like while(true) until the user press esc to exit the program---------;
     again:       
-                 mov                 ax, 8600H                           ; AH = 86h (Delay function), AL = 00h (not used)
-                 xor                 cx, cx                              ; CH = high order byte of delay count, CL = not used
-                 mov                 dx, 0F0FFH                          ; DL = low order byte of delay count, DH = not used
-                 int                 15H                                 ; Call BIOS delay function
+                 mov                 ax, 8600H                                     ; AH = 86h (Delay function), AL = 00h (not used)
+                 xor                 cx, cx                                        ; CH = high order byte of delay count, CL = not used
+                 mov                 dx, 090FFH                                    ; DL = low order byte of delay count, DH = not used
+                 int                 15H                                           ; Call BIOS delay function
 
     ; update the location
     ; copy the current postions into prev_postions
@@ -161,15 +164,15 @@ MAIN PROC FAR
     ; check if there is a change or not
                  mov                 ax, prev_user1_posX
                  cmp                 ax, user1_posX
-                 jnz                 update1                             ; jump to the update if there is a change
+                 jnz                 update1                                       ; jump to the update if there is a change
                  mov                 ax, prev_user1_posY
                  cmp                 ax, user1_posY
-                 jz                  done_all                            ; jump away if there is no change
+                 jz                  done_all                                      ; jump away if there is no change
 
     update1:     
                  clear_prev_location prev_user1_posX, prev_user1_posY
     ; draw user
-                 mov                 bx, 1                               ; to draw
+                 mov                 bx, 1                                         ; to draw
                  setStartPixel
                  call                drawCar
 
@@ -194,7 +197,7 @@ MAIN PROC FAR
                  pop                 ds
                  STI
 
-                 MOV                 AH, 4CH                             ; Function to exit program
+                 MOV                 AH, 4CH                                       ; Function to exit program
                  INT                 21H
 MAIN ENDP
 
@@ -269,7 +272,7 @@ update_frame PROC
                  mov                 current_frame, bl
 
     done_frame:  
-    ret
+                 ret
 
 update_frame ENDP
 
@@ -287,16 +290,22 @@ drawCar PROC
 
                  mov                 al, BACK_GROUND
 
-                 mov                 cx, CAR_HEIGHT                      ; number of lines to draw
+                 mov                 cx, CAR_HEIGHT                                ; number of lines to draw
+                 cmp                 bx, 0                                         ; 0 -> clear , 1 -> draw
+                 jnz                 outerLoop
+                 add                 cx, CAR_OFFSET*2
+                 sub                 di, SCREEN_WIDTH * CAR_OFFSET + CAR_OFFSET
     outerLoop:   
 
-                 mov                 dx, CAR_WIDTH                       ; number of pixels to draw
-
+                 mov                 dx, CAR_WIDTH                                 ; number of pixels to draw
+                 cmp                 bx, 0                                         ; 0 -> clear , 1 -> draw
+                 jnz                 innerLoop
+                 add                 dx, CAR_OFFSET*2
     innerLoop:   
                  cmp                 byte ptr [si], 250
                  jz                  skip
 
-                 cmp                 bx, 0                               ; 0 -> clear , 1 -> draw
+                 cmp                 bx, 0                                         ; 0 -> clear , 1 -> draw
                  jz                  clear_car
 
     draw_car:    
@@ -315,7 +324,11 @@ drawCar PROC
                  dec                 dx
                  jnz                 innerLoop
 
-                 add                 di, SCREEN_WIDTH - CAR_WIDTH        ; move to next line
+                 add                 di, SCREEN_WIDTH - CAR_WIDTH                  ; move to next line
+                 cmp                 bx, 0                                         ; 0 -> clear , 1 -> draw
+                 jnz                 done_car
+                 sub                 di, CAR_OFFSET*2
+    done_car:    
                  loop                outerLoop
 
                  ret
