@@ -20,19 +20,19 @@ include draw.inc
          DASHESCOLOR equ LIGHT_GRAY
          ;*----------------------------------Positions-------------------------------------------------;      
          dt ?
-		 START_X dw 150
+		START_X dw 10
          START_Y dw 150
 		 dt ?
          END_X dw ?
          END_Y dw ?
          ;*----------------------------------BOUNDARY-------------------------------------------------;      
          MIN_X equ 0
-         MAX_X equ 320
+         MAX_X equ 319
          MIN_Y equ 0
-         MAX_Y equ 200 
+         MAX_Y equ 150
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 15
-         LINE_LENGTH equ 20
+         LINE_WIDTH equ 10
+         LINE_LENGTH equ 16
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
          DASHEDLINE_LENGTH equ 6
@@ -50,9 +50,9 @@ include draw.inc
          horizontalDirection db 1 ;! 1 left 0 right
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 50
+        MAX_PARTS equ 80
         TIME equ 0
-		WRONGTHRESHOLD equ 12
+		WRONGTHRESHOLD equ 100
 
 		prev_start_x dw ?
 		prev_start_y dw ?

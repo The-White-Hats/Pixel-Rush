@@ -29,11 +29,11 @@ include circSect.inc
          MAX_Y equ 150 
          ;----------------------------------Dimentions-------------------------------------------------;
          LINE_WIDTH equ 20
-         LINE_LENGTH equ 60
+         LINE_LENGTH equ 5
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
          DASHEDLINE_LENGTH equ 6
-         cornerFlag db 0
+         cornerFlag db 1
          cornerType db 1 ;1 means up, 0 means down
          horizontalDirection db 0
 
