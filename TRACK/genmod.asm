@@ -23,8 +23,8 @@ include draw.inc
 		 BOUNDARY_COLOR1 equ BLUE
 		 BOUNDARY_COLOR2 equ RED
 
-		 EndTrackColor1 db BOUNDARY_COLOR1 ;!Finish Line
-		 EndTrackColor2 db BOUNDARY_COLOR2 ;!Finish Line
+		 EndTrackColor1 db BLACK ;!Finish Line
+		 EndTrackColor2 db WHITE ;!Finish Line
 
 		
 
@@ -43,7 +43,7 @@ include draw.inc
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
          LINE_WIDTH equ 18
-         LINE_LENGTH equ 6
+         LINE_LENGTH equ 7
 		 HORIZONTAL_LINE_LENGTH equ 19
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
@@ -70,9 +70,9 @@ include draw.inc
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 70
+        MAX_PARTS equ 60
         TIME equ 0
-		WRONGTHRESHOLD equ 12
+		WRONGTHRESHOLD equ 20
 
 		prev_start_x dw ?
 		prev_start_y dw ?
@@ -1401,15 +1401,9 @@ FinalLine PROC
 
     call ModifyDirection
 
-    ;call SingleLine
-
 	mov cx,END_LINE_WIDTH
 
-    mov EndTrackColor2,BLACK
-    mov EndTrackColor1,WHITE
     mov ax ,0
-	
-
 	drawfinalline:
 
      cmp ax,EndTrackWidthToggle
@@ -1425,13 +1419,6 @@ FinalLine PROC
      inc ax
 
 	loop drawfinalline
-
-   ; mov EndTrackColor1,BOUNDARY_COLOR1
-   ; mov EndTrackColor2,BOUNDARY_COLOR2
-
-	;call ModifyEachIteration
-	;call SingleLine
-
 	ret
 FinalLine ENDP
 SingleLine PROC
