@@ -19,7 +19,10 @@ include draw.inc
 		 LIGHT_CYAN equ 0bh	
 		 Magenta equ 05h
 		 Brown equ 06h
-		 BLUE equ 01h
+		 BLUE equ 01h 
+		 LIGHT_BLUE equ 09h
+		 PURPLE equ 05h
+		 YELLOW equ 0Eh
 		 BOUNDARY_COLOR1 equ BLUE
 		 BOUNDARY_COLOR2 equ RED
 
@@ -28,8 +31,15 @@ include draw.inc
 
 		
 
+		
+		
          DefaultBackground equ GREEN
          DASHESCOLOR equ LIGHT_GRAY
+		 OBSTACLE_COLOR equ RED
+		 POWERUP1_COLOR equ LIGHT_BLUE
+		 POWERUP2_COLOR equ BLUE
+		 POWERUP3_COLOR equ PURPLE
+		 POWERUP4_COLOR equ YELLOW
          ;*----------------------------------Positions-------------------------------------------------;      
 		 START_X dw 2
          START_Y dw 150
@@ -54,7 +64,9 @@ include draw.inc
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
          DASHEDLINE_LENGTH equ 6
-         ;*----------------------------------Variables-------------------------------------------------;
+		 OBSTACLE_WIDTH equ 4
+		 OBSTACLE_LENGTH equ 4
+          ;*----------------------------------Variables-------------------------------------------------;
 		 posx dw 0
 		 posy dw 0
 		 toggleboundarycolor db 0
@@ -141,7 +153,13 @@ include draw.inc
 		casse9 db 0,0,0
 		casse10 db 3,3,3
 		casse11 db 0,0,0
-        
+		;*------------------------------------------- OBSTACLES AND POWERUPS -------------------------------------------;
+		latestPos db 0
+		nowORthen db 0 ; 0 means now, 1 means then (POWERUPS)
+		lastType db POWERUP1_COLOR
+		latestType db POWERUP2_COLOR
+		
+		savedPowerups dw MAX_PARTS*3 dup(0)
 .code
 main proc far
     mov ax, @data
@@ -1265,6 +1283,7 @@ GenerateHorizontalTrack PROC
 
     final:
 	popa
+	call DrawObstaclesH
 	ret
  GenerateHorizontalTrack  ENDP
 
@@ -1541,4 +1560,161 @@ ModifyDirection PROC
 	mov isup_right,1 
     ret
 ModifyDirection ENDP
+
+DrawObstaclesH PROC
+	pusha
+	mov divider, 4H
+	call randomizer ; randomize the existence of an obstacle
+	call randomizer ; randomize the position of the obstacle
+	call randomizer ; randomize the position of the obstacle
+	cmp random, 1
+	jg power1
+	mov al, OBSTACLE_COLOR
+	jmp initiateDraw
+	power1:
+
+	mov divider, 2H   ; randomize the powerup, draw or save for later
+	call randomizer 
+	mov al, random
+	mov nowORthen, al
+
+	typeRandomizer:
+	call randomizer ; randomize the type of the powerup
+	cmp random, 0
+	jnz power34
+	call randomizer
+	cmp random, 0
+	jnz power2
+	mov al, POWERUP1_COLOR
+	jmp initiateDraw
+	power2:
+	mov al, POWERUP2_COLOR
+	jmp initiateDraw
+	power34:
+	call randomizer
+	cmp random, 0
+	jnz power4
+	mov al, POWERUP3_COLOR
+	jmp initiateDraw
+	power4:
+	mov al, POWERUP4_COLOR
+
+
+
+	initiateDraw:
+	cmp al, lastType
+	jz typeRandomizer
+	cmp al, latestType
+	jz typeRandomizer
+	mov ah, lastType
+	mov latestType, ah
+	mov lastType, al
+	mov divider, 3H
+	call randomizer ; randomize the position of the obstacle
+	cmp random, 0
+	jnz secondPlace
+	mov cx, START_X
+	cmp horizontalDirection, 0
+	jnz leftDrawObs
+	add cx, LINE_LENGTH/4
+	jmp yPosition
+	leftDrawObs:
+	sub cx, LINE_LENGTH/4
+	jmp yPosition
+
+	secondPlace:
+	cmp random, 1
+	jnz thirdPlace
+	mov cx, START_X
+	cmp horizontalDirection, 0
+	jnz leftDrawObs2
+	add cx, LINE_LENGTH/2
+	jmp yPosition
+	leftDrawObs2:
+	sub cx, LINE_LENGTH/2
+	jmp yPosition
+
+
+	thirdPlace:
+	mov cx, START_X
+	cmp horizontalDirection, 0
+	jnz leftDrawObs3
+	add cx, 3*LINE_LENGTH/4
+	jmp yPosition
+	leftDrawObs3:
+	sub cx, 3*LINE_LENGTH/4
+	jmp yPosition
+
+	
+
+	yPosition:
+	mov dx, START_Y
+	sub dx, BOUNDARY_WIDTH
+	push ax
+	randomizerLoop:
+		call randomizer
+		mov ah, random
+		mov al, latestPos
+		cmp ah, al
+		jz randomizerLoop
+		mov latestPos, ah
+	pop ax
+	
+	cmp random, 1
+	jnz secondYPlace
+	sub dx, 3  ; to make it above the track boundary
+	jmp drawObs
+
+	secondYPlace:
+	cmp random, 0
+	jnz thirdYPlace
+	sub dx, LINE_WIDTH/3
+	jmp drawObs
+
+	thirdYPlace:
+
+	sub dx, 2*LINE_WIDTH/3
+
+	drawObs:
+	mov bx, cx
+	cmp nowORthen, 0
+	jnz savePosClr
+	mov ah, 0ch
+	mov si, OBSTACLE_WIDTH
+	drawObsLoop:
+	mov di, OBSTACLE_LENGTH
+	mov cx, bx
+		drawObsLoop2:
+		int 10h
+		cmp horizontalDirection, 0
+		jnz leftDrawObs4
+		inc cx
+		jmp drawObsLoop3
+		leftDrawObs4:
+		dec cx
+		drawObsLoop3:
+		dec di
+		cmp di, 0
+		jnz drawObsLoop2
+		dec dx
+		dec si
+		cmp si, 0
+		jnz drawObsLoop
+
+	savePosClr:
+	
+	
+
+
+
+
+
+
+	popa
+	ret
+
+DrawObstaclesH ENDP
+	
+
+
 end main
