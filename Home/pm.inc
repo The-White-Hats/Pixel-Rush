@@ -89,3 +89,9 @@ drawP PROC
     jnz rowLoop
     ret
 drawP ENDP
+
+UltraGraphicsMode MACRO 
+  mov AX, 4F02h
+  mov BX, 0101h  ; 640x400x256
+  int 10h        ; BIOS interrupt for video services
+ENDM
