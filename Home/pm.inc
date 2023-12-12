@@ -1,3 +1,13 @@
+drawLogo MACRO
+    readImageM logoUL
+    draw 200, 40, 120, 120
+    readImageM logoUR
+    draw 320, 40, 120, 120
+    readImageM logoLL
+    draw 200, 160, 120, 120
+    readImageM logoLR
+    draw 320, 160, 120, 120
+ENDM
 
 ; draw the image present in the buffer ; you give it the starting coordinates and width and height
 draw MACRO x, y, width, height
@@ -16,19 +26,19 @@ ENDM
 readImageM MACRO filename
     lea dx, filename
     call readImageP
-    cmp errorFlag, 1
-    je error_exit
+    ; cmp errorFlag, 1
+    ; je error_exit
 ENDM
 
 ; call all the necessary procedures to read an image
 readImageP PROC
     call openFile
-    jnc noError1       ; Jump if carry flag set (error)
-    mov errorFlag, 1h  ; Set the error flag
+    ; jnc noError1       ; Jump if carry flag set (error)
+    ; mov errorFlag, 1h  ; Set the error flag
     noError1:
     call readData
-    jnc noError2       ; Jump if carry flag set (error)
-    mov errorFlag, 1h  ; set the error flag
+    ; jnc noError2       ; Jump if carry flag set (error)
+    ; mov errorFlag, 1h  ; set the error flag
     noError2:
     call closeFile
     ret
