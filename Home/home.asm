@@ -6,7 +6,6 @@
 .STACK 32
 ;---------------------------------------
 .DATA
-
 include LogoData.inc
 ;---------------------------------------
 .code
@@ -17,9 +16,7 @@ MAIN PROC FAR
     MOV DS,AX
 
     ; open graphics mode
-    mov AX, 4F02h
-    mov BX, 0101h  ; 640x400x256
-    int 10h
+    UltraGraphicsMode
 
     drawLogo
 
