@@ -14,9 +14,6 @@ buffer db buffer_size dup(?)
 
 errtext db "YOUR ERROR MESSAGE", 10, "$"
 
-SCREEN_WIDTH equ 320
-SCREEN_HEIGHT equ 200
-
 Xstart dw ?
 Ystart dw ?
 Xlimit dw ?
@@ -36,9 +33,8 @@ MAIN PROC FAR
     mov al,13h
     int 10h
 
-    readImageM filename1
-
-    draw 100, 10, 120, 120
+    readImageM filename2
+    draw 100, 10, 173, 150
 
     ; wait for a key input to not close the screen
     MOV AH, 0
