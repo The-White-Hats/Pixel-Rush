@@ -66,6 +66,8 @@ include draw.inc
          DASHEDLINE_LENGTH equ 6
 		 OBSTACLE_WIDTH equ 4
 		 OBSTACLE_LENGTH equ 4
+		 POWERUP_WIDTH equ 2
+		 POWERUP_LENGTH equ 2
           ;*----------------------------------Variables-------------------------------------------------;
 		 posx dw 0
 		 posy dw 0
@@ -82,7 +84,7 @@ include draw.inc
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 60
+        MAX_PARTS equ 80
         TIME equ 0
 		WRONGTHRESHOLD equ 20
 
@@ -158,8 +160,23 @@ include draw.inc
 		nowORthen db 0 ; 0 means now, 1 means then (POWERUPS)
 		lastType db POWERUP1_COLOR
 		latestType db POWERUP2_COLOR
-		
-		savedPowerups dw MAX_PARTS*3 dup(0)
+
+		obstacles dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (bottom left corner)
+		compilationPowerups dw MAX_PARTS*2 dup(0)
+		compilationPowerupsClrs db MAX_PARTS dup(0) 
+
+		inGamePowerups dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (bottom left corner)
+		inGamePowerupsClrs db MAX_PARTS dup(0)
+
+
+		saveObstaclesCounter dw 0 ;! offset to add for obstacles array 
+		saveCompilationPowerupsCounter dw 0 ;! offset to add for compilationPowerups array
+		saveCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
+		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
+		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array
+		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array
+
+
 .code
 main proc far
     mov ax, @data
@@ -301,6 +318,13 @@ SelectType PROC
 SelectType ENDP
 
 Draw PROC
+	mov saveObstaclesCounter,0
+	mov saveCompilationPowerupsCounter,0
+	mov saveCompilationPowerupsClrsCounter,0
+	mov saveInGamePowerupsCounter,0
+	mov saveInGamePowerupsClrsCounter,0
+	mov loadCompilationPowerupsClrsCounter,0
+
 	lea si,Directions
     lea bx,PrevStart
 	
@@ -400,6 +424,28 @@ Draw PROC
 		dec cx
 		cmp cx,0 
 		jg iterate_mid 
+
+	pusha ;*--------------------------------------Draw Obstacles----------------------------------------------;
+	lea si, obstacles
+	mov cx, 0
+	finalDrawObstaclesLoop:
+	call DrawObstacle
+	add si, 4
+	add cx, 4
+	cmp cx, saveObstaclesCounter
+	jl finalDrawObstaclesLoop
+	popa
+
+	pusha ;*--------------------------------------Draw Powerups----------------------------------------------;
+	lea si, compilationPowerups
+	finalDrawPowerupsLoop:
+	call DrawPower
+	add si, 4
+	add loadCompilationPowerupsClrsCounter, 1
+	mov ax, loadCompilationPowerupsClrsCounter
+	cmp ax, saveCompilationPowerupsClrsCounter
+	jl finalDrawPowerupsLoop
+	popa
 	ret
 Draw ENDP
 
@@ -861,14 +907,16 @@ GenerateTrackDirections PROC
 				dec TotalParts
                 
 				push bx
-				mov bx,PartWrongsOffset
-				mov [bx],0
-				sub PartWrongsOffset,2
-				inc [bx-2]
-				mov ax,[bx-2]
-				pop bx
-				cmp ax,WRONGTHRESHOLD
-				jz dont_try
+                mov bx,PartWrongsOffset
+                mov ax,0
+                mov [bx],ax
+                sub PartWrongsOffset,2
+                mov ax,[bx-2]
+                inc ax
+                mov [bx-2],ax
+                pop bx
+                cmp ax,WRONGTHRESHOLD
+                jz dont_try
         	GenerateTrackDir_still:
         ;*-----------------------------------------------;
 
@@ -1283,7 +1331,7 @@ GenerateHorizontalTrack PROC
 
     final:
 	popa
-	call DrawObstaclesH
+	call GenerateObstaclesPowerUps
 	ret
  GenerateHorizontalTrack  ENDP
 
@@ -1300,7 +1348,7 @@ randomizer PROC
   mov random, ah ; puts the remainder in random
 
   inc helper    ; increment helper to insure random value every time
-  cmp helper, 0ffh ; return helper to 1 if it's ffh to avoid dividing by zero
+  cmp helper, 11d ; return helper to 1 if it's ffh to avoid dividing by zero
   jne dontreturn
   mov helper, 1h
   dontreturn:
@@ -1561,12 +1609,165 @@ ModifyDirection PROC
     ret
 ModifyDirection ENDP
 
-DrawObstaclesH PROC
+; DrawObstaclesH PROC
+; 	pusha
+
+; 	mov divider, 4H
+; 	call randomizer ; randomize the existence of an obstacle
+; 	call randomizer ; randomize the position of the obstacle
+; 	call randomizer ; randomize the position of the obstacle
+; 	cmp random, 1
+; 	jg power1
+; 	mov al, OBSTACLE_COLOR
+; 	jmp initiateDraw
+; 	power1:
+
+; 	mov divider, 2H   ; randomize the powerup, draw or save for later
+; 	call randomizer 
+; 	mov al, random
+; 	mov nowORthen, al
+
+; 	typeRandomizer:
+; 	call randomizer ; randomize the type of the powerup
+; 	cmp random, 0
+; 	jnz power34
+; 	call randomizer
+; 	cmp random, 0
+; 	jnz power2
+; 	mov al, POWERUP1_COLOR
+; 	jmp initiateDraw
+; 	power2:
+; 	mov al, POWERUP2_COLOR
+; 	jmp initiateDraw
+; 	power34:
+; 	call randomizer
+; 	cmp random, 0
+; 	jnz power4
+; 	mov al, POWERUP3_COLOR
+; 	jmp initiateDraw
+; 	power4:
+; 	mov al, POWERUP4_COLOR
+
+
+
+; 	initiateDraw:
+; 	cmp al, lastType
+; 	jz typeRandomizer
+; 	cmp al, latestType
+; 	jz typeRandomizer
+; 	mov ah, lastType
+; 	mov latestType, ah
+; 	mov lastType, al
+; 	mov divider, 3H
+; 	call randomizer ; randomize the position of the obstacle
+; 	cmp random, 0
+; 	jnz secondPlace
+; 	mov cx, START_X
+; 	cmp horizontalDirection, 0
+; 	jnz leftDrawObs
+; 	add cx, LINE_LENGTH/4
+; 	jmp yPosition
+; 	leftDrawObs:
+; 	sub cx, LINE_LENGTH/4
+; 	jmp yPosition
+
+; 	secondPlace:
+; 	cmp random, 1
+; 	jnz thirdPlace
+; 	mov cx, START_X
+; 	cmp horizontalDirection, 0
+; 	jnz leftDrawObs2
+; 	add cx, LINE_LENGTH/2
+; 	jmp yPosition
+; 	leftDrawObs2:
+; 	sub cx, LINE_LENGTH/2
+; 	jmp yPosition
+
+
+; 	thirdPlace:
+; 	mov cx, START_X
+; 	cmp horizontalDirection, 0
+; 	jnz leftDrawObs3
+; 	add cx, 3*LINE_LENGTH/4
+; 	jmp yPosition
+; 	leftDrawObs3:
+; 	sub cx, 3*LINE_LENGTH/4
+; 	jmp yPosition
+
+	
+
+; 	yPosition:
+; 	mov dx, START_Y
+; 	sub dx, BOUNDARY_WIDTH
+; 	push ax
+; 	randomizerLoop:
+; 		call randomizer
+; 		mov ah, random
+; 		mov al, latestPos
+; 		cmp ah, al
+; 		jz randomizerLoop
+; 		mov latestPos, ah
+; 	pop ax
+	
+; 	cmp random, 1
+; 	jnz secondYPlace
+; 	sub dx, 3  ; to make it above the track boundary
+; 	jmp drawObs
+
+; 	secondYPlace:
+; 	cmp random, 0
+; 	jnz thirdYPlace
+; 	sub dx, LINE_WIDTH/3
+; 	jmp drawObs
+
+; 	thirdYPlace:
+
+; 	sub dx, 2*LINE_WIDTH/3
+
+; 	drawObs:
+; 	mov bx, cx
+; 	cmp nowORthen, 0
+; 	jnz savePosClr
+; 	mov ah, 0ch
+; 	mov si, OBSTACLE_WIDTH
+; 	drawObsLoop:
+; 	mov di, OBSTACLE_LENGTH
+; 	mov cx, bx
+; 		drawObsLoop2:
+; 		int 10h
+; 		cmp horizontalDirection, 0
+; 		jnz leftDrawObs4
+; 		inc cx
+; 		jmp drawObsLoop3
+; 		leftDrawObs4:
+; 		dec cx
+; 		drawObsLoop3:
+; 		dec di
+; 		cmp di, 0
+; 		jnz drawObsLoop2
+; 		dec dx
+; 		dec si
+; 		cmp si, 0
+; 		jnz drawObsLoop
+
+; 	savePosClr:
+
+
+
+
+
+
+; 	popa
+; 	ret
+
+; DrawObstaclesH ENDP
+	
+GenerateObstaclesPowerUps PROC
 	pusha
 	mov divider, 4H
 	call randomizer ; randomize the existence of an obstacle
-	call randomizer ; randomize the position of the obstacle
-	call randomizer ; randomize the position of the obstacle
+	call randomizer 
+	call randomizer 
 	cmp random, 1
 	jg power1
 	mov al, OBSTACLE_COLOR
@@ -1663,24 +1864,87 @@ DrawObstaclesH PROC
 	cmp random, 1
 	jnz secondYPlace
 	sub dx, 3  ; to make it above the track boundary
-	jmp drawObs
-
+	jmp saveObs
 	secondYPlace:
 	cmp random, 0
 	jnz thirdYPlace
 	sub dx, LINE_WIDTH/3
-	jmp drawObs
-
+	jmp saveObs
 	thirdYPlace:
 
 	sub dx, 2*LINE_WIDTH/3
 
-	drawObs:
-	mov bx, cx
+	saveObs:
+	cmp horizontalDirection, 0 
+	jnz saveLeft1
+	cmp al, OBSTACLE_COLOR
+	jnz centerPowerUps
+	add cx, OBSTACLE_WIDTH/2 ; to save the center of the obstacle (x-axis)
+	jmp saveObs1
+	centerPowerUps:
+	add cx, POWERUP_WIDTH/2
+	jmp saveObs1
+	saveLeft1:
+	cmp al, OBSTACLE_COLOR
+	jnz savePowerUps2
+	sub cx, OBSTACLE_WIDTH/2
+	jmp saveObs1
+	savePowerUps2:
+	sub cx, POWERUP_WIDTH/2
+
+
+	saveObs1:
+	cmp al, OBSTACLE_COLOR
+	jnz savePowerUps
+	lea si, obstacles
+	add si, saveObstaclesCounter
+
+	mov [si], cx
+	mov [si+2], dx
+	add saveObstaclesCounter, 4
+	jmp endGenerateObstaclesPowerUps
+
+	savePowerUps:
 	cmp nowORthen, 0
-	jnz savePosClr
+	jnz saveForLater
+	lea si, compilationPowerups
+	add si, saveCompilationPowerupsCounter
+	mov [si], cx
+	mov [si+2], dx
+	add saveCompilationPowerupsCounter, 4
+	lea si, compilationPowerupsClrs
+	add si, saveCompilationPowerupsClrsCounter
+	mov [si], al
+	add saveCompilationPowerupsClrsCounter, 1
+	jmp endGenerateObstaclesPowerUps
+
+	saveForLater:
+	lea si, inGamePowerups
+	add si, saveInGamePowerupsCounter
+	mov [si], cx
+	mov [si+2], dx
+	add saveInGamePowerupsCounter, 4
+	lea si, inGamePowerupsClrs
+	add si, saveInGamePowerupsClrsCounter
+	mov [si], al
+	add saveInGamePowerupsClrsCounter, 1
+
+
+	endGenerateObstaclesPowerUps:
+	popa
+	ret
+GenerateObstaclesPowerUps ENDP
+
+
+DrawObstacle PROC
+	pusha
+	mov bx, [si]
+	sub bx, OBSTACLE_WIDTH/2
+	mov dx, [si+2]
+	mov horizontalDirection, 0
 	mov ah, 0ch
 	mov si, OBSTACLE_WIDTH
+	mov al, OBSTACLE_COLOR
 	drawObsLoop:
 	mov di, OBSTACLE_LENGTH
 	mov cx, bx
@@ -1701,20 +1965,46 @@ DrawObstaclesH PROC
 		cmp si, 0
 		jnz drawObsLoop
 
-	savePosClr:
-	
-	
+	popa
+	ret
+DrawObstacle ENDP
 
 
-
-
-
+DrawPower PROC
+	pusha
+	mov bx, [si]
+	sub bx, POWERUP_WIDTH/2
+	mov dx, [si+2]
+	mov horizontalDirection, 0
+	mov si, POWERUP_WIDTH
+	push bx
+	lea bx, compilationPowerupsClrs
+	add bx, loadCompilationPowerupsClrsCounter
+	mov al, [bx]
+	pop bx
+	mov ah, 0ch
+	drawPowLoop:
+	mov di, POWERUP_LENGTH
+	mov cx, bx
+		drawPowLoop2:
+		int 10h
+		cmp horizontalDirection, 0
+		jnz leftDrawPow4
+		inc cx
+		jmp drawPowLoop3
+		leftDrawPow4:
+		dec cx
+		drawPowLoop3:
+		dec di
+		cmp di, 0
+		jnz drawPowLoop2
+		dec dx
+		dec si
+		cmp si, 0
+		jnz drawPowLoop
 
 	popa
 	ret
-
-DrawObstaclesH ENDP
-	
-
+DrawPower ENDP
 
 end main
