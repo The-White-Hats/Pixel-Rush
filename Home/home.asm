@@ -24,11 +24,12 @@ MAIN PROC FAR
 
     drawLogo
 
-    showColoredMsg mes1, 0AfH, mes1size, mes1y, mes1x
+    showColoredMsg mes1, 0fH, mes1size, mes1y, mes1x
     MoveCursor nameInputX, nameInputY
     getSizedStrM name1, 15d
     checkFirstChar name1, nameWarning
-    
+    MoveCursor 34d, 25
+    showmes name1
 
     
     ; wait for a key input to not close the screen

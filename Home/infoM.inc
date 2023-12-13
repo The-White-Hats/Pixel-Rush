@@ -4,41 +4,6 @@ showmes macro str
     int 21h  
 endm showmes 
 
-; showmes macro str, color, len, row, column
-;     mov ah, 13h ; function to write string in graphics mode
-;     mov al, 1   ; write mode (1 = write string with color)
-;     mov bh, 0   ; page number
-;     mov bl, 7   ; color (7 = light gray)
-;     mov cx, len ; length of string
-;     mov dh, row
-;     mov dl, column
-;     lea si, str ; pointer to string
-;     int 10h     ; call BIOS interrupt 
-; endm showmes
-
-showMsgClr macro str, clr
-    local loop1
-    mov cx,0
-    lea bx,str
-    loop1:
-     mov ax,[bx]
-     inc bx
-     inc cx
-     cmp ax,'$'
-     jnz loop1
-    dec cx
-    mov ah,9 ;Display
-    mov bh,0 ;Page 0
-    mov al,00h ;
-    mov cx,80 ;5 times
-    mov bl,clr ;Green (A) on white(F) background
-
-    int 10h 
-    mov ah,09h
-    lea dx,str
-    int 21h  
-endm showMsgClr 
-
 showColoredMsg MACRO str, color, strSize, row, column
     lea bp, str
     mov cx, strSize
@@ -53,10 +18,9 @@ showColoredMsg MACRO str, color, strSize, row, column
     int 10h
 ENDM
 
-
-showchar macro str
+showchar macro char
     mov ah,02h
-    mov dl,str
+    mov dl,char
     int 21h  
 endm showchar 
 
@@ -237,7 +201,6 @@ checkFirstChar macro buffer, error
     local finish
     local invalid
     invalid:
-    invalid:
     lea si, buffer
     mov cx, 0
     mov cl, [buffer+16] 
@@ -260,13 +223,10 @@ checkFirstChar macro buffer, error
     notValid:
         showColoredMsg nameWarning, 0ch, warningSize, warningY, warningX
 
-        
         MoveCursor nameInputX, nameInputY
         clearLineArea nameSize
-        mov cx, 15d
-        lea di, name1
-        call getSizedStr
-        ; getstr buffer
+        resetBuffer buffer, nameSize, '$'
+        getSizedStrM buffer, 15d
         jmp invalid
     finish:
         MoveCursor mes1x, mes1y
@@ -338,15 +298,17 @@ clearLineArea macro width
 endm clearLineArea
 
 MoveCursor MACRO x, y
+    pusha
     mov dl, x
     mov dh, y
     mov ah, 2H
     int 10h 
+    popa
 ENDM
 
 getSizedStrM MACRO buffer, bufferSize
     lea di, buffer
-    mov cx, bufferSize
+    mov ch, bufferSize
     call getSizedStr
 ENDM
 
@@ -354,21 +316,52 @@ ENDM
 getSizedStr PROC
     ; set the input size in cx and the buffer in di
     push di
-    xor bx, bx
+    xor bh, bh
     getSizedStrLoop:
-    mov ah, 1h
+    mov ah, 1h          ;get the char
     int 21h
-    cmp al, 0DH
-    je getSizedStrEnd
+    cmp al, 0DH         ;pressed enter
+    je getSizedStrEnd   
+    cmp al, 8H          ;pressed backspace
+    jne notBackspace
+    dec di
+    mov [di], byte ptr '$'
+    dec bh
+    showchar 0
+    showchar 8H
+    jmp getSizedStrLoop
+    notBackspace:
     stosb
-    inc bx
-    cmp bx, cx
+    inc bh
+    cmp bh, ch
     jnz getSizedStrLoop
     getSizedStrEnd:
-    sub cx, bx
     pop di
-    add di, 16
-    mov [di], cl 
+    add di, 16d
+    mov [di], bh 
     ret
 getSizedStr ENDP
 
+resetBuffer MACRO name, bufferSize, value
+    lea di, name
+    mov cx, bufferSize
+    mov al, value
+    rep stosb
+ENDM
+
+MoveCursorLeftM MACRO times
+    pusha
+    mov cx, 1H  
+    call MoveCursorLeftP
+    popa
+ENDM 
+
+MoveCursorLeftP PROC
+    mov ah,3h
+    mov bh,0h
+    int 10h
+    mov ah,02h
+    dec dl
+    int 10h
+    ret
+MoveCursorLeftP ENDP

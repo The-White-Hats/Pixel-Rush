@@ -163,13 +163,14 @@ MoveCursorDown MACRO times
 ENDM
 
 MoveCursorLeft MACRO times
+  local repeat
   mov cx, times  
-  .repeat:
+  repeat:
   mov ah,3h
   mov bh,0h
   int 10h
   mov ah,02h
   dec dl
   int 10h
-  loop .repeat
+  loop repeat
 ENDM 
