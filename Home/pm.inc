@@ -92,6 +92,14 @@ drawP ENDP
 
 UltraGraphicsMode MACRO 
   mov AX, 4F02h
-  mov BX, 0101h  ; 640x400x256
+  mov BX, 0101h  ; 640x480x256
   int 10h        ; BIOS interrupt for video services
+ENDM
+
+PaintScreen MACRO Color, LeftTopCorner, RightBottomCorner
+  mov ax ,0600h
+  mov bh, Color
+  mov cx, LeftTopCorner
+  mov dx , RightBottomCorner
+  int 10h
 ENDM
