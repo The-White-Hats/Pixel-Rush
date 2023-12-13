@@ -26,9 +26,10 @@ MAIN PROC FAR
 
     showColoredMsg mes1, 0fH, mes1size, mes1y, mes1x
     MoveCursor nameInputX, nameInputY
-    ; mov bx, 15d
-    ; mov 
-    getstr name1
+    mov cx, 15d
+    lea di, name1
+    call getSizedStr
+    ; getstr name1
     checkFirstChar name1, nameWarning
     
 

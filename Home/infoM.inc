@@ -238,9 +238,9 @@ checkFirstChar macro buffer, error
     local invalid
     invalid:
     invalid:
-    lea si, buffer+2
+    lea si, buffer
     mov cx, 0
-    mov cl, buffer+1
+    mov cl, buffer+16 
     cmp cl, 0
     jz notValid
     inc cx
@@ -263,7 +263,10 @@ checkFirstChar macro buffer, error
         
         MoveCursor nameInputX, nameInputY
         clearLineArea nameSize
-        getstr buffer
+        mov cx, 15d
+        lea di, name1
+        call getSizedStr
+        ; getstr buffer
         jmp invalid
     finish:
         MoveCursor mes1x, mes1y
@@ -326,17 +329,6 @@ checkNameChars macro buffer, error
 endm checkNameChars
 
 clearLineArea macro width 
-    ; ; local loop1
-    ; mov ah, 02h
-    ; mov dl, 0
-    ; int 10h
-    ; ; mov cx, 80
-    ; ; loop1:
-    ; ;     mov ah, 02h
-    ; ;     mov dl, 20h
-    ; ;     int 21h
-    ; ;     loop loop1
-
     mov ah,9 ;Display
     mov bh,0 ;Page 0
     mov al,00h ;Letter D
@@ -354,15 +346,18 @@ ENDM
 
 ;get a string in a buffer with a limit on size
 getSizedStr PROC
-    ; set the input size in bx and the buffer in di
+    ; set the input size in x and the buffer in di
+    xor bx, bx
     getSizedStrLoop:
     mov ah, 1h
     int 21h
     cmp al, 0DH
     je getSizedStrEnd
     stosb
-    dec bx
+    inc bx
+    cmp bx, cx
     jnz getSizedStrLoop
     getSizedStrEnd:
+    mov 
     ret
 getSizedStr ENDP

@@ -11,7 +11,8 @@ warningY equ mes1Y + 2
 warningSize equ $ - 1 - nameWarning
 
 pointsWarning db "Points MUST be a number",'$'
-name1 db 15, 0, 16 dup('$')
+name1 db 16 dup('$')
+name1Size db ?
 points1 db 15, 0, 15 dup('$')
 name2 db 15, 0, 16 dup('$')
 points2 db 15, 0, 15 dup('$')
