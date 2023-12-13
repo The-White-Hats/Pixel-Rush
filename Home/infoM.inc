@@ -240,7 +240,7 @@ checkFirstChar macro buffer, error
     invalid:
     lea si, buffer
     mov cx, 0
-    mov cl, buffer+16 
+    mov cl, [buffer+16] 
     cmp cl, 0
     jz notValid
     inc cx
@@ -344,9 +344,16 @@ MoveCursor MACRO x, y
     int 10h 
 ENDM
 
+getSizedStrM MACRO buffer, bufferSize
+    lea di, buffer
+    mov cx, bufferSize
+    call getSizedStr
+ENDM
+
 ;get a string in a buffer with a limit on size
 getSizedStr PROC
-    ; set the input size in x and the buffer in di
+    ; set the input size in cx and the buffer in di
+    push di
     xor bx, bx
     getSizedStrLoop:
     mov ah, 1h
@@ -358,6 +365,10 @@ getSizedStr PROC
     cmp bx, cx
     jnz getSizedStrLoop
     getSizedStrEnd:
-    mov 
+    sub cx, bx
+    pop di
+    add di, 16
+    mov [di], cl 
     ret
 getSizedStr ENDP
+

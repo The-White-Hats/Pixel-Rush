@@ -24,12 +24,9 @@ MAIN PROC FAR
 
     drawLogo
 
-    showColoredMsg mes1, 0fH, mes1size, mes1y, mes1x
+    showColoredMsg mes1, 0AfH, mes1size, mes1y, mes1x
     MoveCursor nameInputX, nameInputY
-    mov cx, 15d
-    lea di, name1
-    call getSizedStr
-    ; getstr name1
+    getSizedStrM name1, 15d
     checkFirstChar name1, nameWarning
     
 
