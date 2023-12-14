@@ -1,6 +1,6 @@
 nameWarning db "Invalid first letter",'$'
 warningX equ 40 - ($ - nameWarning - 1)/2
-warningY equ mes1Y + 1
+warningY equ 23
 warningSize equ $ - 1 - nameWarning
 
 name1 db 16 dup('$')
@@ -16,6 +16,6 @@ points2 db 0
 
 nameSize equ 15d
 nameInputX equ 40 - nameSize/2
-nameInputY equ mes1Y
+nameInputY equ 21
 
 lineHeight equ 16D

@@ -24,18 +24,15 @@ MAIN PROC FAR
     drawLogo
 
     GetPlayersNames
+
+    drawButtons
+
     
     ; wait for a key input to not close the screen
     MOV AH, 0
     INT 16h
-    jmp success
 
-    error_exit:
-    mov ah, 9
-    mov dx, offset errtext
-    int 21h
 
-    success:
     MOV AH,4CH
     INT 21H
 

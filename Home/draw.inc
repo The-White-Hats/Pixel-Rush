@@ -11,6 +11,17 @@ drawLogo MACRO
     draw 135, 464, 369, 11
 ENDM
 
+drawButtons MACRO
+    pusha
+    readImageM F1button
+    draw 165, 305, 60, 34
+    readImageM F2button
+    draw 290, 305, 60, 34
+    readImageM Exitbutton
+    draw 415, 305, 60, 34
+    popa
+ENDM
+
 ; draw the image present in the buffer ; you give it the starting coordinates and width and height
 draw MACRO x, y, width, height
     ; set the upper left corer and the borders of drawing
