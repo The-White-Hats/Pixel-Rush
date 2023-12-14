@@ -1,4 +1,8 @@
-*.exe
-*.map
-*.obj
+
+*.OBJ
+*.LIB
+*.EXE
+*.MAP
+*.CRF
 *.td
+rndm3.asm
