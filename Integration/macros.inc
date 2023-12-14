@@ -1,9 +1,16 @@
-
 clear macro 
     mov ah, 0
     mov al, 13h
     int 10h
 endm clear
+
+colorScreen macro color
+	mov ax, 0600h
+	mov bh, color
+	mov cx, 0h      ; upper left corner
+	mov dx, 184fh   ; lower right corner
+    int 10h
+endm colorScreen
 
 endlst macro  start     ; give it the start of the vertical cordinate (X-axis)
     ; newline
@@ -67,7 +74,45 @@ shownum macro num
      loop l2      
 endm shownum
 
+overrideInt9 macro
+    ; Disable interrupts
+                 cli
+    ; Save the original interrupt vector for int 9h
+                 mov                 ax, 3509h
+                 int                 21h
+                 mov                 origInt9Offset, bx
+                 mov                 origInt9Segment, es
+
+                 push                ds
+                 mov                 ax, cs
+                 mov                 ds, ax
+    ; Change the interrupt vector for int 9h
+                 mov                 ax, 2509h
+                 lea                 dx, my_isr
+                 int                 21h
+    ; Re-enable interrupts
+                 pop                 ds
+                 sti
+endm overrideInt9
+
+restoreInt9 macro
+    ; Restore the original interrupt vector for int 9h
+             cli
+             mov                 ax, origInt9Segment
+             mov                 dx, origInt9Offset
+    
+             push                ds
+             mov                 ds, ax
+
+             mov                 ax, 2509h
+             int                 21h
+    ; Re-enable interrupts
+             pop                 ds
+             sti
+endm resroreInt9
+
 rmBlink macro
+; Remove Blinking from the screen and allowing to use 16 colors as background
     mov ax, 1003h
     mov bl, 00h     ; 00h background intensity enabled , 01h blink enabled
     mov bh, 00h     ; to avoid problems on some adapters
@@ -95,11 +140,43 @@ closeFile macro
     int 21h
 endm closeFile
 
+inputAllFiles macro
+        mov  cx, 0
+        mov  bp, 0
+        mov  dx, offset carFile
+    file_again:
+        push dx
+        push cx
+        call inputFile
+        pop  cx
+        pop  dx
+        add  dx, FILE_NAME_LEN
+        add  bp, BUFF_SIZE
+        inc  cx
+        cmp  cx, 8
+        jnz  file_again
+endm inputAllFiles
+
 showMsg macro str
     mov ah, 09h
     lea dx, str
     int 21h  
 endm showMsg
+
+delayFunc macro
+    mov    ax, 8600H   ; AH = 86h (Delay function), AL = 00h (not used)
+    xor    cx, cx      ; CH = high order byte of delay count, CL = not used
+    mov    dx, 090FFH  ; DL = low order byte of delay count, DH = not used
+    int    15H         ; Call BIOS delay function
+endm delayFunc
+
+intialCarPosition macro
+    mov     user1_posX, SCREEN_WIDTH/2
+    mov     user1_posY, SCREEN_HEIGHT/2
+    setStartPixel
+    mov     bx, 1
+    call    drawCar
+endm intialCarPosition
 
 clear_prev_location MACRO xpos, ypos
     mov     ax, ypos
@@ -197,7 +274,7 @@ update_dir MACRO
     done_update:
 ENDM
 
-add_to_frame MACRO
+add_to_frame macro
     ; (current_frame + bl) % 8
 
     mov ah, 0
@@ -206,4 +283,45 @@ add_to_frame MACRO
     mov cl, 8
     div cl
     mov bl, ah
-ENDM
+endm
+
+carMainLoop macro
+
+    again:
+    ; Delay Function
+             delayFunc
+
+    ; update the location
+    ; copy the current postions into prev_postions
+             mov                 ax, user1_posX
+             mov                 prev_user1_posX, ax
+             mov                 ax, user1_posY
+             mov                 prev_user1_posY, ax
+             update_user1_pos
+
+    ; check if there is a change or not
+             mov                 ax, prev_user1_posX
+             cmp                 ax, user1_posX
+             jnz                 update1                             ; jump to the update if there is a change
+             mov                 ax, prev_user1_posY
+             cmp                 ax, user1_posY
+             jz                  done_all                            ; jump away if there is no change
+
+    update1: 
+             clear_prev_location prev_user1_posX, prev_user1_posY
+    ; draw user
+             mov                 bx, 1                               ; to draw
+             setStartPixel
+             call                drawCar
+
+    done_all:
+             cmp                 killSignal, 0H
+             jnz                 kill
+ 
+             jmp                 again
+
+    kill:    
+    ; restore the original int 9h
+             restoreInt9
+
+endm carMainLoop
