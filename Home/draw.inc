@@ -28,19 +28,13 @@ ENDM
 readImageM MACRO filename
     lea dx, filename
     call readImageP
-    ; cmp errorFlag, 1
-    ; je error_exit
 ENDM
 
 ; call all the necessary procedures to read an image
 readImageP PROC
     call openFile
-    ; jnc noError1       ; Jump if carry flag set (error)
-    ; mov errorFlag, 1h  ; Set the error flag
     noError1:
     call readData
-    ; jnc noError2       ; Jump if carry flag set (error)
-    ; mov errorFlag, 1h  ; set the error flag
     noError2:
     call closeFile
     ret
@@ -99,14 +93,6 @@ UltraGraphicsMode MACRO
   mov AX, 4F02h
   mov BX, 0101h  ; 640x480x256
   int 10h        ; BIOS interrupt for video services
-ENDM
-
-PaintScreen MACRO Color, LeftTopCorner, RightBottomCorner
-  mov ax ,0600h
-  mov bh, Color
-  mov cx, LeftTopCorner
-  mov dx , RightBottomCorner
-  int 10h
 ENDM
 
 paintAreaM MACRO x, y, width, height, color
