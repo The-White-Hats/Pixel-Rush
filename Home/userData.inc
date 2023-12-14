@@ -1,6 +1,6 @@
 mes1 db "Player 1 Name:", '$'
 mes1size equ $ - mes1 - 1
-mes1X equ 40 - 3 - ($ - mes1 - 1)/2
+mes1X equ 40 - 8 - ($ - mes1 - 1)/2
 mes1Y equ 21
 
 mes12 db "Player 2 Name:", '$'
