@@ -32,6 +32,7 @@ MAIN PROC FAR
     MOV AH, 0
     INT 16h
 
+    UltraGraphicsMode
 
     MOV AH,4CH
     INT 21H
