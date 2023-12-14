@@ -93,8 +93,9 @@ getSizedStr PROC
     push di
     xor bh, bh
     getSizedStrLoop:
-    mov ah, 1h          ; get the char
-    int 21h
+    mov ah, 0h          ; get the char
+    int 16h
+    showchar al
     cmp al, 0DH         ; pressed enter
     je getSizedStrEnd   
     cmp al, 8H          ; pressed backspace
