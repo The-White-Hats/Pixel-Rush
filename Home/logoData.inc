@@ -9,6 +9,8 @@ F1button db 'F1B.bin',  0
 F2button db 'F2B.bin',  0
 Exitbutton db 'ExitB.bin',  0
 
+BackgroundColor equ 2AH
+
 buffer_size equ 15560           ; the array size which is gonna be filled with the img data from the .bin file
 buffer db buffer_size dup(?)
 

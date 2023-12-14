@@ -20,7 +20,7 @@ MAIN PROC FAR
 
     ; open graphics mode
     UltraGraphicsMode
-    paintAreaM 0, 0, 640, 480, 2AH  ; paint the screen in orange
+    paintAreaM 0, 0, 640, 480, BackgroundColor  ; paint the screen in orange
     drawLogo
 
     GetPlayersNames

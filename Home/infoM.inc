@@ -10,7 +10,7 @@ GetPlayersNames MACRO
     MoveCursor nameInputX, nameInputY
     getSizedStrM name1, 15d
     checkFirstChar name1, nameWarning
-    paintAreaM 201, 305, 238, 17, 2AH   ; clear 'player 1 name' logo
+    paintAreaM 201, 305, 238, 17, BackgroundColor   ; clear 'player 1 name' logo
     popa
 
     ; second player
@@ -24,9 +24,9 @@ GetPlayersNames MACRO
     getSizedStrM name2, 15d
     checkFirstChar name2, nameWarning
 
-    paintAreaM 210d, 325d, 220d, 50d, 2AH  ; clear the error area
-    paintAreaM 201, 305, 238, 17, 2AH 
-    paintAreaM 135, 464, 369, 11, 2AH 
+    paintAreaM 210d, 325d, 220d, 50d, BackgroundColor  ; clear the error area
+    paintAreaM 201, 305, 238, 17, BackgroundColor 
+    paintAreaM 135, 464, 369, 11, BackgroundColor 
     popa
 ENDM
 
