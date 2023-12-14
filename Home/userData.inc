@@ -16,6 +16,12 @@ warningY equ mes1Y + 2
 warningSize equ $ - 1 - nameWarning
 
 pointsWarning db "Points MUST be a number",'$'
+pWarningX equ 40 - ($ - pointsWarning - 1)/2
+pWarningY equ mes1Y + 2
+pWarningSize equ $ - 1 - pointsWarning
+
+tempPoints db 3 dup('$')
+tempPointsSize db ?
 
 name1 db 16 dup('$')
 name1Size db ?
@@ -27,11 +33,11 @@ name2Size db ?
 
 points2 dw 0
 
-temp dw 0
 
 nameSize equ 15d
 nameInputX equ mes1X + mes1size + 1
 nameInputY equ mes1Y
 
+pointsSize equ 3d
 pointsInputX equ mes2X + mes2size + 1
 pointsInputY equ mes2Y
