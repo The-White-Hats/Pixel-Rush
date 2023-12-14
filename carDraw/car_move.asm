@@ -1,5 +1,4 @@
-; You may customize this and other start-up templates; 
-; The location of this template is c:\emu8086\inc\0_com_template.txt
+
 .MODEL SMALL
 .STACK 64
 .DATA
@@ -13,7 +12,7 @@
 
     CAR_HEIGHT      equ 16
     CAR_WIDTH       equ 16
-
+    
     CAR_OFFSET      equ 5
 
     SCREEN_WIDTH    equ 320
@@ -56,7 +55,6 @@
                     dt  ?
 .CODE
 
-                 include             car_m.inc
                  include             macros.inc
 
 my_isr PROC
