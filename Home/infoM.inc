@@ -208,8 +208,6 @@ checkFirstChar macro buffer, error
     cmp cl, 0           ; check if the buffer size is zero
     jz notValid
 
-    cmp cx, 0
-    je finish
     lodsb
     cmp al, 'A'
     jl notValid
@@ -233,6 +231,45 @@ checkFirstChar macro buffer, error
         jmp invalid
     finish:
 endm checkFirstChar
+
+validatePointsInput macro buffer, error
+    local notValid
+    local finish
+    local invalid
+    local valid
+    
+    invalid:
+    lea si, buffer
+    mov cx, 0
+    mov cl, [buffer+3] ; load buffer size
+    cmp cl, 0           ; check if the buffer size is zero
+    jz notValid
+
+    inc cl
+    valid:
+    dec cl
+    cmp cl, 0
+    je finish
+
+    lodsb
+    cmp al, '0'
+    jl notValid
+    cmp al, '9'
+    jle valid
+
+    notValid:
+        showColoredMsg pointsWarning, 0ch, pWarningSize, pWarningY, pWarningX
+
+        ; clearLineArea nameSize
+        paintAreaM 325d, 353d, 140d, 16d, 01H  ; paint input area in black
+
+        resetBuffer buffer, pointsSize, '$'
+
+        MoveCursor pointsInputX, pointsInputY       ; return the cursor
+        getSizedStrM buffer, 2d
+        jmp invalid
+    finish:
+endm validatePointsInput
 
 ; checkNameChars macro buffer, error
 ;     local valid
@@ -311,6 +348,9 @@ getSizedStrM MACRO buffer, bufferSize
     lea di, buffer
     mov ch, bufferSize
     call getSizedStr
+    add di, bufferSize
+    inc di
+    mov [di], bh
 ENDM
 
 ;get a string in a buffer with a limit on size
@@ -337,9 +377,7 @@ getSizedStr PROC
     cmp bh, ch
     jnz getSizedStrLoop
     getSizedStrEnd:
-    pop di
-    add di, 16d
-    mov [di], bh 
+    pop di 
     ret
 getSizedStr ENDP
 
