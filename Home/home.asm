@@ -34,17 +34,14 @@ MAIN PROC FAR
     getSizedStrM name1, 15d
     checkFirstChar name1, nameWarning
 
-    ; MoveCursor warningX, warningY
-    ; clearLineArea 160D
-
     paintAreaM 160d, 370d, 320d, 17d, 02H  ; clear the error area
     
     showColoredMsg mes2, 0fH, mes2size, mes2y, mes2x
     MoveCursor pointsInputX, pointsInputY
-    ReadVarLenNum points1
+    getSizedStrM tempPoints, 2d
+    validatePointsInput tempPoints, pointsWarning
 
-    ; MoveCursor mes1x, mes1y
-    ; clearLineArea 160D
+    paintAreaM 160d, 370d, 320d, 17d, 02H  ; clear the error area
 
     ; second player
     paintAreaM 160d, 320d, 320d, 79d, 0H  ; paint input area in black
@@ -58,12 +55,15 @@ MAIN PROC FAR
     
     showColoredMsg mes2, 0fH, mes2size, mes2y, mes2x
     MoveCursor pointsInputX, pointsInputY
-    ReadVarLenNum points2
+    getSizedStrM tempPoints, 2d
+    validatePointsInput tempPoints, pointsWarning
     
+    paintAreaM 160d, 370d, 320d, 17d, 02H  ; clear the error area
 
-    MoveCursor 34d, 25
+    ; MoveCursor 34d, 25d
+    ; MoveCursor 34d, 25d
     showmes name1
-    showchar ' '
+    ; showchar ' '
     showmes name2
 
     
