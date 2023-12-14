@@ -1,12 +1,14 @@
 drawLogo MACRO
     readImageM logoUL
-    draw 200, 40, 120, 120
+    draw 200, 20, 120, 120
     readImageM logoUR
-    draw 320, 40, 120, 120
+    draw 320, 20, 120, 120
     readImageM logoLL
-    draw 200, 160, 120, 120
+    draw 200, 140, 120, 120
     readImageM logoLR
-    draw 320, 160, 120, 120
+    draw 320, 140, 120, 120
+    readImageM hackers
+    draw 135, 464, 369, 11
 ENDM
 
 ; draw the image present in the buffer ; you give it the starting coordinates and width and height

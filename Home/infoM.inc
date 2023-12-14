@@ -50,7 +50,7 @@ checkFirstChar macro buffer, error
         showColoredMsg nameWarning, 0ch, warningSize, warningY, warningX
 
         ; clearLineArea nameSize
-        paintAreaM 320d, 336d, 140d, 16d, 01H  ; paint input area in black
+        paintAreaM 250d, 335d, 140d, lineHeight, 0H  ; paint input area in black
 
         resetBuffer buffer, nameSize, '$'
 
@@ -59,46 +59,6 @@ checkFirstChar macro buffer, error
         jmp invalid
     finish:
 endm checkFirstChar
-
-validatePointsInput macro buffer, error
-    local notValid
-    local finish
-    local invalid
-    local valid
-    
-    invalid:
-    lea si, buffer
-    mov cx, 0
-    mov cl, [buffer+3] ; load buffer size
-    cmp cl, 0           ; check if the buffer size is zero
-    jz notValid
-
-    inc cl
-    valid:
-    dec cl
-    cmp cl, 0
-    je finish
-
-    lodsb
-    cmp al, '0'
-    jl notValid
-    cmp al, '9'
-    jle valid
-
-    notValid:
-        showColoredMsg pointsWarning, 0ch, pWarningSize, pWarningY, pWarningX
-
-        ; clearLineArea nameSize
-        paintAreaM 325d, 353d, 140d, 16d, 01H  ; paint input area in black
-
-        resetBuffer buffer, pointsSize, '$'
-
-        MoveCursor pointsInputX, pointsInputY       ; return the cursor
-        getSizedStrM buffer, 2d
-        jmp invalid
-    finish:
-endm validatePointsInput
-
 
 clearLineArea macro width 
     mov ah,9        ; Display
@@ -133,16 +93,18 @@ getSizedStr PROC
     push di
     xor bh, bh
     getSizedStrLoop:
-    mov ah, 1h          ;get the char
+    mov ah, 1h          ; get the char
     int 21h
-    cmp al, 0DH         ;pressed enter
+    cmp al, 0DH         ; pressed enter
     je getSizedStrEnd   
-    cmp al, 8H          ;pressed backspace
+    cmp al, 8H          ; pressed backspace
     jne notBackspace
+    cmp bh, 0           ; handle pressing backspace when no previous input
+    showchar 0
+    jz getSizedStrLoop
     dec di
     mov [di], byte ptr '$'
     dec bh
-    showchar 0
     showchar 8H
     jmp getSizedStrLoop
     notBackspace:
