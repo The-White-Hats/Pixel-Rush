@@ -70,7 +70,7 @@ include draw.inc
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 60
+        MAX_PARTS equ 120
         TIME equ 0
 		WRONGTHRESHOLD equ 20
 

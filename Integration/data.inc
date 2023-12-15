@@ -53,10 +53,10 @@
 ;--------------------------------------------;
 
 ;------------------Generation----------------;
-   ;*----------------------------------COLORS------------------------------------------------------;
-         TEXT_COLOR equ 0           ; DefaultBackground text on BOUNDARY_COLOR2 background
-         SCREEN_ATTR equ 0F0h       ; BOUNDARY_COLOR2 background (high nibble) and DefaultBackground text (low nibble)
-         DASHEDLINEATTR equ 0F0h
+    ;*----------------------------------COLORS------------------------------------------------------;
+         TEXT_COLOR equ 0    ; DefaultBackground text on BOUNDARY_COLOR2 background
+         SCREEN_ATTR equ 0F0h ; BOUNDARY_COLOR2 background (high nibble) and DefaultBackground text (low nibble)
+         DASHEDLINEATTR equ 0F0h ; 
          RED equ 04h
          LIGHT_GREEN equ 0Ah
          GREEN equ 02h
@@ -66,12 +66,12 @@
          BLACK equ 00h
 		 CYAN equ 03h
 		 LIGHT_CYAN equ 0bh	
-		 Magenta equ 05h
 		 Brown equ 06h
 		 BLUE equ 01h 
 		 LIGHT_BLUE equ 09h
 		 PURPLE equ 05h
 		 YELLOW equ 0Eh
+
 		 BOUNDARY_COLOR1 equ BLUE
 		 BOUNDARY_COLOR2 equ RED
 
@@ -86,21 +86,24 @@
 		 POWERUP2_COLOR equ BLUE
 		 POWERUP3_COLOR equ PURPLE
 		 POWERUP4_COLOR equ YELLOW
+		 SEPARATING_LINE_COLOR equ LIGHT_BLUE
          ;*----------------------------------Positions-------------------------------------------------;      
 		 START_X dw 2
          START_Y dw 150
+         START_CAR_X dw 2
+         START_CAR_Y dw 150
          START_DIR db 0
          END_X dw ?
          END_Y dw ?
          ;*----------------------------------BOUNDARY-------------------------------------------------;      
-         MIN_X equ 1
+         MIN_X equ 0
          MAX_X equ 319
-         MIN_Y equ 1
+         MIN_Y equ 0
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 18
-         LINE_LENGTH equ 7
-		 HORIZONTAL_LINE_LENGTH equ 19
+         LINE_WIDTH equ 32
+         LINE_LENGTH equ 6
+		 HORIZONTAL_LINE_LENGTH equ 31
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
 		 END_LINE_LENGTH equ 6 ;!Finish Line
@@ -108,7 +111,7 @@
          EndTrackWidthToggle equ 2
 
          BOUNDARY_WIDTH equ 1
-         BOUNDARY_LENGTH equ 4
+         BOUNDARY_LENGTH equ 3
          DASHEDLINE_LENGTH equ 6
 		 OBSTACLE_WIDTH equ 4
 		 OBSTACLE_LENGTH equ 4
@@ -130,9 +133,9 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 50
+        MAX_PARTS equ 20
         TIME equ 0
-		WRONGTHRESHOLD equ 20
+		WRONGTHRESHOLD equ 12
 
 		prev_start_x dw ?
 		prev_start_y dw ?
@@ -181,18 +184,18 @@
 		modulus DW 0F4bFh 
 		random_part db 0 ; 4 bytes of memory to store the random seed
         
-		helper db 1H
+		
 		divider db 3H
+		helper db 1H
 		random db 0
-		s db 0
 		;*------------------------------------------- CASES -------------------------------------------; 
 		lastRandom db 0
         currentRandom db 0
 		validationFlag db 0
-		casse0 db 0,5,7
+		casse0 db 5,7,0
 		casse1 db 8,10,1
-		casse2 db 2,6,11
-		casse3 db 3,4,9
+		casse2 db 11,2,6
+		casse3 db 9,3,4
 		casse4 db 1,1,1
 		casse5 db 2,2,2
 		casse6 db 1,1,1
@@ -209,6 +212,16 @@
 
 		obstacles dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (bottom left corner)
 		compilationPowerups dw MAX_PARTS*2 dup(0)
+        ;*------------------------------------------- USERS DATA -------------------------------------------;
+		stringcolor db ?
+		user1name db 'Marwan Kofta$' 
+		user2name db 'Youssef Kola$'
+		user1score db 'Score: $'
+		user2score db 'Score: $'
+		user1theme db PURPLE
+		user2theme db CYAN
+		;*--------------------------------------------------------------------------------------------------;
+		
 		compilationPowerupsClrs db MAX_PARTS dup(0) 
 
 		inGamePowerups dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (bottom left corner)
@@ -221,5 +234,5 @@
 		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
 		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array
 		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array
-
+s db 0
 ;-----------------------------------;

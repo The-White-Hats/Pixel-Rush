@@ -1,4 +1,3 @@
-
 SelectType PROC
 	 cmp CurrentCase , 0 
 		jnz casee1
@@ -71,6 +70,7 @@ SelectType PROC
 			mov cornerType,1
 			call  GenerateHorizontalTrack 
 			jmp Done
+		;*--------------------------------------------------------------------;
 		;*-------------------------------Case10/11--------------------------------;
         casee10:
 		    mov horizontalDirection,1
@@ -81,7 +81,7 @@ SelectType PROC
 		ret
 SelectType ENDP
 
-Draw PROC FAR
+Draw PROC
 	mov saveObstaclesCounter,0
 	mov saveCompilationPowerupsCounter,0
 	mov saveCompilationPowerupsClrsCounter,0
@@ -101,7 +101,7 @@ Draw PROC FAR
     add si, 2*MAX_PARTS-2
     mov ax,0
     modify_maxparts:
-	  cmp byte ptr [si],3dh
+	  cmp byte ptr [si],3d
 	  jle Draw_break
 	  inc ax
 	  sub si,2 
@@ -188,8 +188,8 @@ Draw PROC FAR
 		dec cx
 		cmp cx,0 
 		jg iterate_mid 
-
-	pusha ;*--------------------------------------Draw Obstacles----------------------------------------------;
+    ;*--------------------------------------Draw Obstacles----------------------------------------------;
+	pusha 
 	lea si, obstacles
 	mov cx, 0
 	finalDrawObstaclesLoop:
@@ -199,8 +199,8 @@ Draw PROC FAR
 	cmp cx, saveObstaclesCounter
 	jl finalDrawObstaclesLoop
 	popa
-
-	pusha ;*--------------------------------------Draw Powerups----------------------------------------------;
+   ;*--------------------------------------Draw Powerups----------------------------------------------;
+	pusha 
 	lea si, compilationPowerups
 	finalDrawPowerupsLoop:
 	call DrawPower
@@ -213,7 +213,7 @@ Draw PROC FAR
 	ret
 Draw ENDP
 
-GenerateTrackDirections PROC FAR
+GenerateTrackDirections PROC 
     
 	mov cx,0
 	lea si,Directions
@@ -260,6 +260,7 @@ GenerateTrackDirections PROC FAR
 		skipmove:  
 		
     	call specifiedrandom
+
 
 
         cmp random_part , 0 
@@ -671,16 +672,16 @@ GenerateTrackDirections PROC FAR
 				dec TotalParts
                 
 				push bx
-                mov bx,PartWrongsOffset
-                mov ax,0
-                mov [bx],ax
-                sub PartWrongsOffset,2
-                mov ax,[bx-2]
-                inc ax
-                mov [bx-2],ax
-                pop bx
-                cmp ax,WRONGTHRESHOLD
-                jz dont_try
+				mov bx,PartWrongsOffset
+				mov ax,0
+				mov [bx],ax
+				sub PartWrongsOffset,2
+				mov ax,[bx-2]
+				inc ax
+				mov [bx-2],ax
+				pop bx
+				cmp ax,WRONGTHRESHOLD
+				jz dont_try
         	GenerateTrackDir_still:
         ;*-----------------------------------------------;
 
@@ -1113,6 +1114,7 @@ randomizer PROC
 
   inc helper    ; increment helper to insure random value every time
   cmp helper, 11d ; return helper to 1 if it's ffh to avoid dividing by zero
+  cmp helper, 11d ; return helper to 1 if it's ffh to avoid dividing by zero
   jne dontreturn
   mov helper, 1h
   dontreturn:
@@ -1149,7 +1151,7 @@ Delay PROC
 		ret
 Delay ENDP
 
-RandomStart PROC FAR ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1,2,3 , then i will get random piont on this axis
+RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1,2,3 , then i will get random piont on this axis
 	mov divider,4H
 	mov helper,1h
 	call randomizer
@@ -1223,11 +1225,17 @@ RandomStart PROC FAR ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->
 	mov lastRandom,1
 	mov START_DIR,1
 	mov helper,1h
+
+	mov ax,START_X
+	mov START_CAR_X,ax
+	mov ax,START_Y
+	mov START_CAR_Y,ax
+	
 	ret
 RandomStart ENDP
 
 
-FinalLine PROC FAR
+FinalLine PROC
     call ModifyFinalStart
 
     call ModifyDirection
@@ -1252,7 +1260,6 @@ FinalLine PROC FAR
 	loop drawfinalline
 	ret
 FinalLine ENDP
-
 SingleLine PROC
 	   pusha
         mov cx,START_X
@@ -1314,7 +1321,6 @@ SingleLine PROC
         popa
 		ret
 SingleLine ENDP
-
 ModifyFinalStart PROC
 	cmp CurrentCase,0d
 	jnz nextCase9
@@ -1337,7 +1343,6 @@ ModifyFinalStart PROC
 	inc START_X
 	ret
 ModifyFinalStart ENDP
-
 ModifyEachIteration PROC
     cmp CurrentCase,1
 	jg FinalLine_case
@@ -1347,7 +1352,6 @@ ModifyEachIteration PROC
     dec START_Y
 	ret
 ModifyEachIteration ENDP
-
 ModifyDirection PROC
 	mov isvertical,1
 
@@ -1376,6 +1380,7 @@ ModifyDirection PROC
 	mov isup_right,1 
     ret
 ModifyDirection ENDP
+
 	
 GenerateObstaclesPowerUps PROC
 	pusha
@@ -1580,7 +1585,7 @@ DrawObstacle PROC
 		cmp si, 0
 		jnz drawObsLoop
 
-	popa
+		popa
 	ret
 DrawObstacle ENDP
 
@@ -1621,3 +1626,86 @@ DrawPower PROC
 	popa
 	ret
 DrawPower ENDP
+	
+;*--------------------------------------------display string  in si and with color 'stringcolor'------------------------------------------	
+DisplayString PROC
+	pusha
+	display_string:
+		mov ah,9          ;Display
+		mov bh,0          ;!Page does not work here like normal text mode so leave it 0 so that i work properly (noticed this by testing)
+		mov al,[si]       
+		mov cx,1d               ;1 times
+		mov bl,stringcolor       ;?colors are diffrent from text mode
+		int 10h
+		mov ah,2           
+		inc dl
+		int 10h 
+		inc si
+		mov al,[si]
+		cmp al,'$'
+	jnz display_string
+	popa
+	ret
+DisplayString ENDP
+
+DrawScoreBoard PROC
+	pusha
+	;----------------------------------------Display user names and scores----------------------------;
+		;---------------------------Moving Cursor-------------------;
+		mov ah,2           
+		mov dl,1  ;*1.the row can write up to 40 characters one character takes 8 pixels
+		mov dh,20 ;*2.so the screen is 40*24 char  (24 by testing)
+		int 10h 
+
+	lea si , user1name
+	mov cl,user1theme
+	mov stringcolor , cl
+	call DisplayString
+     
+		mov dh,21 
+		int 10h 
+
+	lea si ,user1score
+    call DisplayString
+
+		mov dl,20 
+		mov dh,20 
+		int 10h
+
+	lea si ,user2name
+	mov cl,user2theme
+	mov stringcolor , cl
+    call DisplayString
+    
+		mov dh,21
+		int 10h
+
+	lea si ,user2score
+    call DisplayString
+	popa
+	ret
+;--------------------------------------------------------------------------------------------------;
+DrawScoreBoard ENDP
+
+BackgroundColoring PROC
+    ;---------------------------------------Screen Coloring--------------------------------------------;
+	mov ax ,0600h
+	mov bh,DefaultBackground
+	mov cx,0h
+	mov dl , 79d
+	mov dh , 18d
+	int 10h
+	;-----------------------------------------------------------------------------------------------------; 
+	;----------------------------------------Separating Line----------------------------------------------;
+	mov al,SEPARATING_LINE_COLOR
+	mov cx,0
+	mov dx,MAX_Y+1
+	SEPARATING_LINE_draw:
+		mov ah,0ch
+		int 10h
+		inc cx
+		cmp cx,320
+	jl SEPARATING_LINE_draw
+	;-------------------------------------------------------------------------------------------------;
+	ret
+BackgroundColoring ENDP

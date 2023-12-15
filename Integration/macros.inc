@@ -46,10 +46,10 @@ clearline macro
     int 10h
 endm cearline   
   
-shownum macro num
+shownum macro
     local l1     
     local l2
-     lea bx, num
+     lea bx, s
      mov cx,10
      mov dx,0
      l1:
@@ -171,9 +171,9 @@ delayFunc macro
 endm delayFunc
 
 intialCarPosition macro
-    mov     ax, START_X
+    mov     ax, START_CAR_X
     mov     user1_posX, ax
-    mov     ax, START_Y
+    mov     ax, START_CAR_Y
     mov     user1_posY, ax
 
     ; save the background
