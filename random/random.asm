@@ -9,6 +9,26 @@
 .code
 include pm.inc
 ;description
+; randomizer PROC
+;   pusha
+;   mov ah, 2Ch
+;   int 21H    ; puts the millseconds in dl
+;   mov al, dl ; contain hundreds of seconds
+
+;   mov ah, 0
+;   div helper ; divide ax by the helper which keep changing; puts the quotiant in al , and remainder in ah
+;   mov ah, 0  
+;   div divider
+;   mov random, ah ; puts the remainder in random
+
+;   inc helper    ; increment helper to insure random value every time
+;   cmp helper, 0ffh ; return helper to 1 if it's ffh to avoid dividing by zero
+;   jne dontreturn
+;   mov helper, 1h
+;   dontreturn:
+;   popa
+;   ret
+; randomizer ENDP
 randomizer PROC
   pusha
   mov ah, 2Ch
@@ -16,10 +36,12 @@ randomizer PROC
   mov al, dl ; contain hundreds of seconds
 
   mov ah, 0
-  div helper ; divide ax by the helper which keep changing; puts the quotiant in al , and remainder in ah
-  mov ah, 0  
-  div divider
-  mov random, ah ; puts the remainder in random
+  mul helper ; divide ax by the helper which keep changing; puts the quotiant in al , and remainder in ah
+  xor bx, bx
+  xor dx, dx
+  mov bl, divider
+  div bx
+  mov random, dl ; puts the remainder in random
 
   inc helper    ; increment helper to insure random value every time
   cmp helper, 0ffh ; return helper to 1 if it's ffh to avoid dividing by zero
