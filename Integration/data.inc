@@ -9,7 +9,7 @@
 
     BUFF_SIZE       equ CAR_HEIGHT*CAR_WIDTH
     
-    CAR_OFFSET      equ 5
+    CAR_OFFSET      equ 0
 
 
     FILE_NAME_LEN   equ 10
@@ -203,23 +203,39 @@
 		casse11 db 0,0,0
 		;*------------------------------------------- OBSTACLES AND POWERUPS -------------------------------------------;
 		latestPos db 0
-		nowORthen db 0 ; 0 means now, 1 means then (POWERUPS)
+		nowORthen db 0 ;! 0 means now, 1 means then (POWERUPS)
 		lastType db POWERUP1_COLOR
 		latestType db POWERUP2_COLOR
 
-		obstacles dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (bottom left corner)
+		obstacles dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (center, bottom)
+        
+
 		compilationPowerups dw MAX_PARTS*2 dup(0)
 		compilationPowerupsClrs db MAX_PARTS dup(0) 
 
-		inGamePowerups dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (bottom left corner)
+		inGamePowerups dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (center, bottom)
 		inGamePowerupsClrs db MAX_PARTS dup(0)
 
 
 		saveObstaclesCounter dw 0 ;! offset to add for obstacles array 
+        savePowerObstaclesCounter dw 0 ;! offset to add for obstacles array (MADE FROM POWERUPS)
+
 		saveCompilationPowerupsCounter dw 0 ;! offset to add for compilationPowerups array
 		saveCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
 		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
 		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array
 		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array
+
+        ;*------------------------------------------- EQUIPPING POWERUPS -------------------------------------------;
+        processed_power_holder db 0 ;! 1 means user1, 2 means user2
+        processed_power db 0 ;! 0 means no powerup, 1 means speed up, 2 means slow down, 3 means drop obstacle, 4 means pass through obstacle
+
+        ;! 0 means no powerup, 1 means speed up, 2 means slow down, 3 means drop obstacle, 4 means pass through obstacle
+        user1_stored_powerup db 3
+        user2_stored_powerup db 0 
+
+        ;! stated in the doc that the car can pass through 1 obstacle (didn't mention limitid time)
+        user1_obstacles_passed db 1
+        user2_obstacles_passed db 1
 
 ;-----------------------------------;

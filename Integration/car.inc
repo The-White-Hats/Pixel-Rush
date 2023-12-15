@@ -5,6 +5,27 @@ my_isr PROC
                  cmp                 al, 1h                                        ; pressing the esc key
                  jz                  midKill
 
+                 
+                 cmp                 al, 19h                                       ; pressing the 'p' key for first player power up
+                 jnz                check_user2
+                 mov                processed_power_holder, 1
+                 mov al, user1_stored_powerup
+                 mov processed_power, al
+                 mov user1_stored_powerup, 0
+                 call activatePowerUp
+                 jmp dontKill
+                 
+    check_user2:            
+                 cmp                 al, 10h                                       ; pressing the 'q' key for second player power up
+                 jnz                continue_whatever
+                 mov                processed_power_holder, 2
+                 mov al, user2_stored_powerup
+                 mov processed_power, al
+                 mov user2_stored_powerup, 0
+                 call activatePowerUp
+                 jmp dontKill
+                                                    
+    continue_whatever:
                  lea                 si, user1_dir_arr
                  lea                 di, user1_dir_bools
                  call                CheckDir
@@ -205,3 +226,159 @@ drawCar PROC
                  ret
 
 drawCar ENDP
+
+activatePowerUp PROC
+        
+        cmp processed_power, 0
+        jz activatePowerUp_end
+        cmp processed_power, 1
+        jz activatePowerUp_speedUp
+        cmp processed_power, 2
+        jz activatePowerUp_speedDown
+        cmp processed_power, 3
+        jz activatePowerUp_dropObs
+        cmp processed_power, 4
+        jz activatePowerUp_passObs
+        jmp activatePowerUp_end
+    activatePowerUp_speedUp:
+        call SpeedUp
+        jmp activatePowerUp_end
+    activatePowerUp_speedDown:
+        call SpeedDown
+        jmp activatePowerUp_end
+    activatePowerUp_dropObs:
+        call DropObs
+        jmp activatePowerUp_end
+    activatePowerUp_passObs:
+        call PassObs
+        jmp activatePowerUp_end
+    activatePowerUp_end:
+        mov processed_power, 0
+        mov processed_power_holder, 0
+        ret
+activatePowerUp ENDP
+
+SpeedUp PROC
+        ret
+SpeedUp ENDP
+
+SpeedDown PROC
+        ret
+SpeedDown ENDP
+
+DropObs PROC
+    pusha
+    lea si, obstacles
+    add si, saveObstaclesCounter
+    add si, savePowerObstaclesCounter
+
+    cmp processed_power_holder, 1
+    jz DropObs_user1
+    cmp processed_power_holder, 2
+    jz DropObs_mid_user2
+    jmp DropObs_mid
+    DropObs_user1:
+        cmp current_dir, 2
+        jl DropObs_down1
+        cmp current_dir, 4
+        jl DropObs_left1
+        cmp current_dir, 6
+        jl DropObs_up1
+        cmp current_dir, 8
+        jl DropObs_mid_right1
+
+        DropObs_down1:
+            mov bx, user1_posX
+            mov [si], bx
+            add si, 2
+            mov bx, user1_posY
+            mov [si], bx
+            mov bx, CAR_HEIGHT/2
+            add [si], bx
+            mov bx, OBSTACLE_LENGTH
+            add [si], bx
+            sub si, 2
+            call DrawObstacle
+            add savePowerObstaclesCounter, 4
+            jmp DropObs_end
+        
+        DropObs_left1: 
+            mov bx, user1_posX
+            mov [si], bx
+            mov bx, CAR_HEIGHT/2
+            sub [si], bx
+            mov bx, OBSTACLE_LENGTH
+            sub [si], bx
+            add si, 2
+            mov bx, user1_posY
+            mov [si], bx
+            sub si, 2
+            call DrawObstacle
+            add savePowerObstaclesCounter, 4
+            jmp DropObs_end
+
+            DropObs_mid:
+                jmp DropObs_end
+
+            DropObs_mid_right1:
+                jmp DropObs_right1
+            
+            DropObs_mid_user2:
+                jmp DropObs_user2
+        
+        DropObs_up1:
+            mov bx, user1_posX
+            mov [si], bx
+            add si, 2
+            mov bx, user1_posY
+            mov [si], bx
+            mov bx, CAR_HEIGHT/2
+            sub [si], bx
+            mov bx, OBSTACLE_LENGTH
+            sub [si], bx
+            sub si, 2
+            call DrawObstacle
+            add savePowerObstaclesCounter, 4
+            jmp DropObs_end
+
+        DropObs_right1:
+            mov bx, user1_posX
+            mov [si], bx
+            mov bx, CAR_HEIGHT/2
+            add [si], bx
+            mov bx, OBSTACLE_LENGTH
+            add [si], bx
+            add si, 2
+            mov bx, user1_posY
+            mov [si], bx
+            sub si, 2
+            call DrawObstacle
+            add savePowerObstaclesCounter, 4
+            jmp DropObs_end
+
+    
+        jmp DropObs_end
+    DropObs_user2:
+        
+        jmp DropObs_end
+    DropObs_end:
+        popa
+        ret
+DropObs ENDP
+
+PassObs PROC
+        cmp processed_power_holder, 1
+        jz PassObs_user1
+        cmp processed_power_holder, 2
+        jz PassObs_user2
+        jmp PassObs_end
+    PassObs_user1:
+        dec user1_obstacles_passed
+        jmp PassObs_end
+    PassObs_user2:
+        dec user2_obstacles_passed
+        jmp PassObs_end
+    PassObs_end:
+        ret
+PassObs ENDP
+
