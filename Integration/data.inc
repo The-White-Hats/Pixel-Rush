@@ -101,9 +101,9 @@
          MIN_Y equ 0
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 32
+         LINE_WIDTH equ 15
          LINE_LENGTH equ 6
-		 HORIZONTAL_LINE_LENGTH equ 31
+		 HORIZONTAL_LINE_LENGTH equ 16
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
 		 END_LINE_LENGTH equ 6 ;!Finish Line
@@ -133,12 +133,17 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 20
+        MAX_PARTS equ 100
         TIME equ 0
 		WRONGTHRESHOLD equ 12
 
+        starttime db ?
+
 		prev_start_x dw ?
 		prev_start_y dw ?
+
+        last_success_x dw ?
+        last_success_y dw ?
         
         x_max_new dw ?
         x_min_new dw ?
@@ -214,8 +219,8 @@
 		compilationPowerups dw MAX_PARTS*2 dup(0)
         ;*------------------------------------------- USERS DATA -------------------------------------------;
 		stringcolor db ?
-		user1name db 'Marwan Kofta$' 
-		user2name db 'Youssef Kola$'
+		user1name db 'Marwan$' 
+		user2name db 'Youssef$'
 		user1score db 'Score: $'
 		user2score db 'Score: $'
 		user1theme db PURPLE

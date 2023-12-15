@@ -1395,7 +1395,6 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	ret
 RandomStart ENDP
 
-
 FinalLine PROC
     call ModifyFinalStart
 

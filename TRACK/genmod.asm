@@ -72,10 +72,16 @@ include draw.inc
         
         MAX_PARTS equ 120
         TIME equ 0
-		WRONGTHRESHOLD equ 20
+		WRONGTHRESHOLD equ 5
 
 		prev_start_x dw ?
 		prev_start_y dw ?
+
+		last_success_x dw ?
+        last_success_y dw ?
+		last_success_dir db ?
+
+		currentValididation db ?
         
         x_max_new dw ?
         x_min_new dw ?
@@ -124,7 +130,7 @@ include draw.inc
 		helper db 1H
 		divider db 3H
 		random db 0
-		s db 0
+		
 		;*------------------------------------------- CASES -------------------------------------------; 
 		lastRandom db 0
         currentRandom db 0
@@ -141,7 +147,7 @@ include draw.inc
 		casse9 db 0,0,0
 		casse10 db 3,3,3
 		casse11 db 0,0,0
-        
+        s db 0
 .code
 main proc far
     mov ax, @data
@@ -387,7 +393,7 @@ Draw ENDP
 
 GenerateTrackDirections PROC 
     
-	mov cx,0
+	 mov helper, 1
 	lea si,Directions
 	lea di,ClosedArea
     lea bx,PrevStart
@@ -413,7 +419,8 @@ GenerateTrackDirections PROC
     mov TotalParts,0
 
 	GenerateTrackDir_loop:
-        
+       
+
         mov ax,START_X
 		mov prev_start_x,ax
 		mov ax,START_Y
@@ -429,14 +436,14 @@ GenerateTrackDirections PROC
 		mov al,START_DIR
 		mov lastRandom,al
 
-		skipmove:  
+		skipmove:
 		
     	call specifiedrandom
 
-
-        cmp random_part , 0 
-		jnz case1
+	
+ 		mov cx,0
 		;*-------------------------------Case0--------------------------------;
+		    mov currentValididation,0
 			mov ax,START_X
 			mov x_min_new,ax
 
@@ -456,13 +463,37 @@ GenerateTrackDirections PROC
 			inc ax
 			mov y_min_new,ax
 
-            
-			jmp GenerateTrackDir_FlagCheck
-        ;*--------------------------------------------------------------------;
-		case1:
-		cmp random_part , 1
-		jnz case2
+            call ValidateTrack ;? call ValidateTrack with new x,y
+
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case0_dontincrementCX
+			    mov last_success_dir,0
+				mov ax,START_X
+				mov last_success_x,ax
+				mov ax,START_Y
+				mov last_success_y,ax
+            cmp cl,random 
+			jz case0_Validated 
+
+			jmp case0_bridge
+
+				case0_Validated:
+				
+				jmp Accepted
+
+			case0_bridge:
+
+			inc cx
+            case0_dontincrementCX:
+            mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax
+        
+		;*--------------------------------------------------------------------;
+		
 		;*-------------------------------Case1--------------------------------;
+		    mov currentValididation,1
          	mov ax,START_X
 			mov x_min_new,ax
 
@@ -483,12 +514,37 @@ GenerateTrackDirections PROC
 			mov y_max_new,ax
 
 
-			jmp GenerateTrackDir_FlagCheck    
+		    call ValidateTrack ;? call ValidateTrack with new x,y
+
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case1_dontincrementCX
+				mov last_success_dir,1
+				mov ax,START_X
+				mov last_success_x,ax
+				mov ax,START_Y
+				mov last_success_y,ax
+				
+            cmp cl,random
+			jz case1_Validated 
+
+			jmp case1_bridge
+
+				case1_Validated:
+				
+				jmp Accepted
+
+			case1_bridge:
+
+			inc cx
+            case1_dontincrementCX: 
+			mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax  
         ;*--------------------------------------------------------------------;
-        case2:
-		cmp random_part , 2
-		jnz case3
+
 		;*-------------------------------Case2--------------------------------;
+		    mov currentValididation,2
          	mov ax,START_X
 			mov x_min_new,ax
 
@@ -508,12 +564,37 @@ GenerateTrackDirections PROC
 			inc ax
 			mov y_min_new,ax
 
-			jmp GenerateTrackDir_FlagCheck
+			call ValidateTrack ;? call ValidateTrack with new x,y
+
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case2_dontincrementCX
+			mov last_success_dir,2
+				mov ax,START_X
+				mov last_success_x,ax
+				mov ax,START_Y
+				mov last_success_y,ax
+
+            cmp cl,random 
+			jz case2_Validated 
+
+			jmp case2_bridge
+
+				case2_Validated:
+				
+				jmp Accepted
+
+			case2_bridge:
+
+			inc cx
+            case2_dontincrementCX:
+			mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax
         ;*--------------------------------------------------------------------;
-		case3:
-		cmp random_part , 3
-		jnz case4
+
 		;*-------------------------------Case3--------------------------------;
+		    mov currentValididation,3
             mov ax,START_X
 			mov x_max_new,ax
 
@@ -533,12 +614,37 @@ GenerateTrackDirections PROC
 			inc ax
 			mov y_min_new,ax
 
-			jmp GenerateTrackDir_FlagCheck
+			call ValidateTrack ;? call ValidateTrack with new x,y
+
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case3_dontincrementCX
+			mov last_success_dir,3
+				mov ax,START_X
+				mov last_success_x,ax
+				mov ax,START_Y
+				mov last_success_y,ax
+
+            cmp cl,random 
+			jz case3_Validated 
+
+			jmp case3_bridge
+
+				case3_Validated:
+				
+				jmp Accepted
+
+			case3_bridge:
+
+			inc cx
+            case3_dontincrementCX:
+			mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax
         ;*--------------------------------------------------------------------;
-		case4:
-		cmp random_part , 4
-		jnz case5
+
 		;*-------------------------------Case4--------------------------------;
+			mov currentValididation,4
          	mov ax,[di-2]
 			mov y_max_new,ax
 
@@ -555,12 +661,42 @@ GenerateTrackDirections PROC
 			inc START_X
 			inc START_Y
 
+            cmp random_part,4
+			jnz staynormal
 			jmp SkipValidation
+			staynormal:
+
+			call ValidateTrack ;? call ValidateTrack with new x,y
+
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case4_dontincrementCX
+			mov last_success_dir,4
+				mov ax,START_X
+				mov last_success_x,ax
+				mov ax,START_Y
+				mov last_success_y,ax
+
+            cmp cl,random
+			jz case4_Validated 
+
+			jmp case4_bridge
+
+				case4_Validated:
+				
+				jmp Accepted
+
+			case4_bridge:
+
+			inc cx
+            case4_dontincrementCX:
+			mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax
 		;*--------------------------------------------------------------------;
-		case5:
-		cmp random_part , 5
-		jnz case6
+
 		;*-------------------------------Case5--------------------------------;
+			mov currentValididation,5
          	mov ax,START_X
 			mov x_min_new,ax
 
@@ -579,13 +715,39 @@ GenerateTrackDirections PROC
 			sub ax,BOUNDARY_WIDTH*2
 			inc ax
 			mov y_min_new,ax
+            
+			
+			call ValidateTrack ;? call ValidateTrack with new x,y
 
-			jmp GenerateTrackDir_FlagCheck
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case5_dontincrementCX
+			mov last_success_dir,5
+				mov ax,START_X
+				mov last_success_x,ax
+				mov ax,START_Y
+				mov last_success_y,ax
+
+            cmp cl,random
+			jz case5_Validated 
+
+			jmp case5_bridge
+
+				case5_Validated:
+				
+				jmp Accepted
+
+			case5_bridge:
+
+			inc cx
+            case5_dontincrementCX:
+			mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax
 		;*--------------------------------------------------------------------;
-		case6:
-		cmp random_part , 6
-		jnz case7
+
 		;*-------------------------------Case6--------------------------------;
+			mov currentValididation,6
 			mov ax,[di-2]
 			mov y_max_new,ax
 
@@ -606,15 +768,43 @@ GenerateTrackDirections PROC
 
 			inc START_Y
 
+			cmp random_part,6
+			jnz staynormal2
 			jmp SkipValidation
+			staynormal2:
+			
+			call ValidateTrack ;? call ValidateTrack with new x,y
 
-			 GenerateTrackDir_mid2:
-			jmp GenerateTrackDir_loop
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case6_dontincrementCX
+			mov last_success_dir,6
+				mov ax,START_X
+				mov last_success_x,ax
+				mov ax,START_Y
+				mov last_success_y,ax
+
+            cmp cl,random
+			jz case6_Validated 
+
+			jmp case6_bridge
+									GenerateTrackDir_mid2:
+									jmp GenerateTrackDir_loop
+				case6_Validated:
+				
+				jmp Accepted
+
+			case6_bridge:
+
+			inc cx
+            case6_dontincrementCX:
+            mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax			
 		;*--------------------------------------------------------------------;
-		case7:
-		cmp random_part , 7
-		jnz case8
+
 		;*-------------------------------Case7--------------------------------;
+			mov currentValididation,7
             mov ax,START_X
 			add ax,LINE_WIDTH
 			add ax,BOUNDARY_WIDTH*2
@@ -638,12 +828,38 @@ GenerateTrackDirections PROC
 			inc ax
 			mov y_min_new,ax
 
-		 	jmp GenerateTrackDir_FlagCheck   
+		 	
+			call ValidateTrack ;? call ValidateTrack with new x,y
+
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case7_dontincrementCX
+			mov last_success_dir,7
+				mov ax,START_X
+				mov last_success_x,ax
+				mov ax,START_Y
+				mov last_success_y,ax
+
+            cmp cl,random
+			jz case7_Validated 
+
+			jmp case7_bridge
+
+				case7_Validated:
+				
+				jmp Accepted
+
+			case7_bridge:
+
+			inc cx
+            case7_dontincrementCX:  
+			mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax
 		;*--------------------------------------------------------------------;
-		case8:
-		cmp random_part , 8
-		jnz case9
+
 	    ;*-------------------------------Case8--------------------------------;
+			mov currentValididation,8
          	mov ax,START_X
 			mov x_min_new,ax
 
@@ -665,12 +881,39 @@ GenerateTrackDirections PROC
             ;! updating
 			mov START_Y,ax
 			mov y_max_new,ax
-			jmp GenerateTrackDir_FlagCheck
+			
+			
+			call ValidateTrack ;? call ValidateTrack with new x,y
+
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case8_dontincrementCX
+			mov last_success_dir,8
+				mov ax,START_X
+				mov last_success_x,ax
+				mov ax,START_Y
+				mov last_success_y,ax
+
+            cmp cl,random
+			jz case8_Validated 
+				
+			jmp case8_bridge
+
+				case8_Validated:
+			
+				jmp Accepted
+
+			case8_bridge:
+
+			inc cx
+            case8_dontincrementCX:
+			mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax
 		;*--------------------------------------------------------------------;
-		case9:
-		cmp random_part , 9
-		jnz case10
+
 		;*-------------------------------Case9--------------------------------;
+		    mov currentValididation,9
             mov ax,[di-2]
 			mov y_max_new,ax
 
@@ -690,12 +933,43 @@ GenerateTrackDirections PROC
 			sub ax,BOUNDARY_WIDTH*2					
 			sub ax,LINE_WIDTH
             mov START_Y,ax
+			
+            cmp random_part,9
+			jnz staynormal3
 			jmp SkipValidation
+			staynormal3:
+            
+			call ValidateTrack ;? call ValidateTrack with new x,y
+
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case9_dontincrementCX
+			mov last_success_dir,9
+				mov ax,START_X
+				mov last_success_x,ax
+				mov ax,START_Y
+				mov last_success_y,ax
+
+            cmp cl,random
+			jz case9_Validated 
+				
+			jmp case9_bridge
+
+				case9_Validated:
+				
+				jmp Accepted
+
+			case9_bridge:
+
+			inc cx
+            case9_dontincrementCX:
+            mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax
 		;*--------------------------------------------------------------------;
-		case10:
-		cmp random_part , 10
-		jnz case11
+
 		;*-------------------------------Case10--------------------------------;
+			mov currentValididation,10
          	mov ax,START_X
 			add ax,LINE_WIDTH
 			add ax,BOUNDARY_WIDTH*2
@@ -722,12 +996,38 @@ GenerateTrackDirections PROC
 
 			mov y_max_new,ax
 
-			jmp GenerateTrackDir_FlagCheck
+			
+			call ValidateTrack ;? call ValidateTrack with new x,y
+
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case10_dontincrementCX
+			mov last_success_dir,10
+				mov ax,START_X
+				mov last_success_x,ax
+				mov ax,START_Y
+				mov last_success_y,ax
+
+            cmp cl,random
+			jz case10_Validated 
+				
+			jmp case10_bridge
+
+				case10_Validated:
+				
+				jmp Accepted
+
+			case10_bridge:
+
+			inc cx
+            case10_dontincrementCX:
+			mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax
 		;*---------------------------------------------------------------------;
-		case11:
-		cmp random_part , 11 
-		jnz GenerateTrackDir_FlagCheck
+
 		;*-------------------------------Case11--------------------------------;
+			mov currentValididation,11
 			mov ax,[di-2]
 			mov y_max_new,ax
 
@@ -752,21 +1052,54 @@ GenerateTrackDirections PROC
 			sub ax,BOUNDARY_WIDTH*2					
 			sub ax,LINE_WIDTH
             mov START_Y,ax
-			
+
+			cmp random_part,11
+			jnz staynormal4
 			jmp SkipValidation
+			staynormal4:
 			
-		    GenerateTrackDir_mid:
-			jmp GenerateTrackDir_mid2
+			call ValidateTrack ;? call ValidateTrack with new x,y
+
+		    cmp TrackCheckFlag,0 ;? check if it is valid
+            jz case11_dontincrementCX
+			mov last_success_dir,11
+			mov ax,START_X
+			mov last_success_x,ax
+			mov ax,START_Y
+			mov last_success_y,ax
+
+            cmp cl,random
+			jz case11_Validated 
+			
+			jmp case11_bridge
+
+				case11_Validated:
+				jmp Accepted
+									GenerateTrackDir_mid:
+									jmp GenerateTrackDir_mid2
+			case11_bridge:
+
+			inc cx
+            case11_dontincrementCX:
+			mov ax,prev_start_x
+			mov START_X,ax
+			mov ax,prev_start_y
+			mov START_Y,ax
 		;*---------------------------------------------------------------------;
-	    GenerateTrackDir_FlagCheck:
-        
-        call ValidateTrack ;? call ValidateTrack with new x,y
+		cmp cx,0
+		jnz Accepted
+	    jmp GenerateTrackDir_wrong
+	
+            Accepted:
 
-		cmp TrackCheckFlag,1 ;? check if it is valid
-        jnz GenerateTrackDir_wrong
+            mov ax,last_success_x
+			mov START_X,ax
+			mov ax,last_success_y
+			mov START_Y,ax
+			mov al, last_success_dir
+			mov random_part,al
 
-            SkipValidation:
-
+           SkipValidation:
 			mov ax,x_min_new
 			mov [di],ax
 			mov ax,x_max_new
@@ -799,36 +1132,15 @@ GenerateTrackDirections PROC
         ;*----------------Wrong Direction-----------------;
         GenerateTrackDir_wrong:
 
-			mov ax,prev_start_x
-			mov START_X,ax
-			mov ax,prev_start_y
-			mov START_Y,ax
-
-			cmp lastRandom,4
-			jge dont_try
-
-            inc WrongCounter
-
-			jmp jadksl
+			jmp dont_try
              GenerateTrackDir_mid6:
 			 jmp  GenerateTrackDir_mid3
-			jadksl:
+			dont_try:
 
-			cmp WrongCounter,WRONGTHRESHOLD
-			jnz GenerateTrackDir_still
-			    dont_try:
-
-                dec cx
-				mov WrongCounter,0
-	
 				cmp TotalParts,0
 				jz GenerateTrackDir_still
-
 			
 				sub si,2
-
-				mov ax,[si-2]
-		        mov lastRandom,al
 
 				sub di,8
 
@@ -844,16 +1156,18 @@ GenerateTrackDirections PROC
                 
 				push bx
 				mov bx,PartWrongsOffset
-				mov [bx],0
+				mov ax,0
+				mov [bx],ax
 				sub PartWrongsOffset,2
-				inc [bx-2]
 				mov ax,[bx-2]
+				inc ax
+				mov [bx-2],ax
 				pop bx
 				cmp ax,WRONGTHRESHOLD
 				jz dont_try
+				
         	GenerateTrackDir_still:
         ;*-----------------------------------------------;
-
 		cmp TotalParts,MAX_PARTS
 	jnz GenerateTrackDir_mid6
 	ret
@@ -911,8 +1225,8 @@ ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values 
 	jle for1
 
     ValidateTrack_skip:
-
     mov TrackCheckFlag,1
+	call CheckCases
 	popa
 	ret 
    
@@ -1281,7 +1595,7 @@ randomizer PROC
   mov random, ah ; puts the remainder in random
 
   inc helper    ; increment helper to insure random value every time
-  cmp helper, 0ffh ; return helper to 1 if it's ffh to avoid dividing by zero
+  cmp helper, 05d ; return helper to 1 if it's ffh to avoid dividing by zero
   jne dontreturn
   mov helper, 1h
   dontreturn:
@@ -1307,7 +1621,34 @@ specifiedrandom PROC
 	popa
 	ret
 ENDP
+CheckCases PROC
+	pusha
+	mov al, lastRandom
+    mov bl, 3
+    mul bl
+    mov bh, 0
+    mov bl, al
 
+    mov al, casse0[bx]
+	cmp al,currentValididation
+	jz ok
+
+	mov al, casse0[bx+1]
+	cmp al,currentValididation
+	jz ok
+
+	mov al, casse0[bx+2]
+	cmp al,currentValididation
+	jz ok
+
+	mov TrackCheckFlag,0
+	popa
+	ret
+
+	ok:
+	popa
+	ret
+CheckCases ENDP
 Delay PROC
 	    pusha
 		MOV AH, 86h ; BIOS delay function

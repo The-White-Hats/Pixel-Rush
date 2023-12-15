@@ -39,13 +39,10 @@ MAIN PROC FAR
           inputAllFiles
 
      ; Generate Track
-          
-          call              RandomStart
-          mov               helper, 1
+          ; call              RandomStart
           call              GenerateTrackDirections
           call              Draw
           call              FinalLine
-
 
      ; draw intial position of the player's cars
           intialCarPosition
