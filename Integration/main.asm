@@ -29,17 +29,23 @@ MAIN PROC FAR
           mov               es, ax
 
      ; Screen Coloring
-          colorScreen       DefaultBackground
+          
+	    call DrawScoreBoard
+
+	    call BackgroundColoring
+		
 					    
      ; Input files
           inputAllFiles
 
      ; Generate Track
+          
           call              RandomStart
           mov               helper, 1
           call              GenerateTrackDirections
           call              Draw
           call              FinalLine
+
 
      ; draw intial position of the player's cars
           intialCarPosition
