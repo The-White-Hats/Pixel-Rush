@@ -29,7 +29,7 @@ MAIN PROC FAR
           mov               es, ax
 
      ; Screen Coloring
-          colorScreen       BACK_GROUND
+          colorScreen       DefaultBackground
 					    
      ; Input files
           inputAllFiles

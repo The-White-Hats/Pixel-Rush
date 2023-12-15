@@ -1252,6 +1252,7 @@ FinalLine PROC FAR
 	loop drawfinalline
 	ret
 FinalLine ENDP
+
 SingleLine PROC
 	   pusha
         mov cx,START_X

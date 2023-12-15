@@ -171,36 +171,29 @@ delayFunc macro
 endm delayFunc
 
 intialCarPosition macro
-    mov     user1_posX, SCREEN_WIDTH/2
-    mov     user1_posY, SCREEN_HEIGHT/2
-    setStartPixel
+    mov     ax, START_X
+    mov     user1_posX, ax
+    mov     ax, START_Y
+    mov     user1_posY, ax
+
+    ; save the background
+    setStartPixel user1_posX, user1_posY
     mov     bx, 1
+    call    setBackground
+
+    ; draw the car
     call    drawCar
 endm intialCarPosition
 
-clear_prev_location MACRO xpos, ypos
+setStartPixel MACRO xpos, ypos
+    ; location => SCREEN_WIDTH*(ypos - CAR_HEIGHT/2) + xpos - CAR_WIDTH/2
+    
     mov     ax, ypos
     sub     ax, CAR_HEIGHT/2
     mov     cx, SCREEN_WIDTH
     mul     cx
     add     ax, xpos
     sub     ax, CAR_WIDTH/2
-
-    mov     di, ax
-    mov     bx, 0   ; to clear
-    call    drawCar 
-ENDM
-
-setStartPixel MACRO
-    ; location => SCREEN_WIDTH*(user1_posY - CAR_HEIGHT/2) + user1_posX - CAR_WIDTH/2
-
-    mov     ax, user1_posY
-    sub     ax, CAR_HEIGHT/2
-    mov     cx, SCREEN_WIDTH
-    mul     cx
-    add     ax, user1_posX
-    sub     ax, CAR_WIDTH/2
-
     mov     di, ax
 ENDM
 
@@ -308,11 +301,17 @@ carMainLoop macro
              jz                  done_all                            ; jump away if there is no change
 
     update1: 
-             clear_prev_location prev_user1_posX, prev_user1_posY
-    ; draw user
-             mov                 bx, 1                               ; to draw
-             setStartPixel
-             call                drawCar
+    ; remove car and draw background
+             setStartPixel prev_user1_posX, prev_user1_posY
+             mov                bx, 0
+             call               setBackground
+
+    ; save the background
+             setStartPixel user1_posX, user1_posY
+             mov                bx, 1
+             call               setBackground
+    ; draw the car
+             call               drawCar
 
     done_all:
              cmp                 killSignal, 0H

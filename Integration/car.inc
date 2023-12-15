@@ -128,8 +128,49 @@ CheckDir ENDP
 
     ;-----------------------
 
-; Set bx => 1 to draw the car - 0 to clear it
+; Set bx => 1 to save the background - 0 to draw it
+setBackground PROC
+                ; set source => screen - distination => current_background
+                sub     di, (SCREEN_WIDTH * CAR_OFFSET) + CAR_OFFSET
+                mov     si, offset current_background
+
+                mov     cx, CAR_HEIGHT + CAR_OFFSET*2                ; number of lines
+    background_outerLoop:   
+                mov     dx, CAR_WIDTH + CAR_OFFSET*2                 ; number of pixels
+    background_innerLoop:   
+                cmp     byte ptr [si], 250
+                jz      background_skip_pixel
+                
+                cmp     bx, 1
+                jz      background_save
+    
+    background_draw:
+                movsb
+                jmp     background_continue
+
+    background_save:
+                mov     ax, es:[di]
+                mov     [si], ax
+
+    background_skip_pixel:        
+                inc     si
+                inc     di
+
+    background_continue:    
+                dec     dx
+                jnz     background_innerLoop
+
+                add     di, SCREEN_WIDTH - CAR_WIDTH - (CAR_OFFSET*2) ; move to next line    
+                loop    background_outerLoop
+
+                ret
+
+setBackground ENDP
+    
+    ;-----------------------
+
 drawCar PROC
+                 setStartPixel user1_posX, user1_posY
                  mov                 si, offset car
 
     ; set the car frame
@@ -139,48 +180,27 @@ drawCar PROC
                  mul                 cx
                  add                 si, ax
 
-                 mov                 al, BACK_GROUND
-
                  mov                 cx, CAR_HEIGHT                                ; number of lines to draw
-                 cmp                 bx, 0                                         ; 0 -> clear , 1 -> draw
-                 jnz                 outerLoop
-                 add                 cx, CAR_OFFSET*2
-                 sub                 di, SCREEN_WIDTH * CAR_OFFSET + CAR_OFFSET
-    outerLoop:   
+    car_outerLoop:   
 
                  mov                 dx, CAR_WIDTH                                 ; number of pixels to draw
-                 cmp                 bx, 0                                         ; 0 -> clear , 1 -> draw
-                 jnz                 innerLoop
-                 add                 dx, CAR_OFFSET*2
-    innerLoop:   
+    car_innerLoop:   
                  cmp                 byte ptr [si], 250
-                 jz                  skip_pixel
-
-                 cmp                 bx, 0                                         ; 0 -> clear , 1 -> draw
-                 jz                  clear_car
-
-    draw_car:    
+                 jz                  car_skip_pixel
+  
                  movsb
-                 jmp                 continue
-              
-    clear_car:   
-                 stosb
-                 jmp                 continue
+                 jmp                 car_continue
 
-    skip_pixel:        
+    car_skip_pixel:        
                  inc                 si
                  inc                 di
 
-    continue:    
+    car_continue:    
                  dec                 dx
-                 jnz                 innerLoop
+                 jnz                 car_innerLoop
 
-                 add                 di, SCREEN_WIDTH - CAR_WIDTH                  ; move to next line
-                 cmp                 bx, 0                                         ; 0 -> clear , 1 -> draw
-                 jnz                 done_car
-                 sub                 di, CAR_OFFSET*2
-    done_car:    
-                 loop                outerLoop
+                 add                 di, SCREEN_WIDTH - CAR_WIDTH                  ; move to next line 
+                 loop                car_outerLoop
 
                  ret
 

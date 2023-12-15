@@ -1,16 +1,16 @@
 
+;------------------General---------------------;
+    SCREEN_WIDTH    equ 320
+    SCREEN_HEIGHT   equ 200
+
 ;---------------------Car-----------------------;
-    BACK_GROUND     equ 0Ah
-
-    BUFF_SIZE       equ 16*16
-
     CAR_HEIGHT      equ 16
     CAR_WIDTH       equ 16
+
+    BUFF_SIZE       equ CAR_HEIGHT*CAR_WIDTH
     
     CAR_OFFSET      equ 5
 
-    SCREEN_WIDTH    equ 320
-    SCREEN_HEIGHT   equ 200
 
     FILE_NAME_LEN   equ 10
     ;------------Files-------------;
@@ -27,8 +27,10 @@
     
     ;------------Car Directions---------;
     car             db  8 dup (BUFF_SIZE dup(?))
-
                     dt  ?
+    ;-----------Saved Background---------;
+    current_background  db ((CAR_HEIGHT+(2*CAR_OFFSET))*(CAR_WIDTH+(2*CAR_OFFSET))) dup(?)
+                        dt  ?
 
     ; start from 0 on up and move clockwise
     current_frame   db  0
