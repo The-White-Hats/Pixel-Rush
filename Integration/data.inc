@@ -202,6 +202,8 @@
 		casse10 db 3,3,3
 		casse11 db 0,0,0
 		;*------------------------------------------- OBSTACLES AND POWERUPS -------------------------------------------;
+        POWERUP_SHOW_DELAY equ 5fh
+
 		latestPos db 0
 		nowORthen db 0 ;! 0 means now, 1 means then (POWERUPS)
 		lastType db POWERUP1_COLOR
@@ -223,8 +225,15 @@
 		saveCompilationPowerupsCounter dw 0 ;! offset to add for compilationPowerups array
 		saveCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
 		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
-		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array
-		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array
+		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array (Insertion)
+		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array (Insertion)
+        loadInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array (Loading)
+        loadInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array (Loading)
+
+
+        generatedPowerupSource dw 0 ;! 0 means compilationPowerups, 1 means inGamePowerups
+
+        showPowerupsCounter dw POWERUP_SHOW_DELAY
 
         ;*------------------------------------------- EQUIPPING POWERUPS -------------------------------------------;
         processed_power_holder db 0 ;! 1 means user1, 2 means user2

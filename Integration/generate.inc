@@ -201,6 +201,7 @@ Draw PROC FAR
 	popa
 
 	pusha ;*--------------------------------------Draw Powerups----------------------------------------------;
+	mov generatedPowerupSource, 0
 	lea si, compilationPowerups
 	finalDrawPowerupsLoop:
 	call DrawPower
@@ -890,7 +891,7 @@ GenerateVerticalTrack PROC ;! Dependent on the START_X and START_Y  and does not
 				mov ah,0ch
 				int 10h
                 
-				;---------------------------------------change posy according to vertical direction if up dec and cmp with start - length if down inc and cmp with start+length ----------------------------------------------;
+				;--------change posy according to vertical direction if up dec and cmp with start - length if down inc and cmp with start+length --------;
 				cmp verticaldirection ,0 
 				jnz down  
 				dec posy
@@ -1137,7 +1138,7 @@ specifiedrandom PROC
 	mov random_part,al
 	popa
 	ret
-ENDP
+specifiedrandom ENDP 
 
 Delay PROC
 	    pusha
@@ -1383,10 +1384,10 @@ GenerateObstaclesPowerUps PROC
 	call randomizer ; randomize the existence of an obstacle
 	call randomizer 
 	call randomizer 
-	cmp random, 1
+	cmp random, 0
 	jg power1
 	mov al, OBSTACLE_COLOR
-	jmp initiateDraw
+	jmp initiateDraw2
 	power1:
 
 	mov divider, 2H   ; randomize the powerup, draw or save for later
@@ -1425,6 +1426,7 @@ GenerateObstaclesPowerUps PROC
 	mov ah, lastType
 	mov latestType, ah
 	mov lastType, al
+	initiateDraw2:
 	mov divider, 3H
 	call randomizer ; randomize the position of the obstacle
 	cmp random, 0
@@ -1520,7 +1522,7 @@ GenerateObstaclesPowerUps PROC
 	jmp endGenerateObstaclesPowerUps
 
 	savePowerUps:
-	cmp nowORthen, 0
+	cmp nowORthen, 1
 	jnz saveForLater
 	lea si, compilationPowerups
 	add si, saveCompilationPowerupsCounter
@@ -1593,8 +1595,18 @@ DrawPower PROC
 	mov horizontalDirection, 0
 	mov si, POWERUP_WIDTH
 	push bx
+	cmp generatedPowerupSource, 0
+	jnz drawInGamePowerup
 	lea bx, compilationPowerupsClrs
 	add bx, loadCompilationPowerupsClrsCounter
+	jmp continueDrawPower
+
+	drawInGamePowerup:
+	lea bx, inGamePowerupsClrs
+	add bx, loadInGamePowerupsClrsCounter
+
+
+	continueDrawPower:
 	mov al, [bx]
 	pop bx
 	mov ah, 0ch
