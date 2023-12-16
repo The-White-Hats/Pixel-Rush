@@ -13,6 +13,8 @@ include userData.inc
 include draw.inc
 include infoM.inc
 
+
+
 MAIN PROC FAR
     MOV AX,@DATA
     MOV DS,AX
@@ -20,7 +22,8 @@ MAIN PROC FAR
 
     ; open graphics mode
     UltraGraphicsMode
-    paintAreaM 0, 0, 640, 480, BackgroundColor  ; paint the screen in orange
+    
+    putWallPaperM 14, 10, 0, 0
     drawLogo
 
     GetPlayersNames

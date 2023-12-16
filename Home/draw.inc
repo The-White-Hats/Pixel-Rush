@@ -1,3 +1,12 @@
+putWallPaperM MACRO bgCR1, bgRR1, bgCS1, bgRS1
+    mov bgCR, bgCR1
+    mov bgRR, bgRR1
+    mov bgCS, bgCS1
+    mov bgRS, bgRS1
+    readImageM wallpaper
+    call putWallPaperP
+ENDM
+
 drawLogo MACRO
     readImageM logoUL
     draw 200, 20, 120, 120
@@ -79,16 +88,21 @@ closeFile ENDP
 
 ; draws an image using interrupt
 drawP PROC
+    pusha
     lea si, buffer
     mov dx, Ystart
     mov ah, 0ch
     rowLoop:
+    cmp dx, ScreenHeight
+    jge  drawPFinish
     mov cx, Xstart
     columnLoop:
     mov al, [si]
     inc si
     cmp al, 250D
     je skip
+    cmp cx, ScreenWidth
+    jge skip
     int 10h
     skip:
     inc cx
@@ -97,6 +111,8 @@ drawP PROC
     inc dx
     cmp dx, Ylimit
     jnz rowLoop
+    drawPFinish:
+    popa
     ret
 drawP ENDP
 
@@ -133,3 +149,24 @@ paintAreaP PROC
     jnz paintAreaRowLoop
     ret
 paintAreaP ENDP
+
+putWallPaperP PROC
+    pusha
+    mov al, bgCR
+    mov cx, bgCS
+    putWallPaperPColumnLoop:
+    mov ah, bgRR
+    mov dx, bgRS
+    putWallPaperPRowLoop:
+    draw cx, dx, bgSize, bgSize
+    dec ah
+    add dx, bgSize
+    cmp ah, 0
+    jnz putWallPaperPRowLoop
+    dec al
+    add cx, bgSize
+    cmp al, 0
+    jnz putWallPaperPColumnLoop
+    popa
+    ret
+putWallPaperP ENDP

@@ -6,27 +6,24 @@ GetPlayersNames MACRO
     readImageM firstPN
     draw 220, 305, 199, 15
 
-    ; showColoredMsg mes1, 0fH, mes1size, mes1y, mes1x
     MoveCursor nameInputX, nameInputY
     getSizedStrM name1, 15d
     checkFirstChar name1, nameWarning
-    paintAreaM 201, 305, 238, 17, BackgroundColor   ; clear 'player 1 name' logo
     popa
 
     ; second player
     pusha
     readImageM secondPN
-    draw 220, 305, 199, 15
+    draw 220, 305, 199, 15                ; draw second player input msg
     paintAreaM 212d, 325d, 216d, 50d, 0H  ; paint input area in black
 
-    ; showColoredMsg mes12, 0fH, mes1size, mes1y, mes1x
     MoveCursor nameInputX, nameInputY
     getSizedStrM name2, 15d
     checkFirstChar name2, nameWarning
 
-    paintAreaM 210d, 325d, 220d, 50d, BackgroundColor  ; clear the error area
-    paintAreaM 201, 305, 238, 17, BackgroundColor 
-    paintAreaM 135, 464, 369, 11, BackgroundColor 
+    putWallPaperM 7, 2, 3*bgSize, 6*bgSize  ; recover the area with the wallpaper
+
+    paintAreaM 0, 430d, 640d, 50d, 0H
     popa
 ENDM
 
