@@ -1,5 +1,4 @@
 include macros.inc
-
 .286
 public GameMain
 extrn user1name:BYTE
@@ -8,10 +7,12 @@ extrn user2name:BYTE
 .STACK 128
 .DATA
           include data.inc
+          include logoData.inc
 
 .CODE
           include           generate.inc
           include           car.inc
+          include           draw.inc
 
 GameMain PROC FAR
      ; initialize memory
@@ -33,17 +34,17 @@ GameMain PROC FAR
 
      ; Screen Coloring
           
-	    call DrawScoreBoard
-
-	    call BackgroundColoring
-		
+	    
+          putWallPaperM 14, 10, 0, 0
+	    
+		call DrawScoreBoard
 					    
      ; Input files
           inputAllFiles
 
      ; Generate Track
          
-          call              Draw
+          call              DrawTrack
           call              FinalLine
 
 

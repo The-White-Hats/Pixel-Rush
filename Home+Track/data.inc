@@ -56,26 +56,11 @@
 
 ;------------------Generation----------------;
     ;*----------------------------------COLORS------------------------------------------------------;
-         TEXT_COLOR equ 0    ; DefaultBackground text on BOUNDARY_COLOR2 background
          SCREEN_ATTR equ 0F0h ; BOUNDARY_COLOR2 background (high nibble) and DefaultBackground text (low nibble)
          DASHEDLINEATTR equ 0F0h ; 
-         RED equ 04h
-         LIGHT_GREEN equ 0Ah
-         GREEN equ 02h
-         LIGHT_GRAY equ 07h
-         GRAY equ 08h
-         WHITE equ 0Fh
-         BLACK equ 00h
-		 CYAN equ 03h
-		 LIGHT_CYAN equ 0bh	
-		 Brown equ 06h
-		 BLUE equ 01h 
-		 LIGHT_BLUE equ 09h
-		 PURPLE equ 05h
-		 YELLOW equ 0Eh
-
-		 BOUNDARY_COLOR1 equ BLUE
-		 BOUNDARY_COLOR2 equ RED
+         
+		 BOUNDARY_COLOR1 equ LIGHT_ORANGE
+		 BOUNDARY_COLOR2 equ EXTRA_LIGHT_GRAY
 
 		 EndTrackColor1 db BLACK ;!Finish Line
 		 EndTrackColor2 db WHITE ;!Finish Line
@@ -135,7 +120,7 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 90
+        MAX_PARTS equ 50
         TIME equ 0
 		WRONGTHRESHOLD equ 12
 
@@ -226,8 +211,8 @@
         userscore db 0
         user1score db 0
 		user2score db 0
-		user1theme db PURPLE
-		user2theme db CYAN
+		user1theme db LIGHT_BLUE
+		user2theme db RED
         usernextpart db  1
         user1nextpart db 1
         user2nextpart db 1

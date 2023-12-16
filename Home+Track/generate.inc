@@ -81,7 +81,7 @@ SelectType PROC
 		ret
 SelectType ENDP
 
-Draw PROC
+DrawTrack PROC
 	pusha
 	mov saveObstaclesCounter,0
 	mov saveCompilationPowerupsCounter,0
@@ -214,7 +214,7 @@ Draw PROC
 	popa
 popa
 	ret
-Draw ENDP
+DrawTrack ENDP
 
 GenerateTrackDirections PROC 
 	Restart:

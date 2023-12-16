@@ -52,23 +52,23 @@ ENDM
 
 ; call all the necessary procedures to read an image
 readImageP PROC
-    call openFile
+    call openFile_Home
     noError1:
     call readData
     noError2:
-    call closeFile
+    call closeFile_Home
     ret
 readImageP ENDP
 
 ;opens a file given the offset of the file name in dx
 ; you need first to move the offset of the file name to dx 
 ; lea dx, filename
-openFile PROC
+openFile_Home PROC
     mov ah, 03Dh
     mov al, 0 ; open attribute: 0 - read-only, 1 - write-only, 2 -read&write
     int 21h
     ret
-openFile ENDP
+openFile_Home ENDP
 
 ; read the data form the opened file
 readData PROC
@@ -80,11 +80,11 @@ readData PROC
     ret
 readData ENDP
 
-closeFile PROC
+closeFile_Home PROC
     mov ah, 3Eh         ; DOS function: close file
     INT 21H
     ret
-closeFile ENDP
+closeFile_Home ENDP
 
 ; draws an image using interrupt
 drawP PROC
@@ -100,11 +100,11 @@ drawP PROC
     mov al, [si]
     inc si
     cmp al, 250D
-    je skip
+    je skip_drawP
     cmp cx, ScreenWidth
-    jge skip
+    jge skip_drawP
     int 10h
-    skip:
+    skip_drawP:
     inc cx
     cmp cx, Xlimit
     jne columnLoop
