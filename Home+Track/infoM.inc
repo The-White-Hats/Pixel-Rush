@@ -7,8 +7,8 @@ GetPlayersNames MACRO
     draw 220, 305, 199, 15
 
     MoveCursor nameInputX, nameInputY
-    getSizedStrM name1, 15d
-    checkFirstChar name1, nameWarning
+    getSizedStrM user1name, 15d
+    checkFirstChar user1name, nameWarning
     popa
 
     ; second player
@@ -18,8 +18,8 @@ GetPlayersNames MACRO
     paintAreaM 212d, 325d, 216d, 50d, 0H  ; paint input area in black
 
     MoveCursor nameInputX, nameInputY
-    getSizedStrM name2, 15d
-    checkFirstChar name2, nameWarning
+    getSizedStrM user2name, 15d
+    checkFirstChar user2name, nameWarning
 
     putWallPaperM 7, 2, 3*bgSize, 6*bgSize  ; recover the area with the wallpaper
 
