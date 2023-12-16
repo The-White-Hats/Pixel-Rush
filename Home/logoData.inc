@@ -8,7 +8,7 @@ secondPN db 'P2N.bin', 0
 F1button db 'F1B.bin',  0
 F2button db 'F2B.bin',  0
 Exitbutton db 'ExitB.bin',  0
-wallpaper db 'w2.bin', 0
+wallpaper db 'w1.bin', 0
 
 BackgroundColor equ 2AH
 ScreenWidth equ 640d
