@@ -220,8 +220,8 @@
 		compilationPowerups dw MAX_PARTS*2 dup(0)
         ;*------------------------------------------- USERS DATA -------------------------------------------;
 		stringcolor db ?
-		user1name db 'Marwan$' 
-		user2name db 'Youssef$'
+		;user1name db 'Marwan$' 
+		;user2name db 'Youssef$'
 		scorename db 'Score: $'
         userscore db 0
         user1score db 0

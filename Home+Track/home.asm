@@ -3,6 +3,7 @@
 ;---------------------------------------
 .286
 extrn GameMain:far
+public user1name,user2name
 .MODEL SMALL
 .STACK 32
 ;---------------------------------------

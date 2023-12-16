@@ -2,6 +2,8 @@ include macros.inc
 
 .286
 public GameMain
+extrn user1name:BYTE
+extrn user2name:BYTE
 .MODEL SMALL
 .STACK 128
 .DATA
