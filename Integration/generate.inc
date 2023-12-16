@@ -101,7 +101,7 @@ Draw PROC
     add si, 2*MAX_PARTS-2
     mov ax,0
     modify_maxparts:
-	  cmp [si],3d
+	  cmp  [si],3d
 	  jle Draw_break
 	  inc ax
 	  sub si,2 
@@ -224,7 +224,7 @@ GenerateTrackDirections PROC
 	mov starttime,al
 
     mov helper,1
-	mov cx,0
+
 	lea si,Directions
 	lea di,ClosedArea
     lea bx,PrevStart
@@ -255,8 +255,10 @@ GenerateTrackDirections PROC
 		int 21H    ; puts the millseconds in dl
 		mov al, dl ; contain hundreds of seconds
 		sub al,starttime
-		cmp al,100
-		jg Restart
+		cmp al,50
+		jge Restart
+		cmp starttime,al
+		jl Restart
        popa
 
         mov ax,START_X
@@ -664,7 +666,6 @@ GenerateTrackDirections PROC
 			jnz GenerateTrackDir_still
 			    dont_try:
 
-                dec cx
 				mov WrongCounter,0
 	
 				cmp TotalParts,0
@@ -672,9 +673,6 @@ GenerateTrackDirections PROC
 
 			
 				sub si,2
-
-				mov ax,[si-2]
-		        mov lastRandom,al
 
 				sub di,8
 
@@ -1130,7 +1128,7 @@ randomizer PROC
   mov random, ah ; puts the remainder in random
 
   inc helper    ; increment helper to insure random value every time
-  cmp helper, 9d ; return helper to 1 if it's ffh to avoid dividing by zero
+  cmp helper, 30d ; return helper to 1 if it's ffh to avoid dividing by zero
   jne dontreturn
   mov helper, 1h
   dontreturn:
@@ -1155,7 +1153,7 @@ specifiedrandom PROC
 	mov random_part,al
 	popa
 	ret
-ENDP
+specifiedrandom ENDP
 
 Delay PROC
 	    pusha
@@ -1186,6 +1184,13 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov START_Y,LINE_WIDTH+2*BOUNDARY_WIDTH
 	RandomStart_skip:
 
+    mov ax,START_Y
+	mov START_CAR_Y,ax
+	sub START_CAR_Y,START_CAR_SHIFT
+
+	mov ax,START_X
+	mov START_CAR_X,ax
+
 	mov divider,3H
 	mov lastRandom,3
 	mov START_DIR,3
@@ -1201,11 +1206,18 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov ax,0
 	mov al,random
 	mov START_Y,ax
-
+    
 	cmp al,LINE_WIDTH+2*BOUNDARY_WIDTH
 	jge RandomStart_skip2
 	mov START_Y,LINE_WIDTH+2*BOUNDARY_WIDTH
 	RandomStart_skip2:
+
+    mov ax,START_Y
+	mov START_CAR_Y,ax
+	sub START_CAR_Y,START_CAR_SHIFT
+
+	mov ax,START_X
+	mov START_CAR_X,ax
 
 	mov divider,3H
 	mov lastRandom,2
@@ -1223,6 +1235,14 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov al,random
 	mov START_X,ax
 	add START_X,10
+
+    mov ax,START_Y
+	mov START_CAR_Y,ax
+
+	mov ax,START_X
+	mov START_CAR_X,ax
+	add START_CAR_X,START_CAR_SHIFT
+
 	mov divider,3H
 	mov lastRandom,0
 	mov START_DIR,0
@@ -1242,14 +1262,15 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov START_DIR,1
 	mov helper,1h
 
-	mov ax,START_X
-	mov START_CAR_X,ax
 	mov ax,START_Y
 	mov START_CAR_Y,ax
-	
+
+	mov ax,START_X
+	mov START_CAR_X,ax
+	add START_CAR_X,START_CAR_SHIFT
+
 	ret
 RandomStart ENDP
-
 
 FinalLine PROC
     call ModifyFinalStart
@@ -1397,7 +1418,6 @@ ModifyDirection PROC
     ret
 ModifyDirection ENDP
 
-	
 GenerateObstaclesPowerUps PROC
 	pusha
 	mov divider, 4H
@@ -1571,7 +1591,6 @@ GenerateObstaclesPowerUps PROC
 	ret
 GenerateObstaclesPowerUps ENDP
 
-
 DrawObstacle PROC
 	pusha
 	mov bx, [si]
@@ -1604,7 +1623,6 @@ DrawObstacle PROC
 		popa
 	ret
 DrawObstacle ENDP
-
 
 DrawPower PROC
 	pusha
@@ -1725,3 +1743,4 @@ BackgroundColoring PROC
 	;-------------------------------------------------------------------------------------------------;
 	ret
 BackgroundColoring ENDP
+

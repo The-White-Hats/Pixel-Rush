@@ -13,6 +13,8 @@
 
 
     FILE_NAME_LEN   equ 10
+
+    START_CAR_SHIFT equ 10
     ;------------Files-------------;
     carFile         db  'car10.bin', 0
                     db  'car11.bin', 0
@@ -101,9 +103,9 @@
          MIN_Y equ 0
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 15
-         LINE_LENGTH equ 6
-		 HORIZONTAL_LINE_LENGTH equ 16
+         LINE_WIDTH equ 18
+         LINE_LENGTH equ 7
+		 HORIZONTAL_LINE_LENGTH equ 19
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
 		 END_LINE_LENGTH equ 6 ;!Finish Line
@@ -133,7 +135,7 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 100
+        MAX_PARTS equ 50
         TIME equ 0
 		WRONGTHRESHOLD equ 12
 
@@ -239,5 +241,5 @@
 		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
 		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array
 		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array
-s db 0
+        s db 0
 ;-----------------------------------;
