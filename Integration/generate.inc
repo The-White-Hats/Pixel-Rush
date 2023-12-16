@@ -1864,7 +1864,7 @@ UpdateUserScore PROC
 	mov userscore,al
 	inc usernextpart
     cmp usernextpart,cl
-	jnz notpassed
+	jl notpassed
 	mov userscore,100
 	popa
 	ret 

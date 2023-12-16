@@ -99,7 +99,7 @@
 
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 3
-         DASHEDLINE_LENGTH equ 6
+         DASHEDLINE_LENGTH equ 5
 		 OBSTACLE_WIDTH equ 4
 		 OBSTACLE_LENGTH equ 4
 		 POWERUP_WIDTH equ 2
@@ -196,7 +196,9 @@
 		casse10 db 3,3,3
 		casse11 db 0,0,0
 		;*------------------------------------------- OBSTACLES AND POWERUPS -------------------------------------------;
-		latestPos db 0
+		POWERUP_SHOW_DELAY equ 5fh
+        
+        latestPos db 0
 		nowORthen db 0 ; 0 means now, 1 means then (POWERUPS)
 		lastType db POWERUP1_COLOR
 		latestType db POWERUP2_COLOR
@@ -222,16 +224,37 @@
 		
 		compilationPowerupsClrs db MAX_PARTS dup(0) 
 
-		inGamePowerups dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (bottom left corner)
+		inGamePowerups dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (center, bottom)
 		inGamePowerupsClrs db MAX_PARTS dup(0)
 
 
 		saveObstaclesCounter dw 0 ;! offset to add for obstacles array 
+        savePowerObstaclesCounter dw 0 ;! offset to add for obstacles array (MADE FROM POWERUPS)
+
 		saveCompilationPowerupsCounter dw 0 ;! offset to add for compilationPowerups array
 		saveCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
 		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
-		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array
-		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array
+		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array (Insertion)
+		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array (Insertion)
+        loadInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array (Loading)
+        loadInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array (Loading)
+
+
+        generatedPowerupSource dw 0 ;! 0 means compilationPowerups, 1 means inGamePowerups
+
+        showPowerupsCounter dw POWERUP_SHOW_DELAY
+
+        ;*------------------------------------------- EQUIPPING POWERUPS -------------------------------------------;
+        processed_power_holder db 0 ;! 1 means user1, 2 means user2
+        processed_power db 0 ;! 0 means no powerup, 1 means speed up, 2 means slow down, 3 means drop obstacle, 4 means pass through obstacle
+
+        ;! 0 means no powerup, 1 means speed up, 2 means slow down, 3 means drop obstacle, 4 means pass through obstacle
+        user1_stored_powerup db 3
+        user2_stored_powerup db 0 
+
+        ;! stated in the doc that the car can pass through 1 obstacle (didn't mention limitid time)
+        user1_obstacles_passed db 1
+        user2_obstacles_passed db 1
         dt ?
         divider db 3H
 		helper db 1H

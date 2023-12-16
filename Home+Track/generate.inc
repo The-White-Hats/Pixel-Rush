@@ -201,8 +201,9 @@ DrawTrack PROC
 	cmp cx, saveObstaclesCounter
 	jl finalDrawObstaclesLoop
 	popa
-   ;*--------------------------------------Draw Powerups----------------------------------------------;
-	pusha 
+
+	pusha ;*--------------------------------------Draw Powerups----------------------------------------------;
+	mov generatedPowerupSource, 0
 	lea si, compilationPowerups
 	finalDrawPowerupsLoop:
 	call DrawPower
@@ -907,7 +908,7 @@ GenerateVerticalTrack PROC ;! Dependent on the START_X and START_Y  and does not
 				mov ah,0ch
 				int 10h
                 
-				;---------------------------------------change posy according to vertical direction if up dec and cmp with start - length if down inc and cmp with start+length ----------------------------------------------;
+				;--------change posy according to vertical direction if up dec and cmp with start - length if down inc and cmp with start+length --------;
 				cmp verticaldirection ,0 
 				jnz down  
 				dec posy
@@ -1077,11 +1078,12 @@ GenerateHorizontalTrack PROC
 
     upOpened:
     mov dx, START_Y
-    sub dx, LINE_WIDTH
     sub dx, BOUNDARY_WIDTH
 
+
     exec:
-    mov si, BOUNDARY_WIDTH
+    mov si, LINE_WIDTH
+	add si, BOUNDARY_WIDTH
 
     open1:
     
@@ -1105,16 +1107,80 @@ GenerateHorizontalTrack PROC
         dec di
         cmp di,0
         jnz open11
-    inc dx
+    dec dx
     dec si
     cmp si,0
     jnz open1
+	call GenerateCorner
+
 
     final:
 	popa
 	call GenerateObstaclesPowerUps
 	ret
  GenerateHorizontalTrack  ENDP
+
+
+GenerateCorner PROC 
+	pusha
+	mov al, DASHESCOLOR
+	mov cx, START_X
+	mov dx, START_Y
+	mov si, LINE_WIDTH/2
+	sub si, DASHEDLINE_LENGTH
+	mov di, LINE_WIDTH/2
+	sub di, DASHEDLINE_LENGTH
+
+	cmp cornerType, 0
+	jnz upOpenedCorner
+	sub dx, DASHEDLINE_LENGTH
+	sub dx, BOUNDARY_WIDTH
+	jmp checkX
+	upOpenedCorner:
+	sub dx, LINE_WIDTH
+	add dx, DASHEDLINE_LENGTH
+
+	checkX:
+	cmp horizontalDirection, 0
+	jnz leftCorner
+	add cx, LINE_WIDTH/2
+	add cx, BOUNDARY_WIDTH
+	jmp drawCorner
+	leftCorner:
+	sub cx, LINE_WIDTH/2
+	sub cx,BOUNDARY_WIDTH
+	
+	drawCorner:
+	mov ah, 0ch	
+	DrawVerticalCorner:
+		int 10h
+		cmp cornerType, 0
+		jnz DrawUpOpenedCorner
+		dec dx
+		jmp DrawVerticalCornerCheck
+		DrawUpOpenedCorner:
+		inc dx
+		DrawVerticalCornerCheck:
+		dec si
+		cmp si, 0
+		jnz DrawVerticalCorner
+
+	DrawHorizontalCorner:
+		int 10h
+		cmp horizontalDirection, 0
+		jnz DrawLeftCorner
+		inc cx
+		jmp DrawHorizontalCornerCheck
+		DrawLeftCorner:
+		dec cx
+		DrawHorizontalCornerCheck:
+		dec di
+		cmp di, 0
+		jnz DrawHorizontalCorner
+	
+	popa
+	ret
+GenerateCorner ENDP
 
 randomizer PROC
     pusha
@@ -1156,7 +1222,7 @@ specifiedrandom PROC
 	mov random_part,al
 	popa
 	ret
-specifiedrandom ENDP
+specifiedrandom ENDP 
 
 Delay PROC
 	    pusha
@@ -1439,10 +1505,10 @@ GenerateObstaclesPowerUps PROC
 	call randomizer ; randomize the existence of an obstacle
 	call randomizer 
 	call randomizer 
-	cmp random, 1
+	cmp random, 0
 	jg power1
 	mov al, OBSTACLE_COLOR
-	jmp initiateDraw
+	jmp initiateDraw2
 	power1:
 
 	mov divider, 2H   ; randomize the powerup, draw or save for later
@@ -1481,6 +1547,7 @@ GenerateObstaclesPowerUps PROC
 	mov ah, lastType
 	mov latestType, ah
 	mov lastType, al
+	initiateDraw2:
 	mov divider, 3H
 	call randomizer ; randomize the position of the obstacle
 	cmp random, 0
@@ -1576,7 +1643,7 @@ GenerateObstaclesPowerUps PROC
 	jmp endGenerateObstaclesPowerUps
 
 	savePowerUps:
-	cmp nowORthen, 0
+	cmp nowORthen, 1
 	jnz saveForLater
 	lea si, compilationPowerups
 	add si, saveCompilationPowerupsCounter
@@ -1647,8 +1714,18 @@ DrawPower PROC
 	mov horizontalDirection, 0
 	mov si, POWERUP_WIDTH
 	push bx
+	cmp generatedPowerupSource, 0
+	jnz drawInGamePowerup
 	lea bx, compilationPowerupsClrs
 	add bx, loadCompilationPowerupsClrsCounter
+	jmp continueDrawPower
+
+	drawInGamePowerup:
+	lea bx, inGamePowerupsClrs
+	add bx, loadInGamePowerupsClrsCounter
+
+
+	continueDrawPower:
 	mov al, [bx]
 	pop bx
 	mov ah, 0ch
@@ -1787,7 +1864,7 @@ UpdateUserScore PROC
 	mov userscore,al
 	inc usernextpart
     cmp usernextpart,cl
-	jnz notpassed
+	jl notpassed
 	mov userscore,100
 	popa
 	ret 

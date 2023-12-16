@@ -284,7 +284,7 @@ carMainLoop macro
 
     ; Delay Function
              delayFunc
-
+             call ShowInGamePowerUps
     ; update the location
     ; copy the current postions into prev_postions
              mov                 ax, user1_posX
