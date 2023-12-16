@@ -82,6 +82,7 @@ SelectType PROC
 SelectType ENDP
 
 Draw PROC
+	pusha
 	mov saveObstaclesCounter,0
 	mov saveCompilationPowerupsCounter,0
 	mov saveCompilationPowerupsClrsCounter,0
@@ -111,6 +112,7 @@ Draw PROC
     lea si,Directions
     mov cx,MAX_PARTS
 	sub cx,ax
+	mov TotalParts,cx
 	iterate:
 
 	   mov ax,[si]
@@ -210,6 +212,7 @@ Draw PROC
 	cmp ax, saveCompilationPowerupsClrsCounter
 	jl finalDrawPowerupsLoop
 	popa
+popa
 	ret
 Draw ENDP
 
@@ -218,10 +221,10 @@ GenerateTrackDirections PROC
 
     call RandomStart
 
-    mov ah, 2Ch
-	int 21H    ; puts the millseconds in dl
-	mov al, dl ; contain hundreds of seconds
-	mov starttime,al
+    ; mov ah, 2Ch
+	; int 21H    ; puts the millseconds in dl
+	; mov al, dl ; contain hundreds of seconds
+	; mov starttime,al
 
     mov helper,1
 
@@ -250,16 +253,14 @@ GenerateTrackDirections PROC
     mov TotalParts,0
 
 	GenerateTrackDir_loop:
-	   pusha
-		mov ah, 2Ch
-		int 21H    ; puts the millseconds in dl
-		mov al, dl ; contain hundreds of seconds
-		sub al,starttime
-		cmp al,50
-		jge Restart
-		cmp starttime,al
-		jl Restart
-       popa
+	;    pusha
+	; 	mov ah, 2Ch
+	; 	int 21H    ; puts the millseconds in dl
+	; 	mov al, dl ; contain hundreds of seconds
+	; 	sub al,starttime
+	; 	cmp al,99
+	; 	jge Restart
+    ;    popa
 
         mov ax,START_X
 		mov prev_start_x,ax
@@ -806,7 +807,7 @@ GenerateVerticalTrack PROC ;! Dependent on the START_X and START_Y  and does not
 		mov middletrackflag , 0
 		movehorizontal:      
 			mov boundaryflag ,  0
-			  call Delay
+			  ;call Delay
 			drawvertical:
 			    mov cx,posx
 				mov dx,posy
@@ -946,7 +947,7 @@ GenerateHorizontalTrack PROC
     mov si, LINE_WIDTH + 2*BOUNDARY_WIDTH ; Outer loop counter
     mov dx, START_Y
     drawRoad:
-	        call Delay
+	        ;call Delay
             mov cx, START_X
             mov di, HORIZONTAL_LINE_LENGTH ; Inner loop counter
             mov bl, BOUNDARY_LENGTH
@@ -1116,19 +1117,21 @@ GenerateHorizontalTrack PROC
  GenerateHorizontalTrack  ENDP
 
 randomizer PROC
-  pusha
+    pusha
   mov ah, 2Ch
   int 21H    ; puts the millseconds in dl
   mov al, dl ; contain hundreds of seconds
 
   mov ah, 0
   div helper ; divide ax by the helper which keep changing; puts the quotiant in al , and remainder in ah
-  mov ah, 0  
-  div divider
-  mov random, ah ; puts the remainder in random
+  xor bx, bx
+  xor dx, dx
+  mov bl, divider
+  div bx
+  mov random, dl ; puts the remainder in random
 
   inc helper    ; increment helper to insure random value every time
-  cmp helper, 30d ; return helper to 1 if it's ffh to avoid dividing by zero
+  cmp helper, 100d ; return helper to 1 if it's ffh to avoid dividing by zero
   jne dontreturn
   mov helper, 1h
   dontreturn:
@@ -1189,7 +1192,10 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	sub START_CAR_Y,START_CAR_SHIFT
 
 	mov ax,START_X
+	sub ax,CAR_HEIGHT/2
 	mov START_CAR_X,ax
+
+	mov current_frame,6
 
 	mov divider,3H
 	mov lastRandom,3
@@ -1217,7 +1223,10 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	sub START_CAR_Y,START_CAR_SHIFT
 
 	mov ax,START_X
+	add ax,CAR_HEIGHT/2
 	mov START_CAR_X,ax
+
+	mov current_frame,2
 
 	mov divider,3H
 	mov lastRandom,2
@@ -1237,11 +1246,14 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	add START_X,10
 
     mov ax,START_Y
+	sub ax,CAR_HEIGHT/2
 	mov START_CAR_Y,ax
 
 	mov ax,START_X
 	mov START_CAR_X,ax
 	add START_CAR_X,START_CAR_SHIFT
+
+	mov current_frame,0
 
 	mov divider,3H
 	mov lastRandom,0
@@ -1263,7 +1275,10 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov helper,1h
 
 	mov ax,START_Y
+	add ax,CAR_HEIGHT/2
 	mov START_CAR_Y,ax
+
+	mov current_frame,4
 
 	mov ax,START_X
 	mov START_CAR_X,ax
@@ -1699,7 +1714,7 @@ DrawScoreBoard PROC
 		mov dh,21 
 		int 10h 
 
-	lea si ,user1score
+	lea si ,scorename
     call DisplayString
 
 		mov dl,20 
@@ -1714,12 +1729,130 @@ DrawScoreBoard PROC
 		mov dh,21
 		int 10h
 
-	lea si ,user2score
+	lea si ,scorename
     call DisplayString
+
 	popa
 	ret
 ;--------------------------------------------------------------------------------------------------;
 DrawScoreBoard ENDP
+
+UpdateUserScore PROC
+	pusha
+	lea si,ClosedArea
+	mov cx,TotalParts
+	mov ax,0
+	mov al,usernextpart
+	mov bl,8
+	mul bl
+	add si,ax
+	
+	mov ax,[si]
+	mov x_min_old,ax
+
+	mov ax,[si+2]
+	mov x_max_old,ax
+
+	mov ax,[si+4]
+	mov y_min_old,ax
+
+	mov ax,[si+6]
+	mov y_max_old,ax
+
+	mov ax,x_min_old
+	cmp user_posX,ax
+	jl notpassed
+
+	
+	mov ax,x_max_old
+	cmp user_posX,ax
+	jg notpassed
+
+	mov ax,y_max_old
+	cmp user_posY,ax
+	jg notpassed
+
+	mov ax,y_min_old
+	cmp user_posY,ax
+	jl notpassed
+    
+	mov ax,0
+    mov al,usernextpart
+	dec al
+	mov bl,100
+	mul bl
+	mov bx,0
+    mov bx,TotalParts
+	div bl
+	mov userscore,al
+	inc usernextpart
+    cmp usernextpart,cl
+	jnz notpassed
+	mov userscore,100
+	popa
+	ret 
+	notpassed:
+	popa
+	ret
+UpdateUserScore ENDP
+UpdateUsersScore PROC
+	mov ax,user1_posX
+    mov user_posX,ax
+    mov ax,user1_posY
+    mov user_posY,ax
+    mov al,user1nextpart
+    mov usernextpart,al
+    mov al,user1score
+    mov userscore,al
+    call UpdateUserScore
+    mov al,usernextpart
+    mov user1nextpart,al
+    mov al,userscore
+    mov user1score,al
+
+	mov ax,user1_posX
+    mov user_posX,ax
+    mov ax,user1_posY
+    mov user_posY,ax
+    mov al,user2nextpart
+    mov usernextpart,al
+    mov al,user2score
+    mov userscore,al
+    call UpdateUserScore
+    mov al,usernextpart
+    mov user2nextpart,al
+    mov al,userscore
+    mov user2score,al
+
+	call DrawScore
+
+	ret
+UpdateUsersScore ENDP
+
+DrawScore PROC
+	mov ah,2           
+	mov dl,7  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dh,21 ;*2.so the screen is 40*24 char  (24 by testing)
+	int 10h 
+
+	pusha
+	mov ax,0
+	mov al,user1score
+	shownum
+	popa
+
+	mov ah,2           
+	mov dl,26  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dh,21 ;*2.so the screen is 40*24 char  (24 by testing)
+	int 10h 
+
+	pusha
+	mov ax,0
+	mov al,user2score
+	shownum
+	popa
+	ret
+DrawScore ENDP
 
 BackgroundColoring PROC
     ;---------------------------------------Screen Coloring--------------------------------------------;
@@ -1743,4 +1876,5 @@ BackgroundColoring PROC
 	;-------------------------------------------------------------------------------------------------;
 	ret
 BackgroundColoring ENDP
+
 

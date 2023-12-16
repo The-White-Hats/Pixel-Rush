@@ -70,10 +70,8 @@ shownum macro
          mov dl,[bx]
          int 21h
          dec bx
-         cmp dh,0
      loop l2      
 endm shownum
-
 overrideInt9 macro
     ; Disable interrupts
                  cli
@@ -281,6 +279,9 @@ endm
 carMainLoop macro
 
     again:
+
+    call UpdateUsersScore
+
     ; Delay Function
              delayFunc
 

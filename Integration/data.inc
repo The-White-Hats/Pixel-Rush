@@ -9,7 +9,7 @@
 
     BUFF_SIZE       equ CAR_HEIGHT*CAR_WIDTH
     
-    CAR_OFFSET      equ 5
+    CAR_OFFSET      equ 0
 
 
     FILE_NAME_LEN   equ 10
@@ -104,7 +104,7 @@
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
          LINE_WIDTH equ 18
-         LINE_LENGTH equ 7
+         LINE_LENGTH equ 5
 		 HORIZONTAL_LINE_LENGTH equ 19
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
@@ -135,7 +135,7 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 50
+        MAX_PARTS equ 90
         TIME equ 0
 		WRONGTHRESHOLD equ 12
 
@@ -158,6 +158,7 @@
 
         y_max_old dw ?
         y_min_old dw ?
+        
 
         Directions dw MAX_PARTS+1 dup(0)
 
@@ -192,9 +193,7 @@
 		random_part db 0 ; 4 bytes of memory to store the random seed
         
 		
-		divider db 3H
-		helper db 1H
-		random db 0
+		
 		;*------------------------------------------- CASES -------------------------------------------; 
 		lastRandom db 0
         currentRandom db 0
@@ -223,10 +222,17 @@
 		stringcolor db ?
 		user1name db 'Marwan$' 
 		user2name db 'Youssef$'
-		user1score db 'Score: $'
-		user2score db 'Score: $'
+		scorename db 'Score: $'
+        userscore db 0
+        user1score db 0
+		user2score db 0
 		user1theme db PURPLE
 		user2theme db CYAN
+        usernextpart db  1
+        user1nextpart db 1
+        user2nextpart db 1
+        user_posX dw ?
+        user_posY dw ? 
 		;*--------------------------------------------------------------------------------------------------;
 		
 		compilationPowerupsClrs db MAX_PARTS dup(0) 
@@ -241,5 +247,9 @@
 		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
 		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array
 		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array
+        dt ?
+        divider db 3H
+		helper db 1H
+		random db 0
         s db 0
 ;-----------------------------------;
