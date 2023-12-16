@@ -98,9 +98,9 @@
          MIN_Y equ 1
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 18
-         LINE_LENGTH equ 7
-		 HORIZONTAL_LINE_LENGTH equ 19
+         LINE_WIDTH equ 25
+         LINE_LENGTH equ 11
+		 HORIZONTAL_LINE_LENGTH equ 26
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
 		 END_LINE_LENGTH equ 6 ;!Finish Line
@@ -109,7 +109,7 @@
 
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
-         DASHEDLINE_LENGTH equ 6
+         DASHEDLINE_LENGTH equ 3
 		 OBSTACLE_WIDTH equ 4
 		 OBSTACLE_LENGTH equ 4
 		 POWERUP_WIDTH equ 2
@@ -130,7 +130,7 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 50
+        MAX_PARTS equ 40
         TIME equ 0
 		WRONGTHRESHOLD equ 20
 

@@ -1061,11 +1061,12 @@ GenerateHorizontalTrack PROC
 
     upOpened:
     mov dx, START_Y
-    sub dx, LINE_WIDTH
     sub dx, BOUNDARY_WIDTH
 
+
     exec:
-    mov si, BOUNDARY_WIDTH
+    mov si, LINE_WIDTH
+	add si, BOUNDARY_WIDTH
 
     open1:
     
@@ -1089,16 +1090,80 @@ GenerateHorizontalTrack PROC
         dec di
         cmp di,0
         jnz open11
-    inc dx
+    dec dx
     dec si
     cmp si,0
     jnz open1
+	call GenerateCorner
+
 
     final:
 	popa
 	call GenerateObstaclesPowerUps
 	ret
  GenerateHorizontalTrack  ENDP
+
+
+GenerateCorner PROC 
+	pusha
+	mov al, DASHESCOLOR
+	mov cx, START_X
+	mov dx, START_Y
+	mov si, LINE_WIDTH/2
+	sub si, DASHEDLINE_LENGTH
+	mov di, LINE_WIDTH/2
+	sub di, DASHEDLINE_LENGTH
+
+	cmp cornerType, 0
+	jnz upOpenedCorner
+	sub dx, DASHEDLINE_LENGTH
+	sub dx, BOUNDARY_WIDTH
+	jmp checkX
+	upOpenedCorner:
+	sub dx, LINE_WIDTH
+	add dx, DASHEDLINE_LENGTH
+
+	checkX:
+	cmp horizontalDirection, 0
+	jnz leftCorner
+	add cx, LINE_WIDTH/2
+	add cx, BOUNDARY_WIDTH
+	jmp drawCorner
+	leftCorner:
+	sub cx, LINE_WIDTH/2
+	sub cx,BOUNDARY_WIDTH
+	
+	drawCorner:
+	mov ah, 0ch	
+	DrawVerticalCorner:
+		int 10h
+		cmp cornerType, 0
+		jnz DrawUpOpenedCorner
+		dec dx
+		jmp DrawVerticalCornerCheck
+		DrawUpOpenedCorner:
+		inc dx
+		DrawVerticalCornerCheck:
+		dec si
+		cmp si, 0
+		jnz DrawVerticalCorner
+
+	DrawHorizontalCorner:
+		int 10h
+		cmp horizontalDirection, 0
+		jnz DrawLeftCorner
+		inc cx
+		jmp DrawHorizontalCornerCheck
+		DrawLeftCorner:
+		dec cx
+		DrawHorizontalCornerCheck:
+		dec di
+		cmp di, 0
+		jnz DrawHorizontalCorner
+	
+	popa
+	ret
+GenerateCorner ENDP
 
 randomizer PROC
   pusha
