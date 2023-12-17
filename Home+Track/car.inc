@@ -438,7 +438,36 @@ handleCar PROC
 
                  mov                 bh, 0
                  ret
-handleCar ENDP;* Check for the first line in the finish line and get its color
+handleCar ENDP
+
+    ;-----------------
+
+clearPowerUp PROC
+    ; set the car frame
+                 sub                 di, (POWERUP_LENGTH/2)*SCREEN_WIDTH + (POWERUP_WIDTH/2)
+                 mov                 cx, POWERUP_LENGTH*2
+    power_outerLoop:   
+
+                 mov                 dx, POWERUP_WIDTH*2
+    power_innerLoop:   
+                 cmp                 byte ptr es:[di], bl
+                 jnz                 power_skip_pixel
+
+                 mov                 byte ptr es:[di], GRAY
+                    
+    power_skip_pixel:
+                 inc                 di
+    power_continue:    
+                 dec                 dx
+                 jnz                 power_innerLoop
+
+                 add                 di, SCREEN_WIDTH - (POWERUP_WIDTH*2)   ; move to next line 
+                 loop                power_outerLoop
+                 
+                 ret
+clearPowerUp ENDP
+
+;* Check for the first line in the finish line and get its color
 ;* if it is not default then one of the users win the match 
 ;* then get this different color and compare it with the color of the user's  car to decide which one win the match 
 CheckForGameFinish PROC

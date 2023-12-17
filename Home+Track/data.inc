@@ -37,13 +37,8 @@
                         dt  ?
     user2_current_background  db ((CAR_HEIGHT+(2*CAR_OFFSET))*(CAR_WIDTH+(2*CAR_OFFSET))) dup(?)
                         dt  ?
-
-    ; start from 0 on up and move clockwise
-    user1_current_frame   db  0
-    user1_prev_frame      db  ?
-    user1_current_dir     db  0
-    user1_prev_dir        db  ?
     
+    ;-----------User's Data---------;
     user1_posX      dw  ?
     user1_posY      dw  ?
     user1_dir_bools db  7 dup(0)                ; up, right, down, left
@@ -51,19 +46,26 @@
     user1_dir_arr   db  48h, 4dh, 50H, 4BH
     user1_prev_posX dw  ?
     user1_prev_posY dw  ?
+                    db  0
+    ; start from 0 on up and move clockwise
+    user1_current_frame   db  0
+    user1_prev_frame      db  ?
+    user1_current_dir     db  0
+    user1_prev_dir        db  ?    
+                    db  0
 
-    user2_posX      dw  30 
-	user2_posY      dw  10
+    user2_posX      dw  ? 
+	user2_posY      dw  ?
 	user2_dir_bools db  7 dup(0)          	    ; up, right, down, left
 	                dw  0                 	    ; margin
 	user2_dir_arr   db  11h, 20h, 1fH, 1eH
-	user2_prev_posX dw  0
-	user2_prev_posY dw  0
+	user2_prev_posX dw  ?
+	user2_prev_posY dw  ?
                     db  0
     user2_current_frame   db  0
-    user2_prev_frame      db  ?
+    user2_prev_frame      db  0
     user2_current_dir     db  0
-    user2_prev_dir        db  ?
+    user2_prev_dir        db  0
                     db  0
     killSignal      db  0
                     dw  0
@@ -141,7 +143,7 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 70
+        MAX_PARTS equ 10
         TIME equ 0
 		WRONGTHRESHOLD equ 12
 

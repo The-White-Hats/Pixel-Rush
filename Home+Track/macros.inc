@@ -178,9 +178,9 @@ intialCarPosition macro
 
 
     mov     user1_posX, 50
-    mov     user1_posY, 180
+    mov     user1_posY, 160
     mov     user2_posX, 250
-    mov     user2_posY, 180
+    mov     user2_posY, 160
 
     mov     user1_current_frame, 0
     mov     user2_current_frame, 0
@@ -394,31 +394,34 @@ endm
 
 detectCollision macro current_frame, car
     local collision
+
     ; check for collision with the boundaries 1
     push              di
-    mov               bl, BOUNDARY_COLOR1
     mov               al, current_frame
     mov               si, offset car
+    mov               bl, BOUNDARY_COLOR1
     call              handleCar
     cmp               bh, 1
     jz                collision
+
+    pop               di  
 
     ; check for collision with the boundaries 2
-    pop               di
     push              di
-    mov               bl, BOUNDARY_COLOR2
     mov               al, current_frame
     mov               si, offset car
+    mov               bl, BOUNDARY_COLOR2
     call              handleCar
     cmp               bh, 1
     jz                collision
 
-    ; check for collision with the obstacles
     pop               di
+
+    ; check for collision with the obstacles
     push              di
-    mov               bl, OBSTACLE_COLOR
     mov               al, current_frame
     mov               si, offset car
+    mov               bl, OBSTACLE_COLOR
     call              handleCar
     cmp               bh, 1
     jz                collision
@@ -426,6 +429,101 @@ detectCollision macro current_frame, car
     collision:
     pop               di
 endm detectCollision
+
+detectPowerUp macro current_frame, car, stored_powerup
+    local collision
+
+    mov               cl, stored_powerup
+
+    ; collision with speed power up
+    push              di
+    push              cx
+    mov               al, current_frame
+    mov               si, offset car
+    mov               bl, POWERUP1_COLOR
+    call              handleCar
+    cmp               bh, 1
+    mov               cl, 1
+    jz                collision
+
+    pop              cx
+    pop               di
+    
+    ; collision with slow power up
+    push              di
+    push              cx
+    mov               al, current_frame
+    mov               si, offset car
+    mov               bl, POWERUP2_COLOR
+    call              handleCar
+    cmp               bh, 1
+    mov               cl, 2
+    jz                collision
+
+    pop              cx
+    pop              di
+
+    ; collision with generate-obstacle power up
+    push              di
+    push              cx
+    mov               al, current_frame
+    mov               si, offset car
+    mov               bl, POWERUP3_COLOR
+    call              handleCar
+    cmp               bh, 1
+    mov               cl, 3
+    jz                collision
+
+    pop              cx
+    pop              di
+
+    ; collision with enable-to-pass power up
+    push              di
+    push              cx
+    mov               al, current_frame
+    mov               si, offset car
+    mov               bl, POWERUP4_COLOR
+    call              handleCar
+    cmp               bh, 1
+    mov               cl, 4
+    jz                collision
+
+    pop              cx
+    pop              di
+    push             di
+    push             cx
+    collision:
+    mov stored_powerup, cl
+    mov si, di
+    pop cx
+    pop di
+    mov di, si
+    mov cl, stored_powerup
+endm detectPowerUp
+
+getPowerUpColor macro current_powerUp
+    cmp current_powerUp, 1
+    jz speed_powerUp
+    cmp current_powerUp, 2
+    jz slow_powerUp
+    cmp current_powerUp, 3
+    jz generate_obstacle_powerUp
+    cmp current_powerUp, 4
+    jz enable_to_pass_powerUp
+    jmp done_powerUp
+    speed_powerUp:
+    mov bl, POWERUP1_COLOR
+    jmp done_powerUp
+    slow_powerUp:
+    mov bl, POWERUP2_COLOR
+    jmp done_powerUp
+    generate_obstacle_powerUp:
+    mov bl, POWERUP3_COLOR
+    jmp done_powerUp
+    enable_to_pass_powerUp:
+    mov bl, POWERUP4_COLOR
+    done_powerUp:
+endm getPowerUpColor
 
 carMainLoop macro
 
@@ -470,7 +568,10 @@ carMainLoop macro
                  jnz               update1                              ; jump to the update if there is a change
                  mov               ax, user1_prev_posY
                  cmp               ax, user1_posY
-                 jz                middle_jump1                            ; jump away if there is no change
+                 jz                middle_jump1 
+                 jmp update1
+     middle_jump1:
+                 jmp                far ptr user2_check
 
      update1:    
      ; remove car and draw background
@@ -484,12 +585,23 @@ carMainLoop macro
                  mov               bh, 0
                  detectCollision   user1_current_frame, car1
                  cmp               bh, 1
-                 jz                user1_collision
+
+                 jz                middle_jump11
+                 jmp               no_middle_jump11
+                 middle_jump11:
+                 jmp               far ptr user1_collision
+
+                 no_middle_jump11:
+                 detectPowerUp     user1_current_frame, car1, user1_stored_powerup
+                 mov               user1_stored_powerup, cl
+                 cmp               bh, 1
+                 jz                user1_powerUp
                  jmp               user1_no_collision
 
-     middle_jump1:
-                 jmp               user2_check
 
+    user1_powerUp:
+                 getPowerUpColor   user1_stored_powerup
+                 call              clearPowerUp
     user1_no_collision:
      ; save the background
                  setStartPixel     user1_posX, user1_posY
@@ -542,6 +654,9 @@ carMainLoop macro
                  mov               ax, user2_prev_posY
                  cmp               ax, user2_posY
                  jz                middle_jump2                            ; jump away if there is no change
+                 jmp update2
+     middle_jump2:
+                 jmp far ptr           done_all
 
      update2:    
      ; remove car and draw background
@@ -557,9 +672,6 @@ carMainLoop macro
                  cmp               bh, 1
                  jz                user2_collision
                  jmp               user2_no_collision
-
-     middle_jump2:
-                 jmp               done_all
 
      user2_no_collision:
      ; save the background
