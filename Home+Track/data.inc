@@ -142,7 +142,7 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 60
+        MAX_PARTS equ 30
         TIME equ 0
 		WRONGTHRESHOLD equ 12
         PleaseFlag db 0
@@ -226,7 +226,8 @@
 		casse11 db 0,0,0
 		;*------------------------------------------- OBSTACLES AND POWERUPS -------------------------------------------;
 		POWERUP_SHOW_DELAY equ 5fh
-        
+        isLastPowerup db 0 ;! 0 means last fig is not powerup, 1 means last fig is powerup
+        isLastPowerupShown db 0 ;! 1 means last power is shown, 0 means last power is not shown
         latestPos db 0
 		nowORthen db 0 ; 0 means now, 1 means then (POWERUPS)
 		lastType db POWERUP1_COLOR

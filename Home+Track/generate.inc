@@ -1670,20 +1670,22 @@ ModifyDirection ENDP
 
 GenerateObstaclesPowerUps PROC
 	pusha
-	mov divider, 4H
+	cmp isLastPowerup, 1
+	jz forceObs
+	mov divider, 12h
 	call randomizer ; randomize the existence of an obstacle
-	call randomizer 
-	call randomizer 
-	cmp random, 0
+	cmp random, 02h
 	jg power1
+	forceObs:
+	mov isLastPowerup, 0
 	mov al, OBSTACLE_COLOR
 	jmp initiateDraw2
 	power1:
 
-	mov divider, 2H   ; randomize the powerup, draw or save for later
-	call randomizer 
-	mov al, random
+	mov isLastPowerup, 1
+	mov al, isLastPowerupShown
 	mov nowORthen, al
+	xor isLastPowerupShown, 1
 
 	typeRandomizer:
 	call randomizer ; randomize the type of the powerup
