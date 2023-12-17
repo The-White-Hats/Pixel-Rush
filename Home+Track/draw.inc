@@ -16,9 +16,12 @@ drawLogo MACRO
     draw 200, 140, 120, 120
     readImageM logoLR
     draw 320, 140, 120, 120
+ENDM
+
+drawnames MACRO
     readImageM hackers
     draw 135, 464, 369, 11
-ENDM
+ENDM    
 
 drawButtons MACRO
     pusha

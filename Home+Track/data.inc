@@ -88,7 +88,7 @@
          MIN_X equ 0
          MAX_X equ 319
          MIN_Y equ 0
-         MAX_Y equ 150 
+         MAX_Y equ 170 
          ;*----------------------------------Dimensions-------------------------------------------------;
          LINE_WIDTH equ 18
          LINE_LENGTH equ 5
@@ -122,7 +122,7 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 50
+        MAX_PARTS equ 5
         TIME equ 0
 		WRONGTHRESHOLD equ 12
 
@@ -211,15 +211,7 @@
 		stringcolor db ?
         IsUser1Win db 0
         IsUser2Win db 0
-        user1car_color db ?
-        user2car_color db ?
 		scorename db 'Score: $'
-        ; WinnerMessagePart1 db 'Congratulations $'
-        ; part1size equ $-WinnerMessagePart1-1
-        ; WinnerMessagePart2 db 'YOU WON!$'
-        ; part2size equ $-WinnerMessagePart2-1
-        ; username1Size dw ?
-        ; username2Size dw ?
         userscore db 0
         user1score db 0
 		user2score db 0

@@ -1,7 +1,7 @@
 include macros.inc
 .286
 public GameMain
-public IsUser1Win,IsUser2Win
+public IsUser1Win,IsUser2Win,user1score,user2score
 extrn user1name:BYTE
 extrn user2name:BYTE
 .MODEL SMALL
@@ -34,11 +34,14 @@ GameMain PROC FAR
           mov               es, ax
 
      ; Screen Coloring
-          mov IsUser1Win,0
-          mov IsUser2Win,0
+          
 	    
-          putWallPaperM 14, 10, 0, 0
-	    
+          putWallPaperM 7, 5, 0, 0
+	     
+          paintAreaM 0,MAX_Y+2,320,1,BLUE
+
+          paintAreaM 0,MAX_Y+3,320,200-MAX_Y-3,BLACK
+
 		call DrawScoreBoard
 					    
      ; Input files

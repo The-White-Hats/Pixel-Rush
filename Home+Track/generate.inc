@@ -808,7 +808,7 @@ GenerateVerticalTrack PROC ;! Dependent on the START_X and START_Y  and does not
 		mov middletrackflag , 0
 		movehorizontal:      
 			mov boundaryflag ,  0
-			  ;call Delay
+			  call Delay
 			drawvertical:
 			    mov cx,posx
 				mov dx,posy
@@ -948,7 +948,7 @@ GenerateHorizontalTrack PROC
     mov si, LINE_WIDTH + 2*BOUNDARY_WIDTH ; Outer loop counter
     mov dx, START_Y
     drawRoad:
-	        ;call Delay
+	        call Delay
             mov cx, START_X
             mov di, HORIZONTAL_LINE_LENGTH ; Inner loop counter
             mov bl, BOUNDARY_LENGTH
@@ -1810,7 +1810,7 @@ DrawScoreBoard PROC
 		;---------------------------Moving Cursor-------------------;
 		mov ah,2           
 		mov dl,1  ;*1.the row can write up to 40 characters one character takes 8 pixels
-		mov dh,20 ;*2.so the screen is 40*24 char  (24 by testing)
+		mov dh,23 ;*2.so the screen is 40*24 char  (24 by testing)
 		int 10h 
 
 	lea si , user1name
@@ -1818,14 +1818,14 @@ DrawScoreBoard PROC
 	mov stringcolor , cl
 	call DisplayString
      
-		mov dh,22 
+		mov dh,24 
 		int 10h 
 
 	lea si ,scorename
     call DisplayString
 
 		mov dl,31 
-		mov dh,20 
+		mov dh,23 
 		int 10h
 
 	lea si ,user2name
@@ -1833,7 +1833,7 @@ DrawScoreBoard PROC
 	mov stringcolor , cl
     call DisplayString
     
-		mov dh,22
+		mov dh,24
 		int 10h
 
 	lea si ,scorename
@@ -1940,7 +1940,7 @@ UpdateUsersScore ENDP
 DrawScore PROC
 	mov ah,2           
 	mov dl,7  ;*1.the row can write up to 40 characters one character takes 8 pixels
-	mov dh,22 ;*2.so the screen is 40*24 char  (24 by testing)
+	mov dh,24 ;*2.so the screen is 40*24 char  (24 by testing)
 	int 10h 
 
 	pusha
@@ -1951,7 +1951,7 @@ DrawScore PROC
 
 	mov ah,2           
 	mov dl,37  ;*1.the row can write up to 40 characters one character takes 8 pixels
-	mov dh,22 ;*2.so the screen is 40*24 char  (24 by testing)
+	mov dh,24 ;*2.so the screen is 40*24 char  (24 by testing)
 	int 10h 
 
 	pusha

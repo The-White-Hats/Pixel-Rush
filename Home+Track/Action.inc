@@ -1,49 +1,87 @@
+PrintVarLenNum MACRO num
+ local l1
+ local l2
+ mov ax,0
+  MOv Al, num
+  MOv DX, 0
+  MOV BX, 10
+  MOv CX, 0
+  L1:
+  DIV BX
+  PUSH DX
+  MOV DX, 0
+  INC CX
+  CMP AX, 0
+  JNE L1
+  MOV AH, 2
+  L2:
+  POP DX
+  ADD DX, 48
+  INT 21H
+  LOOP L2
+ENDM
+
 WinnerScreen PROC
     pusha
-    lea si ,user1name
-    mov cx,0
-    getuser1namesize:
-    inc cx
-	inc si
-    cmp [si],'a'
-    jge check1please
-	jmp endend2
-	check1please:
-	cmp [si],'z'
-	jle getuser1namesize
-	endend2:
-    mov username1Size,cx
+	paintAreaM 168d, 323d, 304d, 54d, GOLD  ; paint input area in black
+    paintAreaM 170d, 325d, 300d, 50d, 0H  ; paint input area in black
+    mov ax,0
+	add al,IsUser1Win
+	add al,IsUser2Win
+	cmp ax,0
+	jz bothlost
 
-    lea si ,user2name
-    mov cx,0
-    getuser2namesize:
-    inc cx
-	inc si
-    cmp [si],'a'
-    jge check2please
-	jmp endend1
-	check2please:
-	cmp [si],'z'
-	jle getuser2namesize
-	endend1:
-    mov username2Size,cx
-
-    ;clear
-
-
-    showColoredMsg WinnerMessagePart1, 2bh, part1size, start_Y_ofpress-10, start_X_ofpress+25 ;* part1
+    showColoredMsg WinnerMessagePart1, GOLD, part1size, 21,25 ;* part1
     cmp IsUser1Win,1
     jnz user2isthewinner
-    showColoredMsg user1name, 2bh,username1Size, start_Y_ofpress-10, start_X_ofpress+26+part1size ;* username
+	mov ax,0
+	mov al,name1Size
+    showColoredMsg user1name, GOLD,ax, 21, 26+part1size ;* username
     jmp WinnerScreen_part2
     user2isthewinner:
-    showColoredMsg user2name, 2bh,username2Size, start_Y_ofpress-10, start_X_ofpress+26+part1size ;* username
+	mov ax,0
+	mov al,name2Size
+    showColoredMsg user2name, GOLD,ax,21, 36+part1size ;* username
     WinnerScreen_part2:
-    showColoredMsg WinnerMessagePart2, 2bh, part2size, start_Y_ofpress-10+2, start_X_ofpress+5+25 ;* part2
+    showColoredMsg WinnerMessagePart2, GOLD, part2size, 22, 35 ;* part2
+    jmp WinnerScreen_drawscores
+	bothlost:
+   
+    showColoredMsg BothLostMes, RED, BothLostMes1size, 22,31 ;* part1
+
+    WinnerScreen_drawscores:
+
+	call Wait_Sec
+
+	paintAreaM 170d, 325d, 300d, 50d, 0H  ; paint input area in black
+    
+	mov ax,0
+	mov al,name1Size
+    showColoredMsg user1name, GOLD,ax, 21, 25 ;* username
+
+	showColoredMsg score, GOLD,scoreSize, 21, 40 ;* username
+
+    popa
+	MoveCursor 40+scoreSize,21
+	PrintVarLenNum user1score
+	pusha
+    
+	mov ax,0
+	mov al,name2Size
+    showColoredMsg user2name, GOLD,ax,22, 25 ;* username
+
+	showColoredMsg score, GOLD,scoreSize, 22, 40 ;* username
+
+	popa
+	MoveCursor 40+scoreSize,22
+	PrintVarLenNum user2score
+	pusha
+
+   	call Wait_Sec
+
     popa
     ret
 WinnerScreen ENDP
-
 
 GetAction PROC
     pusha
@@ -87,15 +125,12 @@ GetAction PROC
             
 			putWallPaperM 14, 10, 0, 0
 
-			call WinnerScreen
-
 			drawLogo
-
-			MOV AH, 0
-			INT 16h
-
-			MOV AH, 0
-			INT 16h
+			call WinnerScreen
+			
+            
+			putWallPaperM 7, 2, 3*bgSize, 6*bgSize  ; recover the area with the wallpaper
+			paintAreaM 0, 430d, 640d, 50d, 0H
 
 			drawButtons
              
@@ -112,3 +147,31 @@ GetAction PROC
         popa
     ret
 GetAction ENDP
+
+
+Wait_Sec PROC
+	pusha
+	mov ah, 2Ch
+	int 21H    ; puts the millseconds in dl
+	add dh,waittime
+	mov al, dh ; contain hundreds of seconds
+	mov bl,60
+	mov ah,0
+	xor dx,dx
+	div bl
+    mov goaltime,ah
+
+    wait_loop:
+	mov ah, 2Ch
+	int 21H    ; puts the millseconds in dl
+	mov al, dh ; contain hundreds of seconds
+	mov bl,60
+	mov ah,0
+	xor dx,dx
+	div bl
+	cmp ah,goaltime
+	jnz wait_loop
+	popa
+	ret
+Wait_Sec ENDP
+

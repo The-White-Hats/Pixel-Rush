@@ -6,6 +6,8 @@ extrn GameMain:far
 public user1name,user2name
 extrn IsUser1Win:BYTE
 extrn IsUser2Win:BYTE
+extrn user1score:BYTE
+extrn user2score:BYTE
 .MODEL SMALL
 .STACK 32
 ;---------------------------------------
@@ -13,11 +15,18 @@ extrn IsUser2Win:BYTE
 include LogoData.inc
 include userData.inc
 include AcData.inc
+s db ?
+dt ?
+scorestring db ?
+dt ?
+
 ;---------------------------------------
 .code
 include draw.inc
 include infoM.inc
 include Action.inc
+
+
 
 MAIN PROC FAR
     MOV AX,@DATA
@@ -28,7 +37,10 @@ MAIN PROC FAR
     UltraGraphicsMode
     
     putWallPaperM 14, 10, 0, 0
+
+
     drawLogo
+    drawnames
 
     GetPlayersNames
 

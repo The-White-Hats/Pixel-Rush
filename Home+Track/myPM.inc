@@ -45,23 +45,25 @@ ENDM
 
 ; This proc print a number with variable lenght up to 65535
 PrintVarLenNum MACRO num
+ local l1
+ local l2
   MOv AX, num
   MOv DX, 0
   MOV BX, 10
   MOv CX, 0
-  .L1:
+  L1:
   DIV BX
   PUSH DX
   MOV DX, 0
   INC CX
   CMP AX, 0
-  JNE .L1
+  JNE L1
   MOV AH, 2
-  .L2:
+  L2:
   POP DX
   ADD DX, 48
   INT 21H
-  LOOP .L2
+  LOOP L2
 ENDM
 
 MoveCursor MACRO x, y
