@@ -51,7 +51,8 @@
     user1_current_frame   db  0
     user1_prev_frame      db  ?
     user1_current_dir     db  0
-    user1_prev_dir        db  ?    
+    user1_prev_dir        db  ?   
+    user1_speed           db  2 
                     db  0
 
     user2_posX      dw  ? 
@@ -66,6 +67,7 @@
     user2_prev_frame      db  0
     user2_current_dir     db  0
     user2_prev_dir        db  0
+    user2_speed           db  2 
                     db  0
     killSignal      db  0
                     dw  0
@@ -278,12 +280,12 @@
         processed_power db 0 ;! 0 means no powerup, 1 means speed up, 2 means slow down, 3 means drop obstacle, 4 means pass through obstacle
 
         ;! 0 means no powerup, 1 means speed up, 2 means slow down, 3 means drop obstacle, 4 means pass through obstacle
-        user1_stored_powerup db 3
+        user1_stored_powerup db 0
         user2_stored_powerup db 0 
 
         ;! stated in the doc that the car can pass through 1 obstacle (didn't mention limitid time)
-        user1_obstacles_passed db 1
-        user2_obstacles_passed db 1
+        user1_obstacles_passed db 0
+        user2_obstacles_passed db 0
         dt ?
         divider db 3H
 		helper db 1H

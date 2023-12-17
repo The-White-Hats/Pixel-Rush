@@ -5,24 +5,24 @@ my_isr PROC
                  jz                  midKill
 
                  
-    ;              cmp                al, 19h                                       ; pressing the 'p' key for first player power up
-    ;              jnz                check_user2
-    ;              mov                processed_power_holder, 1
-    ;              mov                al, user1_stored_powerup
-    ;              mov                processed_power, al
-    ;              mov                user1_stored_powerup, 0
-    ;              call               activatePowerUp
-    ;              jmp                dontKill
+                 cmp                al, 19h                                       ; pressing the 'p' key for first player power up
+                 jnz                check_user2
+                 mov                processed_power_holder, 1
+                 mov                al, user1_stored_powerup
+                 mov                processed_power, al
+                 mov                user1_stored_powerup, 0
+                 call               activatePowerUp
+                 jmp                dontKill
                  
-    ; check_user2:            
-    ;              cmp                 al, 10h                                       ; pressing the 'q' key for second player power up
-    ;              jnz                continue_whatever
-    ;              mov                processed_power_holder, 2
-    ;              mov                al, user2_stored_powerup
-    ;              mov                processed_power, al
-    ;              mov                user2_stored_powerup, 0
-    ;              call               activatePowerUp
-    ;              jmp                dontKill
+    check_user2:            
+                 cmp                 al, 10h                                       ; pressing the 'q' key for second player power up
+                 jnz                continue_whatever
+                 mov                processed_power_holder, 2
+                 mov                al, user2_stored_powerup
+                 mov                processed_power, al
+                 mov                user2_stored_powerup, 0
+                 call               activatePowerUp
+                 jmp                dontKill
 
     continue_whatever:
                  lea                 si, user1_dir_arr
@@ -220,45 +220,65 @@ setBackground ENDP
 
 ;     ;-----------------------    
 
-; activatePowerUp PROC
-;     ; check for power up type
-;         cmp processed_power, 0  
-;         jz activatePowerUp_end
-;         cmp processed_power, 1
-;         jz activatePowerUp_speedUp
-;         cmp processed_power, 2
-;         jz activatePowerUp_speedDown
-;         cmp processed_power, 3
-;         jz activatePowerUp_dropObs
-;         cmp processed_power, 4
-;         jz activatePowerUp_passObs
-;         jmp activatePowerUp_end
+activatePowerUp PROC
+    ; check for power up type
+        cmp processed_power, 0  
+        jz activatePowerUp_end
+        cmp processed_power, 1
+        jz activatePowerUp_speedUp
+        cmp processed_power, 2
+        jz activatePowerUp_speedDown
+        cmp processed_power, 3
+        jz activatePowerUp_dropObs
+        cmp processed_power, 4
+        jz activatePowerUp_passObs
+        jmp activatePowerUp_end
 
-;     activatePowerUp_speedUp:
-;         call SpeedUp
-;         jmp activatePowerUp_end
-;     activatePowerUp_speedDown:
-;         call SpeedDown
-;         jmp activatePowerUp_end
-;     activatePowerUp_dropObs:
-;         call DropObs
-;         jmp activatePowerUp_end
-;     activatePowerUp_passObs:
-;         call PassObs
-;         jmp activatePowerUp_end
-;     activatePowerUp_end:
-;         mov processed_power, 0
-;         mov processed_power_holder, 0
-;         ret
-; activatePowerUp ENDP
+    activatePowerUp_speedUp:
+        call SpeedUp
+        jmp activatePowerUp_end
+    activatePowerUp_speedDown:
+        call SpeedDown
+        jmp activatePowerUp_end
+    activatePowerUp_dropObs:
+        ;call DropObs
+        jmp activatePowerUp_end
+    activatePowerUp_passObs:
+        call PassObs
+        jmp activatePowerUp_end
+    activatePowerUp_end:
+        mov processed_power, 0
+        mov processed_power_holder, 0
+        ret
+activatePowerUp ENDP
 ;     ;-----------------------
-; SpeedUp PROC
-;         ret
-; SpeedUp ENDP
-;     ;-----------------------
-; SpeedDown PROC
-;         ret
-; SpeedDown ENDP
+SpeedUp PROC
+    cmp processed_power_holder, 1
+    jz SpeedUp_user1
+    cmp processed_power_holder, 2
+    jz SpeedUp_user2
+    ret
+    SpeedUp_user1:
+        inc user1_speed
+        ret
+    SpeedUp_user2:
+        inc user2_speed
+        ret
+SpeedUp ENDP
+    ;-----------------------
+SpeedDown PROC
+    cmp processed_power_holder, 1
+    jz SpeedDown_user1
+    cmp processed_power_holder, 2
+    jz SpeedDown_user2
+    ret
+    SpeedDown_user1:
+        dec user2_speed
+        ret
+    SpeedDown_user2:
+        dec user1_speed
+        ret
+SpeedDown ENDP
 ;     ;-----------------------
 ; DropObs PROC
 ;     pusha
@@ -364,25 +384,25 @@ setBackground ENDP
 ;         ret
 ; DropObs ENDP
 ;     ;-----------------------
-; PassObs PROC
-;         pusha
-;         cmp processed_power_holder, 1
-;         jz PassObs_user1
-;         cmp processed_power_holder, 2
-;         jz PassObs_user2
-;         jmp PassObs_end
-;     PassObs_user1:
-;         ;! now the user1_obstacles_passed is 0, it must be checked in the collision logic to pass this user through one obstacle
-;         ;! and then it must be set to 1 again
-;         dec user1_obstacles_passed  
-;         jmp PassObs_end
-;     PassObs_user2:
-;         dec user2_obstacles_passed
-;         jmp PassObs_end
-;     PassObs_end:
-;         popa
-;         ret
-; PassObs ENDP
+PassObs PROC
+        pusha
+        cmp processed_power_holder, 1
+        jz PassObs_user1
+        cmp processed_power_holder, 2
+        jz PassObs_user2
+        jmp PassObs_end
+    PassObs_user1:
+        ;! now the user1_obstacles_passed is 0, it must be checked in the collision logic to pass this user through one obstacle
+        ;! and then it must be set to 1 again
+        mov user1_obstacles_passed, 1  
+        jmp PassObs_end
+    PassObs_user2:
+        mov user2_obstacles_passed, 1
+        jmp PassObs_end
+    PassObs_end:
+        popa
+        ret
+PassObs ENDP
 
 
     ;-----------------------
@@ -463,7 +483,7 @@ clearPowerUp PROC
 
                  add                 di, SCREEN_WIDTH - (POWERUP_WIDTH*2)   ; move to next line 
                  loop                power_outerLoop
-                 
+
                  ret
 clearPowerUp ENDP
 

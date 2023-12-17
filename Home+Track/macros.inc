@@ -234,29 +234,30 @@ ENDM
 update_user1_pos MACRO
     ; I am considering up as positive y and down as negative y
     mov ax, 0101h ; ah -> x, al -> y
+    mov bx, word ptr user1_speed
 
     up1:
     cmp user1_dir_bools, 00H
     jz right1
-    dec word ptr user1_posY
+    sub word ptr user1_posY, bx
     inc al
 
     right1:
     cmp user1_dir_bools[2], 00H
     jz down1
-    inc word ptr user1_posX
+    add word ptr user1_posX, bx
     inc ah
 
     down1:
     cmp user1_dir_bools[4], 00H
     jz left1
-    inc word ptr user1_posY
+    add word ptr user1_posY, bx
     dec al
 
     left1:
     cmp user1_dir_bools[6], 00H
     jz finish_update1
-    dec word ptr user1_posX
+    sub word ptr user1_posX, bx
     dec ah
     
     finish_update1:
@@ -273,29 +274,30 @@ ENDM
 update_user2_pos MACRO
     ; I am considering up as positive y and down as negative y
     mov ax, 0101h ; ah -> x, al -> y
+    mov bx, word ptr user2_speed
 
     up2:
     cmp user2_dir_bools, 00H
     jz right2
-    dec word ptr user2_posY
+    sub word ptr user2_posY, bx
     inc al
 
     right2:
     cmp user2_dir_bools[2], 00H
     jz down2
-    inc word ptr user2_posX
+    add word ptr user2_posX, bx
     inc ah
 
     down2:
     cmp user2_dir_bools[4], 00H
     jz left2
-    inc word ptr user2_posY
+    add word ptr user2_posY, bx
     dec al
 
     left2:
     cmp user2_dir_bools[6], 00H
     jz finish_update2
-    dec word ptr user2_posX
+    sub word ptr user2_posX, bx
     dec ah
     
     finish_update2:
@@ -392,7 +394,7 @@ add_to_frame macro
     pop ax
 endm
 
-detectCollision macro current_frame, car
+detectCollision macro current_frame, car, user_obstacles_passed
     local collision
 
     ; check for collision with the boundaries 1
@@ -419,12 +421,12 @@ detectCollision macro current_frame, car
 
     ; check for collision with the obstacles
     push              di
+    cmp               user_obstacles_passed, 1
+    jz                collision
     mov               al, current_frame
     mov               si, offset car
     mov               bl, OBSTACLE_COLOR
     call              handleCar
-    cmp               bh, 1
-    jz                collision
 
     collision:
     pop               di
@@ -502,6 +504,7 @@ detectPowerUp macro current_frame, car, stored_powerup
 endm detectPowerUp
 
 getPowerUpColor macro current_powerUp
+    local speed_powerUp, slow_powerUp, generate_obstacle_powerUp, enable_to_pass_powerUp, done_powerUp
     cmp current_powerUp, 1
     jz speed_powerUp
     cmp current_powerUp, 2
@@ -583,7 +586,7 @@ carMainLoop macro
      ; check for collision
                  setStartPixel     user1_posX, user1_posY
                  mov               bh, 0
-                 detectCollision   user1_current_frame, car1
+                 detectCollision   user1_current_frame, car1, user1_obstacles_passed
                  cmp               bh, 1
 
                  jz                middle_jump11
@@ -668,10 +671,24 @@ carMainLoop macro
      ; check for collision
                  setStartPixel     user2_posX, user2_posY
                  mov               bh, 0
-                 detectCollision   user2_current_frame, car2
+                 detectCollision   user2_current_frame, car2, user2_obstacles_passed
                  cmp               bh, 1
-                 jz                user2_collision
+                 jz                middle_jump22
+                 jmp               no_middle_jump22
+                 middle_jump22:
+                 jmp               far ptr user2_collision
+
+                 no_middle_jump22:
+                 detectPowerUp     user2_current_frame, car2, user2_stored_powerup
+                 mov               user2_stored_powerup, cl
+                 cmp               bh, 1
+                 jz                user2_powerUp
                  jmp               user2_no_collision
+
+
+    user2_powerUp:
+                 getPowerUpColor   user2_stored_powerup
+                 call              clearPowerUp
 
      user2_no_collision:
      ; save the background
