@@ -213,6 +213,42 @@ DrawTrack PROC
 	cmp ax, saveCompilationPowerupsClrsCounter
 	jl finalDrawPowerupsLoop
 	popa
+    
+	lea si,Directions
+    	;*-------------------Close start line------------------
+    lea bx,PrevStart
+
+	mov ax,START_X
+	mov x_max_new,ax
+	mov ax,START_Y
+	mov y_max_new,ax
+
+    mov ax,CurrentCase
+	mov x_min_new,ax
+
+	mov ax,[bx]
+	mov START_X,ax
+	mov ax,[bx+2]
+	mov START_Y,ax
+   
+    mov ax,[si]
+	mov CurrentCase ,ax
+    mov END_LINE_LENGTH,LINE_WIDTH+BOUNDARY_WIDTH
+	mov EndTrackColor1,LIGHT_ORANGE
+	mov EndTrackColor2,LIGHT_BLUE
+    
+	call SingleLine
+
+	mov ax,x_max_new
+	mov START_X,ax
+	mov ax,y_max_new
+	mov START_Y,ax
+    mov ax,x_min_new
+	mov CurrentCase,ax
+    mov END_LINE_LENGTH,6
+	mov EndTrackColor1,BLACK
+	mov EndTrackColor2,WHITE
+
 popa
 	ret
 DrawTrack ENDP
@@ -1133,7 +1169,6 @@ GenerateHorizontalTrack PROC
 	ret
  GenerateHorizontalTrack  ENDP
 
-
 GenerateCorner PROC 
 	pusha
 	mov al, DASHESCOLOR
@@ -1289,11 +1324,12 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	sub START_CAR2_Y,START_CAR_SHIFT+SPACE_BETWEEN
    
 	mov ax,START_X
-	sub ax,CAR_HEIGHT/2
+	sub ax,CAR_HEIGHT/2+1
 	mov START_CAR_X,ax
     mov START_CAR2_X,ax
-
-
+   
+    mov isvertical,1
+	mov isup_right,1
 
 	mov user1_current_frame,6
 	mov user2_current_frame,6
@@ -1326,10 +1362,12 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	sub START_CAR2_Y,START_CAR_SHIFT+SPACE_BETWEEN
 
 	mov ax,START_X
-	add ax,CAR_HEIGHT/2
+	add ax,CAR_HEIGHT/2+1
 	mov START_CAR_X,ax
 	mov START_CAR2_X,ax
-
+    
+	mov isvertical,1
+	mov isup_right,1
 
 	mov user1_current_frame,2
 	mov user2_current_frame,2
@@ -1352,7 +1390,7 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	add START_X,10
 
     mov ax,START_Y
-	sub ax,CAR_HEIGHT/2
+	sub ax,CAR_HEIGHT/2+1
 	mov START_CAR_Y,ax
 	mov START_CAR2_Y,ax
 
@@ -1361,6 +1399,9 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	add START_CAR_X,START_CAR_SHIFT
 	mov START_CAR2_X,ax
 	add START_CAR2_X,START_CAR_SHIFT+SPACE_BETWEEN
+
+	mov isvertical,0
+	mov isup_right,1
 
 	mov user1_current_frame,0
 	mov user2_current_frame,0
@@ -1385,12 +1426,15 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov helper,1h
 
 	mov ax,START_Y
-	add ax,CAR_HEIGHT/2
+	add ax,CAR_HEIGHT/2+1
 	mov START_CAR_Y,ax
 	mov START_CAR2_Y,ax
 
 	mov user1_current_frame,4
 	mov user2_current_frame,4
+
+	mov isvertical,0
+	mov isup_right,1
 
 	mov ax,START_X
 	mov START_CAR_X,ax
@@ -1424,10 +1468,6 @@ FinalLine PROC
      inc ax
 
 	loop drawfinalline
-	mov ax,posx
-	mov CHECK_WIN_START_X,ax
-	mov ax,posy
-	mov CHECK_WIN_START_Y,ax
 	ret
 FinalLine ENDP
 SingleLine PROC
@@ -1489,31 +1529,6 @@ SingleLine PROC
 			FinalLine_skip:
 		loop drawsingleline
 
-		 cmp isvertical,1
-			   jnz itshorizontal2
-
-			    cmp isup_right,1
-					jnz itsdown2
-
-						inc posy
-						jmp FinalLine_skip2
-
-					itsdown2:
-					    dec posy
-						jmp FinalLine_skip2
-
-			   itshorizontal2:
-			   cmp isup_right,1
-				jnz itsleft2
-
-					dec posx
-					jmp FinalLine_skip2
-
-				itsleft2:
-					inc posx
-
-			FinalLine_skip2:
-
         popa
 		ret
 SingleLine ENDP
@@ -1553,7 +1568,24 @@ ModifyDirection PROC
 
     cmp CurrentCase,0
 	jnz FinalLine_case1
+
 	mov isup_right,0
+	mov ax,START_X
+	mov finish_x_min,ax
+
+	mov ax,START_Y
+	add ax,END_LINE_LENGTH
+	dec ax
+	mov finish_y_max,ax 
+
+	mov ax,START_Y
+	mov finish_y_min,ax 
+
+	mov ax,LINE_WIDTH
+	add ax,START_X
+	dec ax
+	mov finish_x_max,ax
+
 	ret
 
     FinalLine_case1:
@@ -1561,6 +1593,18 @@ ModifyDirection PROC
 	cmp CurrentCase,1
 	jnz FinalLine_case2
 	mov isup_right,1
+	mov ax,START_X
+	mov finish_x_min,ax
+	mov ax,START_Y
+	mov finish_y_max,ax  
+	mov ax,START_Y
+	sub ax,END_LINE_LENGTH
+    inc ax 
+	mov finish_y_min,ax 
+	mov ax,LINE_WIDTH
+	add ax,START_X
+	dec ax
+	mov finish_x_max,ax
 	ret
 
     FinalLine_case2:
@@ -1570,10 +1614,46 @@ ModifyDirection PROC
 	cmp CurrentCase,2d
 	jnz lefthorizontal1
 	mov isup_right,0
+
+	mov ax,START_X
+	sub ax,END_LINE_LENGTH
+	inc ax
+	mov finish_x_min,ax
+
+	mov ax,START_Y
+	mov finish_y_max,ax  
+
+	mov ax,START_Y
+	sub ax,LINE_WIDTH
+    inc ax 
+	mov finish_y_min,ax 
+
+
+	mov ax,START_X
+	mov finish_x_max,ax
+
 	ret
 
     lefthorizontal1:
 	mov isup_right,1 
+
+	mov ax,START_X
+	add ax,END_LINE_LENGTH
+	dec ax
+	mov finish_x_max,ax
+
+	mov ax,START_Y
+	mov finish_y_max,ax  
+
+	mov ax,START_Y
+	sub ax,LINE_WIDTH
+    inc ax 
+	mov finish_y_min,ax 
+
+
+	mov ax,START_X
+	mov finish_x_min,ax
+
     ret
 ModifyDirection ENDP
 
@@ -1913,6 +1993,29 @@ UpdateUserScore PROC
 
 	mov ax,[si+6]
 	mov y_max_old,ax
+    ;---------------------------------------check for finish line-----------------------------
+	mov ax,finish_x_min
+	cmp user_posX,ax
+	jl checknormalll
+
+	
+	mov ax,finish_x_max
+	cmp user_posX,ax
+	jg checknormalll
+
+	mov ax,finish_y_max
+	cmp user_posY,ax
+	jg checknormalll
+
+	mov ax,finish_y_min
+	cmp user_posY,ax
+	jl checknormalll
+
+	mov userscore,100
+	popa
+	ret 
+
+	checknormalll:
 
 	mov ax,x_min_old
 	cmp user_posX,ax
@@ -1930,7 +2033,7 @@ UpdateUserScore PROC
 	mov ax,y_min_old
 	cmp user_posY,ax
 	jl notpassed
-    
+
 	mov ax,0
     mov al,usernextpart
 	dec al
@@ -1941,11 +2044,7 @@ UpdateUserScore PROC
 	div bl
 	mov userscore,al
 	inc usernextpart
-    cmp usernextpart,cl
-	jl notpassed
-	mov userscore,100
-	popa
-	ret 
+
 	notpassed:
 	popa
 	ret

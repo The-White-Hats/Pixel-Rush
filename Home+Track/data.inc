@@ -104,8 +104,6 @@
          START_DIR db 0
          END_X dw ?
          END_Y dw ?
-         CHECK_WIN_START_X dw ?
-         CHECK_WIN_START_Y dw ?
          ;*----------------------------------BOUNDARY-------------------------------------------------;      
          MIN_X equ 0
          MAX_X equ 319
@@ -117,7 +115,7 @@
 		 HORIZONTAL_LINE_LENGTH equ 26
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
-		 END_LINE_LENGTH equ 6 ;!Finish Line
+		 END_LINE_LENGTH dw 6 ;!Finish Line
 		 END_LINE_DASHEDLINE_LENGTH equ 2 ;!Finish Line
          EndTrackWidthToggle equ 2
 
@@ -158,9 +156,6 @@
 
 		prev_start_x dw ?
 		prev_start_y dw ?
-
-        last_success_x dw ?
-        last_success_y dw ?
         
         x_max_new dw ?
         x_min_new dw ?
@@ -173,7 +168,11 @@
 
         y_max_old dw ?
         y_min_old dw ?
-        
+
+        finish_x_max dw ?
+        finish_x_min dw ?
+        finish_y_max dw ?
+        finish_y_min dw ?
 
         Directions dw MAX_PARTS+1 dup(0)
 
@@ -289,6 +288,6 @@
         divider db 3H
 		helper db 1H
 		random db 0
+        resetTH db ?
         s db 0
-;-----------------------------------;
-    resetTH db ?
+    ;-----------------------------------;
