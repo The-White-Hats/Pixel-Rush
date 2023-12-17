@@ -113,6 +113,7 @@ DrawTrack PROC
     mov cx,MAX_PARTS
 	sub cx,ax
 	mov TotalParts,cx
+
 	iterate:
 
 	   mov ax,[si]
@@ -213,30 +214,48 @@ DrawTrack PROC
 	cmp ax, saveCompilationPowerupsClrsCounter
 	jl finalDrawPowerupsLoop
 	popa
+    
+	lea si,Directions
+    	;*-------------------Close start line------------------
+    lea bx,PrevStart
+
+	mov ax,START_X
+	mov x_max_new,ax
+	mov ax,START_Y
+	mov y_max_new,ax
+
+    mov ax,CurrentCase
+	mov x_min_new,ax
+
+	mov ax,[bx]
+	mov START_X,ax
+	mov ax,[bx+2]
+	mov START_Y,ax
+   
+    mov ax,[si]
+	mov CurrentCase ,ax
+    mov END_LINE_LENGTH,LINE_WIDTH+BOUNDARY_WIDTH
+	mov EndTrackColor1,LIGHT_ORANGE
+	mov EndTrackColor2,ORANGE_RED
+    
+	call SingleLine
+
+	mov ax,x_max_new
+	mov START_X,ax
+	mov ax,y_max_new
+	mov START_Y,ax
+    mov ax,x_min_new
+	mov CurrentCase,ax
+    mov END_LINE_LENGTH,6
+	mov EndTrackColor1,BLACK
+	mov EndTrackColor2,WHITE
+
 popa
 	ret
 DrawTrack ENDP
 
 GenerateTrackDirections PROC 
-	Restart:
-		mov ah, 2Ch
-		int 21H    ; puts the millseconds in dl
-		add dh,1		; threshold time
-		mov al, dh ; contain hundreds of seconds
-		mov bl,60
-		mov ah,0
-		xor dx,dx
-		div bl
-		mov resetTH,ah
-
-
-    ; mov ah, 2Ch
-	; int 21H    ; puts the millseconds in dl
-	; mov al, dl ; contain hundreds of seconds
-	; mov starttime,al
-
-    ; mov helper,1
-		call ResetAllTrackData
+	call ResetAllTrackData
 
     call RandomStart
 
@@ -262,29 +281,8 @@ GenerateTrackDirections PROC
 	mov [bx+2],ax
 	add bx,4
     
-    ; mov TotalParts,0
 
 	GenerateTrackDir_loop:
-	;    pusha
-	; 	mov ah, 2Ch
-	; 	int 21H    ; puts the millseconds in dl
-	; 	mov al, dl ; contain hundreds of seconds
-	; 	sub al,starttime
-	; 	cmp al,99
-	; 	jge Restart
-    ;    popa
-
-		pusha
-		mov ah, 2Ch
-		int 21H    ; puts the millseconds in dl
-		mov al, dh ; contain hundreds of seconds
-		mov bl,60
-		mov ah,0
-		xor dx,dx
-		div bl
-		cmp ah,resetTH
-		jz Restart
-		popa
 
         mov ax,START_X
 		mov prev_start_x,ax
@@ -302,10 +300,8 @@ GenerateTrackDirections PROC
 		mov lastRandom,al
 
 		skipmove:  
-		
+	    
     	call specifiedrandom
-
-
 
         cmp random_part , 0 
 		jnz case1
@@ -720,7 +716,7 @@ GenerateTrackDirections PROC
 				inc ax
 				mov [bx-2],ax
 				pop bx
-				cmp ax,WRONGTHRESHOLD
+				cmp ax,2
 				jz dont_try
         	GenerateTrackDir_still:
         ;*-----------------------------------------------;
@@ -732,6 +728,7 @@ GenerateTrackDirections ENDP
 
 ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values of x,y. they should be updated before calling this procedure
 	pusha
+	
 	;---------------------------check for bounadry conditions---------------------------------;
 			cmp x_min_new,MIN_X
 			jge ValidateTrack_check1
@@ -757,8 +754,9 @@ ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values 
    jz ValidateTrack_skip
    lea si,ClosedArea
    mov cx,0
-   for1:
 
+   for1:
+    
 	mov ax,[si]
 	mov x_min_old,ax
 
@@ -788,6 +786,7 @@ ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values 
 	ret 
    
     wrong:
+
     mov TrackCheckFlag,0
 	popa
 	ret
@@ -1139,10 +1138,19 @@ GenerateHorizontalTrack PROC
 
     final:
 	popa
+	pusha
+	mov ax ,TotalParts
+	sub ax,cx
+    cmp ax,2
+	jle leaveleave
+	add ax,2
+	cmp ax,TotalParts
+	jge leaveleave
 	call GenerateObstaclesPowerUps
+    leaveleave:
+	popa
 	ret
  GenerateHorizontalTrack  ENDP
-
 
 GenerateCorner PROC 
 	pusha
@@ -1206,24 +1214,21 @@ GenerateCorner PROC
 GenerateCorner ENDP
 
 randomizer PROC
-    pusha
+  pusha
   mov ah, 2Ch
   int 21H    ; puts the millseconds in dl
   mov al, dl ; contain hundreds of seconds
-
   mov ah, 0
+
   div helper ; divide ax by the helper which keep changing; puts the quotiant in al , and remainder in ah
   xor bx, bx
   xor dx, dx
   mov bl, divider
   div bx
-  mov random, dl ; puts the remainder in random
-	; mov ah,02h
-  ;   mov dl,'a'
-  ;   int 21h 
 
+  mov random, dl ; puts the remainder in random
   inc helper    ; increment helper to insure random value every time
-  cmp helper, 100d ; return helper to 1 if it's ffh to avoid dividing by zero
+  cmp helper, 9d ; return helper to 1 if it's ffh to avoid dividing by zero
   jne dontreturn
   mov helper, 1h
   dontreturn:
@@ -1282,10 +1287,16 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
     mov ax,START_Y
 	mov START_CAR_Y,ax
 	sub START_CAR_Y,START_CAR_SHIFT
-
+	mov START_CAR2_Y,ax
+	sub START_CAR2_Y,START_CAR_SHIFT+SPACE_BETWEEN
+   
 	mov ax,START_X
-	sub ax,CAR_HEIGHT/2
+	sub ax,CAR_HEIGHT/2+1
 	mov START_CAR_X,ax
+    mov START_CAR2_X,ax
+   
+    mov isvertical,1
+	mov isup_right,1
 
 	mov user1_current_frame,6
 	mov user2_current_frame,6
@@ -1314,10 +1325,16 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
     mov ax,START_Y
 	mov START_CAR_Y,ax
 	sub START_CAR_Y,START_CAR_SHIFT
+	mov START_CAR2_Y,ax
+	sub START_CAR2_Y,START_CAR_SHIFT+SPACE_BETWEEN
 
 	mov ax,START_X
-	add ax,CAR_HEIGHT/2
+	add ax,CAR_HEIGHT/2+1
 	mov START_CAR_X,ax
+	mov START_CAR2_X,ax
+    
+	mov isvertical,1
+	mov isup_right,1
 
 	mov user1_current_frame,2
 	mov user2_current_frame,2
@@ -1340,12 +1357,18 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	add START_X,10
 
     mov ax,START_Y
-	sub ax,CAR_HEIGHT/2
+	sub ax,CAR_HEIGHT/2+1
 	mov START_CAR_Y,ax
+	mov START_CAR2_Y,ax
 
 	mov ax,START_X
 	mov START_CAR_X,ax
 	add START_CAR_X,START_CAR_SHIFT
+	mov START_CAR2_X,ax
+	add START_CAR2_X,START_CAR_SHIFT+SPACE_BETWEEN
+
+	mov isvertical,0
+	mov isup_right,1
 
 	mov user1_current_frame,0
 	mov user2_current_frame,0
@@ -1370,15 +1393,21 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov helper,1h
 
 	mov ax,START_Y
-	add ax,CAR_HEIGHT/2
+	add ax,CAR_HEIGHT/2+1
 	mov START_CAR_Y,ax
+	mov START_CAR2_Y,ax
 
 	mov user1_current_frame,4
 	mov user2_current_frame,4
 
+	mov isvertical,0
+	mov isup_right,1
+
 	mov ax,START_X
 	mov START_CAR_X,ax
 	add START_CAR_X,START_CAR_SHIFT
+	mov START_CAR2_X,ax
+	add START_CAR2_X,START_CAR_SHIFT+SPACE_BETWEEN
 
 	ret
 RandomStart ENDP
@@ -1406,10 +1435,6 @@ FinalLine PROC
      inc ax
 
 	loop drawfinalline
-	mov ax,posx
-	mov CHECK_WIN_START_X,ax
-	mov ax,posy
-	mov CHECK_WIN_START_Y,ax
 	ret
 FinalLine ENDP
 SingleLine PROC
@@ -1471,31 +1496,6 @@ SingleLine PROC
 			FinalLine_skip:
 		loop drawsingleline
 
-		 cmp isvertical,1
-			   jnz itshorizontal2
-
-			    cmp isup_right,1
-					jnz itsdown2
-
-						inc posy
-						jmp FinalLine_skip2
-
-					itsdown2:
-					    dec posy
-						jmp FinalLine_skip2
-
-			   itshorizontal2:
-			   cmp isup_right,1
-				jnz itsleft2
-
-					dec posx
-					jmp FinalLine_skip2
-
-				itsleft2:
-					inc posx
-
-			FinalLine_skip2:
-
         popa
 		ret
 SingleLine ENDP
@@ -1535,7 +1535,24 @@ ModifyDirection PROC
 
     cmp CurrentCase,0
 	jnz FinalLine_case1
+
 	mov isup_right,0
+	mov ax,START_X
+	mov finish_x_min,ax
+
+	mov ax,START_Y
+	add ax,END_LINE_LENGTH
+	dec ax
+	mov finish_y_max,ax 
+
+	mov ax,START_Y
+	mov finish_y_min,ax 
+
+	mov ax,LINE_WIDTH
+	add ax,START_X
+	dec ax
+	mov finish_x_max,ax
+
 	ret
 
     FinalLine_case1:
@@ -1543,6 +1560,18 @@ ModifyDirection PROC
 	cmp CurrentCase,1
 	jnz FinalLine_case2
 	mov isup_right,1
+	mov ax,START_X
+	mov finish_x_min,ax
+	mov ax,START_Y
+	mov finish_y_max,ax  
+	mov ax,START_Y
+	sub ax,END_LINE_LENGTH
+    inc ax 
+	mov finish_y_min,ax 
+	mov ax,LINE_WIDTH
+	add ax,START_X
+	dec ax
+	mov finish_x_max,ax
 	ret
 
     FinalLine_case2:
@@ -1552,29 +1581,67 @@ ModifyDirection PROC
 	cmp CurrentCase,2d
 	jnz lefthorizontal1
 	mov isup_right,0
+
+	mov ax,START_X
+	sub ax,END_LINE_LENGTH
+	inc ax
+	mov finish_x_min,ax
+
+	mov ax,START_Y
+	mov finish_y_max,ax  
+
+	mov ax,START_Y
+	sub ax,LINE_WIDTH
+    inc ax 
+	mov finish_y_min,ax 
+
+
+	mov ax,START_X
+	mov finish_x_max,ax
+
 	ret
 
     lefthorizontal1:
 	mov isup_right,1 
+
+	mov ax,START_X
+	add ax,END_LINE_LENGTH
+	dec ax
+	mov finish_x_max,ax
+
+	mov ax,START_Y
+	mov finish_y_max,ax  
+
+	mov ax,START_Y
+	sub ax,LINE_WIDTH
+    inc ax 
+	mov finish_y_min,ax 
+
+
+	mov ax,START_X
+	mov finish_x_min,ax
+
     ret
 ModifyDirection ENDP
 
 GenerateObstaclesPowerUps PROC
 	pusha
-	mov divider, 4H
+	cmp isLastPowerup, 1
+	jz forceObs
+	mov divider, 12h
 	call randomizer ; randomize the existence of an obstacle
-	call randomizer 
-	call randomizer 
-	cmp random, 0
+	cmp random, 02h
 	jg power1
+	forceObs:
+	mov isLastPowerup, 0
 	mov al, OBSTACLE_COLOR
 	jmp initiateDraw2
 	power1:
 
-	mov divider, 2H   ; randomize the powerup, draw or save for later
-	call randomizer 
-	mov al, random
+	mov isLastPowerup, 1
+	mov al, isLastPowerupShown
 	mov nowORthen, al
+	xor isLastPowerupShown, 1
 
 	typeRandomizer:
 	call randomizer ; randomize the type of the powerup
@@ -1895,6 +1962,29 @@ UpdateUserScore PROC
 
 	mov ax,[si+6]
 	mov y_max_old,ax
+    ;---------------------------------------check for finish line-----------------------------
+	mov ax,finish_x_min
+	cmp user_posX,ax
+	jl checknormalll
+
+	
+	mov ax,finish_x_max
+	cmp user_posX,ax
+	jg checknormalll
+
+	mov ax,finish_y_max
+	cmp user_posY,ax
+	jg checknormalll
+
+	mov ax,finish_y_min
+	cmp user_posY,ax
+	jl checknormalll
+
+	mov userscore,100
+	popa
+	ret 
+
+	checknormalll:
 
 	mov ax,x_min_old
 	cmp user_posX,ax
@@ -1912,7 +2002,7 @@ UpdateUserScore PROC
 	mov ax,y_min_old
 	cmp user_posY,ax
 	jl notpassed
-    
+
 	mov ax,0
     mov al,usernextpart
 	dec al
@@ -1923,11 +2013,7 @@ UpdateUserScore PROC
 	div bl
 	mov userscore,al
 	inc usernextpart
-    cmp usernextpart,cl
-	jl notpassed
-	mov userscore,100
-	popa
-	ret 
+
 	notpassed:
 	popa
 	ret
@@ -2094,7 +2180,8 @@ ResetAllTrackData PROC
 	mov isup_right, 0H ;! 1 up or right 0 oppisite
 
 	mov CountDownMin, 2H
-	mov CountDownSec, 0H
+	mov CountDownSec, 0H 
+	mov TotalParts,0
 	;--------------------------------------------------------------------------;
 	;TODO add data in the data.inc line 175
 
@@ -2118,12 +2205,6 @@ ResetAllTrackData PROC
 	mov lastRandom, 0
 	mov currentRandom, 0
 	mov validationFlag, 0
-	; lea si, casse0
-	; mov [si], 5
-	; inc si
-	; mov [si], 7
-	; inc si
-	; mov [si], 0
 	;-----------------------------Obstacles and powerups-----------------------;
 	mov latestPos, 0
 	mov nowORthen, 0 ; 0 means now, 1 means then (POWERUPS)

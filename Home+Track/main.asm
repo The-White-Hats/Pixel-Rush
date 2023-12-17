@@ -39,7 +39,7 @@ GameMain PROC FAR
 	    
           putWallPaperM 7, 5, 0, 0
 	     
-          paintAreaM 0,MAX_Y+2,320,1,BLUE
+          paintAreaM 0,MAX_Y+2,320,1,GOLD
 
           paintAreaM 0,MAX_Y+3,320,200-MAX_Y-3,BLACK
 

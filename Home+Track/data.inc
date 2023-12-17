@@ -14,7 +14,8 @@
 
     FILE_NAME_LEN   equ 9
 
-    START_CAR_SHIFT equ 10
+    START_CAR_SHIFT equ 8
+    SPACE_BETWEEN   equ 10
     ;------------Files-------------;
     carFile         db  'car0.bin', 0
                     db  'car1.bin', 0
@@ -83,7 +84,7 @@
          DASHEDLINEATTR equ 0F0h ; 
          
 		 BOUNDARY_COLOR1 equ LIGHT_ORANGE
-		 BOUNDARY_COLOR2 equ EXTRA_LIGHT_GRAY
+		 BOUNDARY_COLOR2 equ ORANGE_RED
 
 		 EndTrackColor1 db BLACK ;!Finish Line
 		 EndTrackColor2 db WHITE ;!Finish Line
@@ -102,23 +103,23 @@
          START_Y dw 150
          START_CAR_X dw 2
          START_CAR_Y dw 150
+         START_CAR2_X dw 2
+         START_CAR2_Y dw 150
          START_DIR db 0
          END_X dw ?
          END_Y dw ?
-         CHECK_WIN_START_X dw ?
-         CHECK_WIN_START_Y dw ?
          ;*----------------------------------BOUNDARY-------------------------------------------------;      
          MIN_X equ 0
          MAX_X equ 319
          MIN_Y equ 10
-         MAX_Y equ 170 
+         MAX_Y equ 180 
          ;*----------------------------------Dimensions-------------------------------------------------;
          LINE_WIDTH equ 25
          LINE_LENGTH equ 5
 		 HORIZONTAL_LINE_LENGTH equ 26
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
-		 END_LINE_LENGTH equ 6 ;!Finish Line
+		 END_LINE_LENGTH dw 6 ;!Finish Line
 		 END_LINE_DASHEDLINE_LENGTH equ 2 ;!Finish Line
          EndTrackWidthToggle equ 2
 
@@ -145,10 +146,9 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 10
+        MAX_PARTS equ 30
         TIME equ 0
 		WRONGTHRESHOLD equ 12
-
 
         CountDownMin db 2
         CountDownSec db 0
@@ -159,9 +159,6 @@
 
 		prev_start_x dw ?
 		prev_start_y dw ?
-
-        last_success_x dw ?
-        last_success_y dw ?
         
         x_max_new dw ?
         x_min_new dw ?
@@ -174,7 +171,11 @@
 
         y_max_old dw ?
         y_min_old dw ?
-        
+
+        finish_x_max dw ?
+        finish_x_min dw ?
+        finish_y_max dw ?
+        finish_y_min dw ?
 
         Directions dw MAX_PARTS+1 dup(0)
 
@@ -228,7 +229,8 @@
 		casse11 db 0,0,0
 		;*------------------------------------------- OBSTACLES AND POWERUPS -------------------------------------------;
 		POWERUP_SHOW_DELAY equ 5fh
-        
+        isLastPowerup db 0 ;! 0 means last fig is not powerup, 1 means last fig is powerup
+        isLastPowerupShown db 0 ;! 1 means last power is shown, 0 means last power is not shown
         latestPos db 0
 		nowORthen db 0 ; 0 means now, 1 means then (POWERUPS)
 		lastType db POWERUP1_COLOR
@@ -281,15 +283,25 @@
 
         ;! 0 means no powerup, 1 means speed up, 2 means slow down, 3 means drop obstacle, 4 means pass through obstacle
         user1_stored_powerup db 0
-        user2_stored_powerup db 0 
+        user2_stored_powerup db 0
+
+        user1_speedUpCounter db 0 ;! counts the 5 seconds of speeding up the first user 
+        user2_speedUpCounter db 0 ;! counts the 5 seconds of speeding up the second user
+        user1_slowDownCounter db 0 ;! counts the 5 seconds of slowing down the first user
+        user2_slowDownCounter db 0 ;! counts the 5 seconds of slowing down the second user
 
         ;! stated in the doc that the car can pass through 1 obstacle (didn't mention limitid time)
         user1_obstacles_passed db 0
         user2_obstacles_passed db 0
+
+        current_dir db ?
+        current_posX dw ?
+        current_posY dw ?
+
         dt ?
         divider db 3H
 		helper db 1H
 		random db 0
+        resetTH db 0
         s db 0
-;-----------------------------------;
-    resetTH db ?
+    ;-----------------------------------;

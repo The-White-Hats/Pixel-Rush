@@ -31,8 +31,8 @@ include draw.inc
          MIN_Y equ 0
          MAX_Y equ 150
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 10
-         LINE_LENGTH equ 16
+         LINE_WIDTH equ 25
+         LINE_LENGTH equ 26
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 4
          DASHEDLINE_LENGTH equ 6
@@ -50,9 +50,9 @@ include draw.inc
          horizontalDirection db 1 ;! 1 left 0 right
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 80
+        MAX_PARTS equ 20
         TIME equ 0
-		WRONGTHRESHOLD equ 100
+		WRONGTHRESHOLD equ 12
 
 		prev_start_x dw ?
 		prev_start_y dw ?
@@ -144,39 +144,6 @@ main proc far
 
 	clear
     
-	; lea si,Directions
-	; mov cx,MAX_PARTS
-	; l1321:
-	; 	mov ax,[si]	
-	; 	push cx
-	; 	shownum 
-	; 	endl
-	; 	pop  cx
-	; 	add si,2
-	; loop l1321
-
-	; lea si,PrevStart
-	; mov cx,MAX_PARTS
-	; l1321f:
-	; 	mov ax,[si]	
-	; 	push cx
-	; 	shownum 
-	; 	endl
-	; 	pop  cx
-	; 	add si,2
-    ;    	jmp ja55slf
-    ;          GenerateTrackDir_mid688:
-	; 		 jmp  l1321f
-	; 	ja55slf:
-	; 	mov ax,[si]	
-	; 	push cx
-	; 	shownum 
-	; 	endl
-	; 	pop  cx
-	; 	add si,2
-
-	; loop GenerateTrackDir_mid688
-
     call Draw
 
     MOV    AH,0               
@@ -1352,7 +1319,7 @@ randomizer PROC
   mov random, ah ; puts the remainder in random
 
   inc helper    ; increment helper to insure random value every time
-  cmp helper, 0ffh ; return helper to 1 if it's ffh to avoid dividing by zero
+  cmp helper, 09h ; return helper to 1 if it's ffh to avoid dividing by zero
   jne dontreturn
   mov helper, 1h
   dontreturn:

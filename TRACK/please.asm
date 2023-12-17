@@ -42,9 +42,9 @@ include draw.inc
          MIN_Y equ 1
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 18
-         LINE_LENGTH equ 6
-		 HORIZONTAL_LINE_LENGTH equ 19
+         LINE_WIDTH equ 25
+         LINE_LENGTH equ 5
+		 HORIZONTAL_LINE_LENGTH equ 26
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
 		 END_LINE_LENGTH equ 6 ;!Finish Line
@@ -72,7 +72,7 @@ include draw.inc
         
         MAX_PARTS equ 70
         TIME equ 0
-		WRONGTHRESHOLD equ 12
+		WRONGTHRESHOLD equ 150
 
 		prev_start_x dw ?
 		prev_start_y dw ?
@@ -124,7 +124,7 @@ include draw.inc
 		helper db 1H
 		divider db 3H
 		random db 0
-		s db 0
+		resetTH db 0
 		;*------------------------------------------- CASES -------------------------------------------; 
 		lastRandom db 0
         currentRandom db 0
@@ -141,6 +141,7 @@ include draw.inc
 		casse9 db 0,0,0
 		casse10 db 3,3,3
 		casse11 db 0,0,0
+		s db ?
         
 .code
 main proc far
@@ -386,7 +387,7 @@ Draw PROC
 Draw ENDP
 
 GenerateTrackDirections PROC 
-    
+
 	mov cx,0
 	lea si,Directions
 	lea di,ClosedArea
@@ -413,12 +414,12 @@ GenerateTrackDirections PROC
     mov TotalParts,0
 
 	GenerateTrackDir_loop:
-        
+
         mov ax,START_X
 		mov prev_start_x,ax
 		mov ax,START_Y
 		mov prev_start_y,ax
-      
+        
 		cmp si,startoffsetdirection
 		jz resetlastrandom
 		mov ax,[si-2]
@@ -432,7 +433,12 @@ GenerateTrackDirections PROC
 		skipmove:  
 		
     	call specifiedrandom
-
+        
+		pusha
+		mov ax,TotalParts
+		shownum 
+		endl
+		popa
 
         cmp random_part , 0 
 		jnz case1
@@ -827,8 +833,8 @@ GenerateTrackDirections PROC
 			
 				sub si,2
 
-				mov ax,[si-2]
-		        mov lastRandom,al
+				; mov ax,[si-2]
+		        ; mov lastRandom,al
 
 				sub di,8
 
@@ -844,12 +850,14 @@ GenerateTrackDirections PROC
                 
 				push bx
 				mov bx,PartWrongsOffset
-				mov [bx],0
+				mov ax,0
+				mov [bx],ax
 				sub PartWrongsOffset,2
-				inc [bx-2]
 				mov ax,[bx-2]
+				inc ax
+				mov [bx-2],ax
 				pop bx
-				cmp ax,WRONGTHRESHOLD
+				cmp ax,10
 				jz dont_try
         	GenerateTrackDir_still:
         ;*-----------------------------------------------;
@@ -1281,7 +1289,7 @@ randomizer PROC
   mov random, ah ; puts the remainder in random
 
   inc helper    ; increment helper to insure random value every time
-  cmp helper, 0ffh ; return helper to 1 if it's ffh to avoid dividing by zero
+  cmp helper, 09h ; return helper to 1 if it's ffh to avoid dividing by zero
   jne dontreturn
   mov helper, 1h
   dontreturn:
