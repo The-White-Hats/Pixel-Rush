@@ -1908,6 +1908,7 @@ UpdateUserScore PROC
 UpdateUserScore ENDP
 
 UpdateUsersScore PROC
+	;-----------------------------------------user1--------------------------------------;
 	mov ax,user1_posX
     mov user_posX,ax
     mov ax,user1_posY
@@ -1924,15 +1925,18 @@ UpdateUsersScore PROC
     mov al,userscore
     mov user1score,al
 
-	mov ax,user1_posX
+	;-----------------------------------------user2--------------------------------------;
+	mov ax,user2_posX
     mov user_posX,ax
-    mov ax,user1_posY
+    mov ax,user2_posY
     mov user_posY,ax
     mov al,user2nextpart
     mov usernextpart,al
     mov al,user2score
     mov userscore,al
+
     call UpdateUserScore
+
     mov al,usernextpart
     mov user2nextpart,al
     mov al,userscore
