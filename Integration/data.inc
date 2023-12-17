@@ -35,13 +35,15 @@
                         dt  ?
 
     ; start from 0 on up and move clockwise
-    current_frame   db  0
-    current_dir     db  0
+    current_frame   db  ?
+    prev_frame      db  ?
+    current_dir     db  ?
+    prev_dir        db  ?
     
-    user1_posX      dw  ?                                                ; Position X
-    user1_posY      dw  ?                                                ; Position Y
-    user1_dir_bools db  7 dup(0)                                         ; up, right, down, left
-                    db  0                                                ; margin
+    user1_posX      dw  ?
+    user1_posY      dw  ?
+    user1_dir_bools db  7 dup(0)              ; up, right, down, left
+                    db  0                     ; margin
     user1_dir_arr   db  48h, 4dh, 50H, 4BH
     prev_user1_posX dw  ?
     prev_user1_posY dw  ?
@@ -56,26 +58,11 @@
 
 ;------------------Generation----------------;
     ;*----------------------------------COLORS------------------------------------------------------;
-         TEXT_COLOR equ 0    ; DefaultBackground text on BOUNDARY_COLOR2 background
          SCREEN_ATTR equ 0F0h ; BOUNDARY_COLOR2 background (high nibble) and DefaultBackground text (low nibble)
          DASHEDLINEATTR equ 0F0h ; 
-         RED equ 04h
-         LIGHT_GREEN equ 0Ah
-         GREEN equ 02h
-         LIGHT_GRAY equ 07h
-         GRAY equ 08h
-         WHITE equ 0Fh
-         BLACK equ 00h
-		 CYAN equ 03h
-		 LIGHT_CYAN equ 0bh	
-		 Brown equ 06h
-		 BLUE equ 01h 
-		 LIGHT_BLUE equ 09h
-		 PURPLE equ 05h
-		 YELLOW equ 0Eh
-
-		 BOUNDARY_COLOR1 equ BLUE
-		 BOUNDARY_COLOR2 equ RED
+         
+		 BOUNDARY_COLOR1 equ LIGHT_ORANGE
+		 BOUNDARY_COLOR2 equ EXTRA_LIGHT_GRAY
 
 		 EndTrackColor1 db BLACK ;!Finish Line
 		 EndTrackColor2 db WHITE ;!Finish Line
@@ -114,7 +101,7 @@
 
          BOUNDARY_WIDTH equ 1
          BOUNDARY_LENGTH equ 3
-         DASHEDLINE_LENGTH equ 3
+         DASHEDLINE_LENGTH equ 5
 		 OBSTACLE_WIDTH equ 4
 		 OBSTACLE_LENGTH equ 4
 		 POWERUP_WIDTH equ 2
@@ -211,27 +198,25 @@
 		casse10 db 3,3,3
 		casse11 db 0,0,0
 		;*------------------------------------------- OBSTACLES AND POWERUPS -------------------------------------------;
-        POWERUP_SHOW_DELAY equ 5fh
-
-		latestPos db 0
-		nowORthen db 0 ;! 0 means now, 1 means then (POWERUPS)
+		POWERUP_SHOW_DELAY equ 5fh
+        
+        latestPos db 0
+		nowORthen db 0 ; 0 means now, 1 means then (POWERUPS)
 		lastType db POWERUP1_COLOR
 		latestType db POWERUP2_COLOR
 
-		obstacles dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (center, bottom)
-        
-
+		obstacles dw MAX_PARTS*2 dup(0) ;! START_X,START_Y (bottom left corner)
 		compilationPowerups dw MAX_PARTS*2 dup(0)
         ;*------------------------------------------- USERS DATA -------------------------------------------;
 		stringcolor db ?
-		user1name db 'Marwan$' 
-		user2name db 'Youssef$'
+		;user1name db 'Marwan$' 
+		;user2name db 'Youssef$'
 		scorename db 'Score: $'
         userscore db 0
         user1score db 0
 		user2score db 0
-		user1theme db PURPLE
-		user2theme db CYAN
+		user1theme db LIGHT_BLUE
+		user2theme db RED
         usernextpart db  1
         user1nextpart db 1
         user2nextpart db 1
@@ -278,3 +263,77 @@
 		random db 0
         s db 0
 ;-----------------------------------;
+
+RED equ 04h
+LIGHT_GREEN equ 0Ah
+GREEN equ 02h
+LIGHT_GRAY equ 07h
+GRAY equ 08h
+WHITE equ 0Fh
+BLACK equ 00h
+CYAN equ 03h
+LIGHT_CYAN equ 0bh	
+BROWN equ 06h
+BLUE equ 01h 
+LIGHT_BLUE equ 09h
+PURPLE equ 05h
+YELLOW equ 0Eh
+ORANGE equ 0Ch
+LIGHT_ORANGE equ 27h
+EXTRA_LIGHT_GRAY equ 2ch
+TEXT_COLOR equ YELLOW
+
+logoUL db 'logoUl.bin', 0
+logoLL db 'logoLL.bin', 0
+logoUR db 'logoUR.bin', 0
+logoLR db 'logoLR.bin', 0
+hackers db 'hackers.bin', 0
+firstPN db 'P1N.bin', 0
+secondPN db 'P2N.bin', 0
+F1button db 'F1B.bin',  0
+F2button db 'F2B.bin',  0
+Exitbutton db 'ExitB.bin',  0
+wallpaper db 'w1.bin', 0
+
+BackgroundColor equ 2AH
+ScreenWidth equ 640d
+ScreenHeight equ 480d
+
+buffer_size equ 15560           ; the array size which is gonna be filled with the img data from the .bin file
+buffer db buffer_size dup(?)
+
+Xstart dw ?
+Ystart dw ?
+Xlimit dw ?
+Ylimit dw ?
+
+; bg = background, C = column, R = row | repeat, S = start
+bgCR db ?
+bgRR db ?
+bgCS dw ?
+bgRS dw ?
+bgSize equ 48
+
+errorFlag db 0
+
+nameWarning db "Invalid first letter",'$'
+warningX equ 40 - ($ - nameWarning - 1)/2
+warningY equ 22
+warningSize equ $ - 1 - nameWarning
+
+user1name db 16 dup('$')
+name1Size db ?
+
+points1 db 0
+
+user2name db 16 dup('$')
+name2Size db ?
+
+points2 db 0
+
+
+nameSize equ 15d
+nameInputX equ 40 - nameSize/2
+nameInputY equ 21
+
+lineHeight equ 16D

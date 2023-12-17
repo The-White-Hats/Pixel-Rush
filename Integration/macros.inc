@@ -60,7 +60,7 @@ shownum macro
        inc bx 
        cmp ax,0
      jnz l1     
-     mov [bx],'$' 
+     mov byte ptr [bx],'$' 
      mov cx, bx
      lea dx,s
      sub cx,dx  
@@ -174,13 +174,17 @@ intialCarPosition macro
     mov     ax, START_CAR_Y
     mov     user1_posY, ax
 
+    mov     al, current_frame
+    mov     current_dir, al
+
     ; save the background
     setStartPixel user1_posX, user1_posY
     mov     bx, 1
     call    setBackground
 
     ; draw the car
-    call    drawCar
+    mov     bh, 1
+    call    handleCar
 endm intialCarPosition
 
 setStartPixel MACRO xpos, ypos
@@ -278,51 +282,86 @@ endm
 
 carMainLoop macro
 
-    again:
+     again:      
 
-    call UpdateUsersScore
+                 call              UpdateUsersScore
 
-    ; Delay Function
-             delayFunc
-             call ShowInGamePowerUps
+     ; Delay Function
+                 delayFunc
+     call              ShowInGamePowerUps
 
-    ; update the location
-    ; copy the current postions into prev_postions
-             mov                 ax, user1_posX
-             mov                 prev_user1_posX, ax
-             mov                 ax, user1_posY
-             mov                 prev_user1_posY, ax
-             update_user1_pos
+     ; update the location
+     ; copy the current states into previous ones
+                 mov               ax, user1_posX
+                 mov               prev_user1_posX, ax
+                 mov               ax, user1_posY
+                 mov               prev_user1_posY, ax
+                 mov               al, current_frame
+                 mov               prev_frame, al
+                 mov               al, current_dir
+                 mov               prev_dir, al
+                 update_user1_pos
 
-    ; check if there is a change or not
-             mov                 ax, prev_user1_posX
-             cmp                 ax, user1_posX
-             jnz                 update1                             ; jump to the update if there is a change
-             mov                 ax, prev_user1_posY
-             cmp                 ax, user1_posY
-             jz                  done_all                            ; jump away if there is no change
+     ; check if there is a change or not
+                 mov               ax, prev_user1_posX
+                 cmp               ax, user1_posX
+                 jnz               update1                              ; jump to the update if there is a change
+                 mov               ax, prev_user1_posY
+                 cmp               ax, user1_posY
+                 jz                middle_jump                            ; jump away if there is no change
 
-    update1: 
-    ; remove car and draw background
-             setStartPixel prev_user1_posX, prev_user1_posY
-             mov                bx, 0
-             call               setBackground
+     update1:    
+     ; remove car and draw background
+                 setStartPixel     prev_user1_posX, prev_user1_posY
+                 mov               bx, 0
+                 call              setBackground
 
-    ; save the background
-             setStartPixel user1_posX, user1_posY
-             mov                bx, 1
-             call               setBackground
-    ; draw the car
-             call               drawCar
+     ; check for collision
+                 mov               bh, 0
+                 mov               bl, BOUNDARY_COLOR1
+                 call              handleCar
+                 cmp               bh, 1
+                 jz                collision
 
-    done_all:
-             cmp                 killSignal, 0H
-             jnz                 kill
+                 mov               bl, BOUNDARY_COLOR2
+                 call              handleCar
+                 cmp               bh, 1
+                 jz                collision
+
+     ; save the background
+                 setStartPixel     user1_posX, user1_posY
+                 mov               bx, 1
+                 call              setBackground
+     ; draw the car
+                 mov               bh, 1
+                 call              handleCar
+
+     middle_jump:
+                 jmp               done_all
+
+     collision:  
+     ; get previous postions
+                 mov               ax, prev_user1_posX
+                 mov               user1_posX, ax
+                 mov               ax, prev_user1_posY
+                 mov               user1_posY, ax
+                 mov               al, prev_frame
+                 mov               current_frame, al
+                 mov               al, prev_dir
+                 mov               current_dir, al
+     ; draw the car
+                 mov               bh, 1
+                 call              handleCar
+
+
+     done_all:   
+                 cmp               killSignal, 0H
+                 jnz               kill
  
-             jmp                 again
+                 jmp               again
 
-    kill:    
-    ; restore the original int 9h
-             restoreInt9
+     kill:       
+     ; restore the original int 9h
+                 restoreInt9
 
 endm carMainLoop

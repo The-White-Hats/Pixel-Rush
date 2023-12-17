@@ -30,9 +30,9 @@ MAIN PROC FAR
 
      ; Screen Coloring
           
-	    call DrawScoreBoard
+          call              DrawScoreBoard
 
-	    call BackgroundColoring
+          call              BackgroundColoring
 		
 					    
      ; Input files

@@ -18,7 +18,8 @@ GameMain PROC FAR
      ; initialize memory
           mov               ax , @DATA
           mov               ds , ax
-     call              GenerateTrackDirections
+          call              GenerateTrackDirections
+
      ; clear the screen
           clear
 
@@ -37,7 +38,7 @@ GameMain PROC FAR
 	    
           putWallPaperM 14, 10, 0, 0
 	    
-		call DrawScoreBoard
+		call             DrawScoreBoard
 					    
      ; Input files
           inputAllFiles

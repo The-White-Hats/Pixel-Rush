@@ -102,7 +102,7 @@ DrawTrack PROC
     add si, 2*MAX_PARTS-2
     mov ax,0
     modify_maxparts:
-	  cmp  [si],3d
+	  cmp byte ptr [si],3d
 	  jle Draw_break
 	  inc ax
 	  sub si,2 

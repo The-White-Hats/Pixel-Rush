@@ -8,10 +8,11 @@
     DASHEDLINEATTR  equ 0F0h
     BACK_GROUND     equ 0Ah
 
-    BUFF_SIZE       equ 16*16
 
-    CAR_HEIGHT      equ 16
-    CAR_WIDTH       equ 16
+    CAR_HEIGHT      equ 11
+    CAR_WIDTH       equ 11
+
+    BUFF_SIZE       equ CAR_HEIGHT * CAR_WIDTH
     
     CAR_OFFSET      equ 5
 
@@ -20,19 +21,12 @@
 
     FILE_NAME_LEN   equ 10
     ;------------Files-------------;
-    carFile         db  'car10.bin', 0
-                    db  'car11.bin', 0
-                    db  'car12.bin', 0
-                    db  'car13.bin', 0
-                    db  'car14.bin', 0
-                    db  'car15.bin', 0
-                    db  'car16.bin', 0
-                    db  'car17.bin', 0
+    carFile         db  'car.bin', 0
 
     errorMsg        db  "Something went wrong with files !!", 10, "$"
     
     ;------------Car Directions---------;
-    car             db  8 dup (BUFF_SIZE dup(?))
+    car             db  BUFF_SIZE dup(?)
 
                     dt  ?
 
@@ -124,17 +118,7 @@ MAIN PROC FAR
                  mov                 cx, 0
                  mov                 bp, 0
                  mov                 dx, offset carFile
-    file_again:  
-                 push                dx
-                 push                cx
                  call                inputFile
-                 pop                 cx
-                 pop                 dx
-                 add                 dx, FILE_NAME_LEN
-                 add                 bp, BUFF_SIZE
-                 inc                 cx
-                 cmp                 cx, 8
-                 jnz                 file_again
 
     ; ------------------------------draw the intial position of the players--------------------------;
     ; draw user
@@ -145,40 +129,6 @@ MAIN PROC FAR
                  call                drawCar
 
     ; ------------------this loop is like while(true) until the user press esc to exit the program---------;
-    again:       
-                 mov                 ax, 8600H                                     ; AH = 86h (Delay function), AL = 00h (not used)
-                 xor                 cx, cx                                        ; CH = high order byte of delay count, CL = not used
-                 mov                 dx, 090FFH                                    ; DL = low order byte of delay count, DH = not used
-                 int                 15H                                           ; Call BIOS delay function
-
-    ; update the location
-    ; copy the current postions into prev_postions
-                 mov                 ax, user1_posX
-                 mov                 prev_user1_posX, ax
-                 mov                 ax, user1_posY
-                 mov                 prev_user1_posY, ax
-                 update_user1_pos
-
-    ; check if there is a change or not
-                 mov                 ax, prev_user1_posX
-                 cmp                 ax, user1_posX
-                 jnz                 update1                                       ; jump to the update if there is a change
-                 mov                 ax, prev_user1_posY
-                 cmp                 ax, user1_posY
-                 jz                  done_all                                      ; jump away if there is no change
-
-    update1:     
-                 clear_prev_location prev_user1_posX, prev_user1_posY
-    ; draw user
-                 mov                 bx, 1                                         ; to draw
-                 setStartPixel
-                 call                drawCar
-
-    done_all:    
-                 cmp                 killSignal, 0H
-                 jnz                 kill
- 
-                 jmp                 again
 
     kill:        
     ; Restore the original interrupt vector for int 9h
@@ -280,11 +230,6 @@ drawCar PROC
                  mov                 si, offset car
 
     ; set the car frame
-                 mov                 cx, BUFF_SIZE
-                 mov                 al, current_frame
-                 mov                 ah, 0
-                 mul                 cx
-                 add                 si, ax
 
                  mov                 al, BACK_GROUND
 
