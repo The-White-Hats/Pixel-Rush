@@ -1824,7 +1824,7 @@ DrawScoreBoard PROC
 	lea si ,scorename
     call DisplayString
 
-		mov dl,31 
+		mov dl,30 
 		mov dh,23 
 		int 10h
 
@@ -1950,7 +1950,7 @@ DrawScore PROC
 	popa
 
 	mov ah,2           
-	mov dl,37  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dl,36  ;*1.the row can write up to 40 characters one character takes 8 pixels
 	mov dh,24 ;*2.so the screen is 40*24 char  (24 by testing)
 	int 10h 
 
@@ -1985,4 +1985,50 @@ BackgroundColoring PROC
 	ret
 BackgroundColoring ENDP
 
+Timer PROC
+	pusha
+	mov ah, 2Ch
+	int 21H    ; puts the millseconds in dl
+	cmp PrevSec, dh ; contain hundreds of seconds
+	jz Timer_leave
+    mov PrevSec,dh
+	cmp CountDownSec,0
+	jz decrementmin
+	dec CountDownSec
+    jmp Timer_leave
+	
+	decrementmin:
+	mov CountDownSec,59
+	cmp CountDownMin,0
+	jz Timer_finished
+	dec CountDownMin
+    jmp Timer_leave
 
+	Timer_finished:
+	mov killSignal,1
+    jmp Timer_return
+
+	Timer_leave:
+    mov ah,2           
+	mov dl,0  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dh,0 ;*2.so the screen is 40*24 char  (24 by testing)
+	int 10h
+	mov ax,0
+	mov al,CountDownMin
+	shownum 
+	mov dl,':'
+	mov ah,2
+	int 21h
+	cmp CountDownSec,10
+	jge show2
+	mov dl,'0'
+	mov ah,2
+	int 21h
+	show2:
+	mov ax,0
+	mov al,CountDownSec
+	shownum
+	Timer_return:
+	popa
+	ret
+Timer ENDP

@@ -428,8 +428,8 @@ CheckForGameFinish PROC
     mov IsUser2Win,1
     
     display_winnerscreen:
-    mov killSignal,1h
-
+    mov killSignal,1
+    
     CheckForGameFinish_skip:
     popa
     ret

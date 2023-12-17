@@ -278,7 +278,12 @@ endm
 
 carMainLoop macro
 
+    mov ah, 2Ch
+	int 21H    ; puts the millseconds in dl
+	mov PrevSec, dh ; contain hundreds of seconds
+
     again:
+
 
     call UpdateUsersScore
 
@@ -313,16 +318,17 @@ carMainLoop macro
              call               setBackground
     ; draw the car
              call               drawCar
-    ; check for winner         
-             call               CheckForGameFinish 
     done_all:
-             cmp                 killSignal, 0H
-             jnz                 kill
+               call Timer
+            ; check for winner         
+                    
+            call CheckForGameFinish  
+            cmp                 killSignal, 0H
+            jnz                 kill
  
              jmp                 again
 
     kill:    
     ; restore the original int 9h
              restoreInt9    
-      ret
 endm carMainLoop

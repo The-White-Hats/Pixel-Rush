@@ -87,7 +87,7 @@
          ;*----------------------------------BOUNDARY-------------------------------------------------;      
          MIN_X equ 0
          MAX_X equ 319
-         MIN_Y equ 0
+         MIN_Y equ 10
          MAX_Y equ 170 
          ;*----------------------------------Dimensions-------------------------------------------------;
          LINE_WIDTH equ 18
@@ -122,9 +122,15 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 5
+        MAX_PARTS equ 10
         TIME equ 0
 		WRONGTHRESHOLD equ 12
+
+
+        CountDownMin db 2
+        CountDownSec db 0
+
+        PrevSec db ?
 
         starttime db ?
 
