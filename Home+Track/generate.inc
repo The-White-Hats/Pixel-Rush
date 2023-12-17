@@ -219,15 +219,26 @@ DrawTrack ENDP
 
 GenerateTrackDirections PROC 
 	Restart:
+		mov ah, 2Ch
+		int 21H    ; puts the millseconds in dl
+		add dh,1		; threshold time
+		mov al, dh ; contain hundreds of seconds
+		mov bl,60
+		mov ah,0
+		xor dx,dx
+		div bl
+		mov resetTH,ah
 
-    call RandomStart
 
     ; mov ah, 2Ch
 	; int 21H    ; puts the millseconds in dl
 	; mov al, dl ; contain hundreds of seconds
 	; mov starttime,al
 
-    mov helper,1
+    ; mov helper,1
+		call ResetAllTrackData
+
+    call RandomStart
 
 	lea si,Directions
 	lea di,ClosedArea
@@ -251,7 +262,7 @@ GenerateTrackDirections PROC
 	mov [bx+2],ax
 	add bx,4
     
-    mov TotalParts,0
+    ; mov TotalParts,0
 
 	GenerateTrackDir_loop:
 	;    pusha
@@ -262,6 +273,18 @@ GenerateTrackDirections PROC
 	; 	cmp al,99
 	; 	jge Restart
     ;    popa
+
+		pusha
+		mov ah, 2Ch
+		int 21H    ; puts the millseconds in dl
+		mov al, dh ; contain hundreds of seconds
+		mov bl,60
+		mov ah,0
+		xor dx,dx
+		div bl
+		cmp ah,resetTH
+		jz Restart
+		popa
 
         mov ax,START_X
 		mov prev_start_x,ax
@@ -1195,6 +1218,9 @@ randomizer PROC
   mov bl, divider
   div bx
   mov random, dl ; puts the remainder in random
+	; mov ah,02h
+  ;   mov dl,'a'
+  ;   int 21h 
 
   inc helper    ; increment helper to insure random value every time
   cmp helper, 100d ; return helper to 1 if it's ffh to avoid dividing by zero
