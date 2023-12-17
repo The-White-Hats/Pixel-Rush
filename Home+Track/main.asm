@@ -34,7 +34,8 @@ GameMain PROC FAR
           mov               es, ax
 
      ; Screen Coloring
-          
+          mov IsUser1Win,0
+          mov IsUser2Win,0
 	    
           putWallPaperM 14, 10, 0, 0
 	    

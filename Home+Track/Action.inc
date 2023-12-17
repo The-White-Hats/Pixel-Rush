@@ -1,15 +1,3 @@
-;description
-showColoredusername MACRO str, color, row, column
-    lea bp, str
-    ; Print the string in red color at position (100, 50)
-    mov ah, 13h
-    mov al, 0 ; sub-function 0: use BL as color and do not update cursor
-    mov bh, 0 ; page number
-    mov bl, color ; red color
-    mov dh, row ; row
-    mov dl, column ; column
-    int 10h
-ENDM showColoredusername
 WinnerScreen PROC
     pusha
     lea si ,user1name
