@@ -113,6 +113,7 @@ DrawTrack PROC
     mov cx,MAX_PARTS
 	sub cx,ax
 	mov TotalParts,cx
+
 	iterate:
 
 	   mov ax,[si]
@@ -235,7 +236,7 @@ DrawTrack PROC
 	mov CurrentCase ,ax
     mov END_LINE_LENGTH,LINE_WIDTH+BOUNDARY_WIDTH
 	mov EndTrackColor1,LIGHT_ORANGE
-	mov EndTrackColor2,LIGHT_BLUE
+	mov EndTrackColor2,ORANGE_RED
     
 	call SingleLine
 
@@ -1165,7 +1166,17 @@ GenerateHorizontalTrack PROC
 
     final:
 	popa
+	pusha
+	mov ax ,TotalParts
+	sub ax,cx
+    cmp ax,2
+	jle leaveleave
+	add ax,2
+	cmp ax,TotalParts
+	jge leaveleave
 	call GenerateObstaclesPowerUps
+    leaveleave:
+	popa
 	ret
  GenerateHorizontalTrack  ENDP
 

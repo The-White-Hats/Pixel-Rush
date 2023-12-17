@@ -15,7 +15,7 @@ YELLOW equ 0Eh
 ORANGE equ 0Ch
 GOLD equ 2bH
 LIGHT_ORANGE equ 27h
-EXTRA_LIGHT_GRAY equ 2ch
+ORANGE_RED equ 2ch
 TEXT_COLOR equ YELLOW
 
 logoUL db 'logoUl.bin', 0
