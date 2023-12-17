@@ -2042,3 +2042,97 @@ Timer PROC
 	popa
 	ret
 Timer ENDP
+
+;description
+ResetAllTrackData PROC
+	pusha
+	;-----------------------------------Positions------------------------------;
+	mov START_X, 2H
+	mov START_Y, 150H
+	mov START_CAR_X, 2H
+	mov START_CAR_Y, 150H
+	mov START_DIR, 0H
+	;-----------------------------------Variables------------------------------;
+	mov posx, 0H
+	mov posy, 0H
+	mov toggleboundarycolor, 0H
+	mov toggletrackmiddle, 0H
+	mov boundaryflag,  0H
+	mov middletrackflag, 0H
+	mov verticaldirection, 0H ;! 0 up 1 down
+
+	mov cornerFlag, 1H  ;! 0 means no corner, 1 means corner
+	mov cornerType, 1H ;! 1 means up, 0 means down
+	mov horizontalDirection, 1H ;! 1 left 0 right
+	mov isvertical, 0H ;! 1 vertical ,0 horizontal
+	mov isup_right, 0H ;! 1 up or right 0 oppisite
+
+	mov CountDownMin, 2H
+	mov CountDownSec, 0H
+	;--------------------------------------------------------------------------;
+	;TODO add data in the data.inc line 175
+
+	mov PartWrongsOffset, 0H
+	mov SingleCheckFlag, 1H ;? check for single part in track
+	mov TrackCheckFlag, 1H ;? check for all track parts with the new part
+	mov TotalParts, 0H ;? check for all track parts so far
+	mov WrongCounter, 0H ;? count number of consecutive wrong parts
+	mov startoffsetdirection, 0H 
+	mov startoffsetclosedarea, 0H 
+	mov startoffsetprevstart, 0H 
+
+	mov CurrentCase, 0H 
+	;*----------------------Random Proc Variables-------------------------------;
+	mov seed, 1234H       ; Initial seed value
+	mov multiplier, 1d51H
+	mov increment, 8c45H
+	mov modulus, 0F4bFh 
+	mov random_part, 0 ; 4 bytes of memory to store the random seed
+	;-------------------------------Casses--------------------------------------;
+	mov lastRandom, 0
+	mov currentRandom, 0
+	mov validationFlag, 0
+	; lea si, casse0
+	; mov [si], 5
+	; inc si
+	; mov [si], 7
+	; inc si
+	; mov [si], 0
+	;-----------------------------Obstacles and powerups-----------------------;
+	mov latestPos, 0
+	mov nowORthen, 0 ; 0 means now, 1 means then (POWERUPS)
+	mov lastType, POWERUP1_COLOR
+	mov latestType, POWERUP2_COLOR
+	;------------------------------User data-----------------------------------;
+	mov userscore, 0H
+	mov usernextpart,  1H
+	mov user1nextpart, 1H
+	mov user2nextpart, 1H
+
+	mov saveObstaclesCounter, 0 ;! offset to add for obstacles array 
+	mov savePowerObstaclesCounter, 0 ;! offset to add for obstacles array (MADE FROM POWERUPS)
+
+	mov saveCompilationPowerupsCounter, 0 ;! offset to add for compilationPowerups array
+	mov saveCompilationPowerupsClrsCounter, 0 ;! offset to add for compilationPowerupsClrs array
+	mov loadCompilationPowerupsClrsCounter, 0 ;! offset to add for compilationPowerupsClrs array
+	mov saveInGamePowerupsCounter, 0 ;! offset to add for inGamePowerups array (Insertion)
+	mov saveInGamePowerupsClrsCounter, 0 ;! offset to add for inGamePowerupsClrs array (Insertion)
+	mov loadInGamePowerupsCounter, 0 ;! offset to add for inGamePowerups array (Loading)
+	mov loadInGamePowerupsClrsCounter, 0 ;! offset to add for inGamePowerupsClrs array (Loading)
+	mov generatedPowerupSource, 0 ;! 0 means compilationPowerups, 1 means inGamePowerups
+	mov showPowerupsCounter, POWERUP_SHOW_DELAY
+
+	;-----------------------------------Equipping Powerups------------------------;
+	mov processed_power_holder, 0 ;! 1 means user1, 2 means user2
+	mov processed_power, 0 ;! 0 means no powerup, 1 means speed up, 2 means slow down, 
+	mov user1_stored_powerup, 3
+	mov user2_stored_powerup, 0 
+	mov user1_obstacles_passed, 1
+	mov user2_obstacles_passed, 1
+	mov divider, 3H
+	mov helper, 1H
+	mov random, 0
+
+	popa
+	ret
+ResetAllTrackData ENDP

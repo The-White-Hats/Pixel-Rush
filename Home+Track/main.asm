@@ -65,8 +65,7 @@ GameMain PROC FAR
 		; INT 16H
           ; cmp ah, 3EH         ;if the pressed key is F4 then jump to the label pressF4Please  
           ; jnz pressF4Please
-         
-     ; return to DOS
+         call ResetAllTrackData
          ret
 GameMain ENDP
      
