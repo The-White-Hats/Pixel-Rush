@@ -434,6 +434,16 @@ carMainLoop macro
 	mov PrevSec, dh ; contain hundreds of seconds
 
      again:      
+                mov ax,0
+                add al,IsUser1Win
+                add al,IsUser2Win
+                cmp ax,0
+
+                jnz dlkfgjlldf
+                jmp dslkfgj
+                   dlkfgjlldf:
+                   jmp skipallofthis
+                dslkfgj:   
 
                 call              UpdateUsersScore
 
@@ -583,14 +593,18 @@ carMainLoop macro
                  mov               bh, 1
                  call              handleCar
      done_all:   
-               call Timer
-            ; check for winner         
+                call Timer
+               ; check for winner         
                     
-            call CheckForGameFinish  
+                call CheckForGameFinish    
+                
+                skipallofthis:
                 cmp               killSignal, 0H
                 jnz               kill
- 
-                 jmp               again
+
+               
+
+                jmp               again
 
      kill:       
      ; restore the original int 9h

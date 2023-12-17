@@ -1916,7 +1916,9 @@ UpdateUsersScore PROC
     mov usernextpart,al
     mov al,user1score
     mov userscore,al
+
     call UpdateUserScore
+	
     mov al,usernextpart
     mov user1nextpart,al
     mov al,userscore

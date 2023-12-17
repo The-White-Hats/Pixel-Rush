@@ -1,7 +1,7 @@
 my_isr PROC
                  in                  al, 60H                                       ; put the scan code of the pressed or unpressed
 
-                 cmp                 al, 1h                                        ; pressing the esc key
+                 cmp                 al, 3eh                                        ; pressing the f4 key
                  jz                  midKill
 
                  
@@ -36,7 +36,7 @@ my_isr PROC
                  jmp                 dontKill
 
     midKill:     
-                 mov                 al, 0ffH
+                 mov                 al, 1H
                  mov                 killSignal, al                                ; Call DOS interrupt to exit
 
     dontKill:    
@@ -455,7 +455,7 @@ CheckForGameFinish PROC
     mov IsUser2Win,1
     
     display_winnerscreen:
-    mov killSignal,1
+    ;mov killSignal,1
     
     CheckForGameFinish_skip:
     popa

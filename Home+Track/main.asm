@@ -60,11 +60,11 @@ GameMain PROC FAR
      ; Main Loop
           carMainLoop
           
-           pressF4Please:
-          MOV AH, 00H         ;get the pressed key scan code and put it in ah        
-		INT 16H
-          cmp ah, 3EH         ;if the pressed key is F4 then jump to the label pressF4Please  
-          jnz pressF4Please
+          ;  pressF4Please:
+          ; MOV AH, 00H         ;get the pressed key scan code and put it in ah        
+		; INT 16H
+          ; cmp ah, 3EH         ;if the pressed key is F4 then jump to the label pressF4Please  
+          ; jnz pressF4Please
          
      ; return to DOS
          ret
