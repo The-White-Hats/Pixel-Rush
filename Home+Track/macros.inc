@@ -608,6 +608,7 @@ carMainLoop macro
 
      kill:       
      ; restore the original int 9h
+     mov killSignal, 0H
                  restoreInt9
 
 endm carMainLoop

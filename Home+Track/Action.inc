@@ -129,6 +129,12 @@ GetAction PROC
 
 			drawLogo
 			call WinnerScreen
+
+			mov user1score, 0
+			mov user2score, 0
+			mov IsUser1Win, 0H
+			mov IsUser2Win, 0H
+			
 			
 			putWallPaperM 7, 2, 3*bgSize, 6*bgSize  ; recover the area with the wallpaper
 			paintAreaM 0, 430d, 640d, 50d, 0H
