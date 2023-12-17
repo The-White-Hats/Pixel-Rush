@@ -11,6 +11,15 @@ points1 db 0
 user2name db 16 dup('$')
 name2Size db ?
 
+username1Size dw 0
+username2Size dw 0
+
+WinnerMessagePart1 db 'Congratulations $'
+part1size equ $-WinnerMessagePart1-1
+WinnerMessagePart2 db 'YOU WON!$'
+part2size equ $-WinnerMessagePart2-1
+
+
 points2 db 0
 
 

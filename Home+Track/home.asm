@@ -4,6 +4,8 @@
 .286
 extrn GameMain:far
 public user1name,user2name
+extrn IsUser1Win:BYTE
+extrn IsUser2Win:BYTE
 .MODEL SMALL
 .STACK 32
 ;---------------------------------------

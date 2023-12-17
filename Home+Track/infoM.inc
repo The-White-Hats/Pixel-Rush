@@ -45,7 +45,7 @@ showColoredMsg MACRO str, color, strSize, row, column
     mov dh, row ; row
     mov dl, column ; column
     int 10h
-ENDM
+ENDM showColoredMsg
 
 showchar macro char
     mov ah,02h

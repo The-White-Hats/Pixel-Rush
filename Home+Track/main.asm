@@ -1,6 +1,7 @@
 include macros.inc
 .286
 public GameMain
+public IsUser1Win,IsUser2Win
 extrn user1name:BYTE
 extrn user2name:BYTE
 .MODEL SMALL
@@ -54,9 +55,10 @@ GameMain PROC FAR
      ; Main Loop
           carMainLoop
 
+          ;call WinnerScreen
      ; return to DOS
-          mov               AH, 4ch
-          int               21h
+          MOV AH,4CH
+          INT 21H
 GameMain ENDP
      
 END 

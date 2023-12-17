@@ -313,7 +313,8 @@ carMainLoop macro
              call               setBackground
     ; draw the car
              call               drawCar
-
+    ; check for winner         
+             call               CheckForGameFinish 
     done_all:
              cmp                 killSignal, 0H
              jnz                 kill
@@ -322,6 +323,6 @@ carMainLoop macro
 
     kill:    
     ; restore the original int 9h
-             restoreInt9
-
+             restoreInt9    
+      ret
 endm carMainLoop

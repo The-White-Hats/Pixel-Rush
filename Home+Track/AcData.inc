@@ -1,7 +1,7 @@
 
 
-start_X_ofpress equ 28 
-start_Y_ofpress equ 5
+start_Y_ofpress equ 28 
+start_X_ofpress equ 5
 
 user_lastaction db ?
 

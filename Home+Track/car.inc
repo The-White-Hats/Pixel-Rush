@@ -411,3 +411,98 @@ PassObs PROC
         ret
 PassObs ENDP
 
+;* Check for the first line in the finish line and get its color
+;* if it is not default then one of the users win the match 
+;* then get this different color and compare it with the color of the user's  car to decide which one win the match 
+CheckForGameFinish PROC
+    pusha
+    mov si,END_LINE_WIDTH
+    mov cx,CHECK_WIN_START_X
+    mov dx,CHECK_WIN_START_Y
+    check_loop:
+        mov bh,0
+        mov ah,0dh
+        int 10h
+        cmp al,BLACK
+        jz Nowinners
+        cmp al,WHITE
+        jz Nowinners
+        jmp lets_make_celebration
+        Nowinners:
+
+        ; mov al,PURPLE
+        ; mov ah,0ch
+        ; int 10h
+
+        ;* move on the line according to the last drawn part if vertical(0,1)  dec start_x
+        ;* if horizontal(2,3) inc start_y
+        cmp CurrentCase,1
+        jg CheckForGameFinish_case1
+        dec cx
+        jmp CheckForGameFinish_skip
+        CheckForGameFinish_case1:
+        inc dx
+        CheckForGameFinish_skip:
+        dec si
+        cmp si,0
+    jnz check_loop
+    popa
+    ret
+    lets_make_celebration:
+    ;* we need to compare the color of the user's car with the color in al
+    cmp user1car_color ,al
+    jnz user2wins
+
+    mov IsUser1Win,1
+    jmp display_winnerscreen
+
+    user2wins:
+    mov IsUser2Win,1
+    
+    display_winnerscreen:
+    ;call WinnerScreen
+    mov killSignal,1h
+    popa
+    ret
+CheckForGameFinish ENDP
+
+; WinnerScreen PROC
+;     pusha
+;     lea si ,user1name
+;     mov cx,0
+;     cmp [si],'$'
+;     jz emptyname
+;     getuser1namesize:
+;     inc cx
+;     cmp [si],'$'
+;     inc si
+;     jnz getuser1namesize
+;     emptyname:
+;     mov username1Size,cx
+
+;     lea si ,user2name
+;     mov cx,0
+;     cmp [si],'$'
+;     jz emptyname2
+;     getuser2namesize:
+;     inc cx
+;     cmp [si],'$'
+;     inc si
+;     jnz getuser2namesize
+;     emptyname2:
+;     mov username2Size,cx
+
+;     ;clear
+
+;     showColoredMsg2 WinnerMessagePart1, 2bh, part1size, 30, 15 ;* part1
+;     cmp IsUser1Win,1
+;     jnz user2isthewinner
+;     showColoredMsg2 user1name, 2bh, username1Size, 30, 15 ;* username
+;     jmp WinnerScreen_part2
+;     user2isthewinner:
+;     showColoredMsg2 user2name, 2bh, username2Size, 30, 15 ;* username
+;     WinnerScreen_part2:
+;     showColoredMsg2 WinnerMessagePart2, 2bh, part2size, 35, 17 ;* part2
+;     popa
+;     ret
+; WinnerScreen ENDP    

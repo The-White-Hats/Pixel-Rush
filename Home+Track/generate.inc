@@ -1376,6 +1376,10 @@ FinalLine PROC
      inc ax
 
 	loop drawfinalline
+	mov ax,posx
+	mov CHECK_WIN_START_X,ax
+	mov ax,posy
+	mov CHECK_WIN_START_Y,ax
 	ret
 FinalLine ENDP
 SingleLine PROC
@@ -1436,6 +1440,32 @@ SingleLine PROC
 
 			FinalLine_skip:
 		loop drawsingleline
+
+		 cmp isvertical,1
+			   jnz itshorizontal2
+
+			    cmp isup_right,1
+					jnz itsdown2
+
+						inc posy
+						jmp FinalLine_skip2
+
+					itsdown2:
+					    dec posy
+						jmp FinalLine_skip2
+
+			   itshorizontal2:
+			   cmp isup_right,1
+				jnz itsleft2
+
+					dec posx
+					jmp FinalLine_skip2
+
+				itsleft2:
+					inc posx
+
+			FinalLine_skip2:
+
         popa
 		ret
 SingleLine ENDP
@@ -1788,13 +1818,13 @@ DrawScoreBoard PROC
 	mov stringcolor , cl
 	call DisplayString
      
-		mov dh,21 
+		mov dh,22 
 		int 10h 
 
 	lea si ,scorename
     call DisplayString
 
-		mov dl,20 
+		mov dl,31 
 		mov dh,20 
 		int 10h
 
@@ -1803,7 +1833,7 @@ DrawScoreBoard PROC
 	mov stringcolor , cl
     call DisplayString
     
-		mov dh,21
+		mov dh,22
 		int 10h
 
 	lea si ,scorename
@@ -1872,6 +1902,7 @@ UpdateUserScore PROC
 	popa
 	ret
 UpdateUserScore ENDP
+
 UpdateUsersScore PROC
 	mov ax,user1_posX
     mov user_posX,ax
@@ -1909,7 +1940,7 @@ UpdateUsersScore ENDP
 DrawScore PROC
 	mov ah,2           
 	mov dl,7  ;*1.the row can write up to 40 characters one character takes 8 pixels
-	mov dh,21 ;*2.so the screen is 40*24 char  (24 by testing)
+	mov dh,22 ;*2.so the screen is 40*24 char  (24 by testing)
 	int 10h 
 
 	pusha
@@ -1919,8 +1950,8 @@ DrawScore PROC
 	popa
 
 	mov ah,2           
-	mov dl,26  ;*1.the row can write up to 40 characters one character takes 8 pixels
-	mov dh,21 ;*2.so the screen is 40*24 char  (24 by testing)
+	mov dl,37  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dh,22 ;*2.so the screen is 40*24 char  (24 by testing)
 	int 10h 
 
 	pusha

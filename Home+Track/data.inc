@@ -82,6 +82,8 @@
          START_DIR db 0
          END_X dw ?
          END_Y dw ?
+         CHECK_WIN_START_X dw ?
+         CHECK_WIN_START_Y dw ?
          ;*----------------------------------BOUNDARY-------------------------------------------------;      
          MIN_X equ 0
          MAX_X equ 319
@@ -207,9 +209,17 @@
 		compilationPowerups dw MAX_PARTS*2 dup(0)
         ;*------------------------------------------- USERS DATA -------------------------------------------;
 		stringcolor db ?
-		;user1name db 'Marwan$' 
-		;user2name db 'Youssef$'
+        IsUser1Win db 0
+        IsUser2Win db 0
+        user1car_color db ?
+        user2car_color db ?
 		scorename db 'Score: $'
+        ; WinnerMessagePart1 db 'Congratulations $'
+        ; part1size equ $-WinnerMessagePart1-1
+        ; WinnerMessagePart2 db 'YOU WON!$'
+        ; part2size equ $-WinnerMessagePart2-1
+        ; username1Size dw ?
+        ; username2Size dw ?
         userscore db 0
         user1score db 0
 		user2score db 0

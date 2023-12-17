@@ -120,7 +120,7 @@ UltraGraphicsMode MACRO
   mov AX, 4F02h
   mov BX, 0101h  ; 640x480x256
   int 10h        ; BIOS interrupt for video services
-ENDM
+ENDM UltraGraphicsMode
 
 paintAreaM MACRO x, y, width, height, color
     mov Xstart, x
@@ -170,3 +170,4 @@ putWallPaperP PROC
     popa
     ret
 putWallPaperP ENDP
+   
