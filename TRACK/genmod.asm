@@ -70,9 +70,9 @@ include draw.inc
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 120
+        MAX_PARTS equ 70
         TIME equ 0
-		WRONGTHRESHOLD equ 5
+		WRONGTHRESHOLD equ 12
 
 		prev_start_x dw ?
 		prev_start_y dw ?
@@ -130,7 +130,7 @@ include draw.inc
 		helper db 1H
 		divider db 3H
 		random db 0
-		
+		resetTH db 1
 		;*------------------------------------------- CASES -------------------------------------------; 
 		lastRandom db 0
         currentRandom db 0
@@ -392,8 +392,20 @@ Draw PROC
 Draw ENDP
 
 GenerateTrackDirections PROC 
-    
+    Restart:
+	mov ah, 2Ch
+	int 21H    ; puts the millseconds in dl
+	add dl,10		; threshold time
+	mov al, dl ; contain hundreds of seconds
+	mov bl,100
+	mov ah,0
+	xor dx,dx
+	div bl
+	mov resetTH,ah
+
+    call RandomStart
 	 mov helper, 1
+
 	lea si,Directions
 	lea di,ClosedArea
     lea bx,PrevStart
@@ -420,6 +432,17 @@ GenerateTrackDirections PROC
 
 	GenerateTrackDir_loop:
        
+        pusha
+		mov ah, 2Ch
+		int 21H    ; puts the millseconds in dl
+		mov al, dl ; contain hundreds of seconds
+		mov bl,100
+		mov ah,0
+		xor dx,dx
+		div bl
+		cmp ah,resetTH
+		jge Restart
+		popa
 
         mov ax,START_X
 		mov prev_start_x,ax

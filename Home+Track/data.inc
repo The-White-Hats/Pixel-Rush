@@ -14,7 +14,8 @@
 
     FILE_NAME_LEN   equ 9
 
-    START_CAR_SHIFT equ 10
+    START_CAR_SHIFT equ 8
+    SPACE_BETWEEN   equ 10
     ;------------Files-------------;
     carFile         db  'car0.bin', 0
                     db  'car1.bin', 0
@@ -98,6 +99,8 @@
          START_Y dw 150
          START_CAR_X dw 2
          START_CAR_Y dw 150
+         START_CAR2_X dw 2
+         START_CAR2_Y dw 150
          START_DIR db 0
          END_X dw ?
          END_Y dw ?
@@ -141,10 +144,10 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 70
+        MAX_PARTS equ 5
         TIME equ 0
 		WRONGTHRESHOLD equ 12
-
+        PleaseFlag db 0
 
         CountDownMin db 2
         CountDownSec db 0

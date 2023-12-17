@@ -219,24 +219,20 @@ DrawTrack ENDP
 
 GenerateTrackDirections PROC 
 	Restart:
-		mov ah, 2Ch
-		int 21H    ; puts the millseconds in dl
-		add dh,1		; threshold time
-		mov al, dh ; contain hundreds of seconds
-		mov bl,60
-		mov ah,0
-		xor dx,dx
-		div bl
-		mov resetTH,ah
+		; mov ah, 2Ch
+		; int 21H    ; puts the millseconds in dl
+		; add dl,10		; threshold time
+		; mov al, dl ; contain hundreds of seconds
+		; mov bl,100
+		; mov ah,0
+		; xor dx,dx
+		; div bl
+		; mov resetTH,ah
 
-
-    ; mov ah, 2Ch
-	; int 21H    ; puts the millseconds in dl
-	; mov al, dl ; contain hundreds of seconds
-	; mov starttime,al
-
-    ; mov helper,1
-		call ResetAllTrackData
+    ; mov ah,02h
+    ; mov dl,'a'
+    ; int 21h 
+	call ResetAllTrackData
 
     call RandomStart
 
@@ -262,29 +258,19 @@ GenerateTrackDirections PROC
 	mov [bx+2],ax
 	add bx,4
     
-    ; mov TotalParts,0
 
 	GenerateTrackDir_loop:
-	;    pusha
-	; 	mov ah, 2Ch
-	; 	int 21H    ; puts the millseconds in dl
-	; 	mov al, dl ; contain hundreds of seconds
-	; 	sub al,starttime
-	; 	cmp al,99
-	; 	jge Restart
-    ;    popa
-
-		pusha
-		mov ah, 2Ch
-		int 21H    ; puts the millseconds in dl
-		mov al, dh ; contain hundreds of seconds
-		mov bl,60
-		mov ah,0
-		xor dx,dx
-		div bl
-		cmp ah,resetTH
-		jz Restart
-		popa
+		; pusha
+		; mov ah, 2Ch
+		; int 21H    ; puts the millseconds in dl
+		; mov al, dl ; contain hundreds of seconds
+		; mov bl,100
+		; mov ah,0
+		; xor dx,dx
+		; div bl
+		; cmp ah,resetTH
+		; jge Restart
+		; popa
 
         mov ax,START_X
 		mov prev_start_x,ax
@@ -302,9 +288,10 @@ GenerateTrackDirections PROC
 		mov lastRandom,al
 
 		skipmove:  
-		
+	    
     	call specifiedrandom
-
+        cmp PleaseFlag,1
+		jz Restart
 
 
         cmp random_part , 0 
@@ -732,6 +719,7 @@ GenerateTrackDirections ENDP
 
 ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values of x,y. they should be updated before calling this procedure
 	pusha
+	
 	;---------------------------check for bounadry conditions---------------------------------;
 			cmp x_min_new,MIN_X
 			jge ValidateTrack_check1
@@ -757,8 +745,9 @@ ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values 
    jz ValidateTrack_skip
    lea si,ClosedArea
    mov cx,0
-   for1:
 
+   for1:
+    
 	mov ax,[si]
 	mov x_min_old,ax
 
@@ -788,6 +777,7 @@ ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values 
 	ret 
    
     wrong:
+
     mov TrackCheckFlag,0
 	popa
 	ret
@@ -1210,7 +1200,19 @@ randomizer PROC
   mov ah, 2Ch
   int 21H    ; puts the millseconds in dl
   mov al, dl ; contain hundreds of seconds
-
+	; pusha
+	; 	mov bl,100
+	; 	mov ah,0
+	; 	xor dx,dx
+	; 	div bl
+	; 	cmp ah,resetTH
+	;     jl randomizer_ldkjf
+	; 	mov PleaseFlag ,0
+	; 	popa 
+	; 	popa
+	; 	ret
+	; 	randomizer_ldkjf:
+	; popa
   mov ah, 0
   div helper ; divide ax by the helper which keep changing; puts the quotiant in al , and remainder in ah
   xor bx, bx
@@ -1219,11 +1221,12 @@ randomizer PROC
   div bx
   mov random, dl ; puts the remainder in random
 	; mov ah,02h
-  ;   mov dl,'a'
-  ;   int 21h 
+    ; mov dl,helper
+	; add dl,'0'
+    ; int 21h 
 
   inc helper    ; increment helper to insure random value every time
-  cmp helper, 100d ; return helper to 1 if it's ffh to avoid dividing by zero
+  cmp helper, 9d ; return helper to 1 if it's ffh to avoid dividing by zero
   jne dontreturn
   mov helper, 1h
   dontreturn:
@@ -1282,10 +1285,15 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
     mov ax,START_Y
 	mov START_CAR_Y,ax
 	sub START_CAR_Y,START_CAR_SHIFT
-
+	mov START_CAR2_Y,ax
+	sub START_CAR2_Y,START_CAR_SHIFT+SPACE_BETWEEN
+   
 	mov ax,START_X
 	sub ax,CAR_HEIGHT/2
 	mov START_CAR_X,ax
+    mov START_CAR2_X,ax
+
+
 
 	mov user1_current_frame,6
 	mov user2_current_frame,6
@@ -1314,10 +1322,14 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
     mov ax,START_Y
 	mov START_CAR_Y,ax
 	sub START_CAR_Y,START_CAR_SHIFT
+	mov START_CAR2_Y,ax
+	sub START_CAR2_Y,START_CAR_SHIFT+SPACE_BETWEEN
 
 	mov ax,START_X
 	add ax,CAR_HEIGHT/2
 	mov START_CAR_X,ax
+	mov START_CAR2_X,ax
+
 
 	mov user1_current_frame,2
 	mov user2_current_frame,2
@@ -1342,10 +1354,13 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
     mov ax,START_Y
 	sub ax,CAR_HEIGHT/2
 	mov START_CAR_Y,ax
+	mov START_CAR2_Y,ax
 
 	mov ax,START_X
 	mov START_CAR_X,ax
 	add START_CAR_X,START_CAR_SHIFT
+	mov START_CAR2_X,ax
+	add START_CAR2_X,START_CAR_SHIFT+SPACE_BETWEEN
 
 	mov user1_current_frame,0
 	mov user2_current_frame,0
@@ -1372,6 +1387,7 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov ax,START_Y
 	add ax,CAR_HEIGHT/2
 	mov START_CAR_Y,ax
+	mov START_CAR2_Y,ax
 
 	mov user1_current_frame,4
 	mov user2_current_frame,4
@@ -1379,6 +1395,8 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov ax,START_X
 	mov START_CAR_X,ax
 	add START_CAR_X,START_CAR_SHIFT
+	mov START_CAR2_X,ax
+	add START_CAR2_X,START_CAR_SHIFT+SPACE_BETWEEN
 
 	ret
 RandomStart ENDP
@@ -2094,7 +2112,8 @@ ResetAllTrackData PROC
 	mov isup_right, 0H ;! 1 up or right 0 oppisite
 
 	mov CountDownMin, 2H
-	mov CountDownSec, 0H
+	mov CountDownSec, 0H 
+	mov TotalParts,0
 	;--------------------------------------------------------------------------;
 	;TODO add data in the data.inc line 175
 
@@ -2118,12 +2137,6 @@ ResetAllTrackData PROC
 	mov lastRandom, 0
 	mov currentRandom, 0
 	mov validationFlag, 0
-	; lea si, casse0
-	; mov [si], 5
-	; inc si
-	; mov [si], 7
-	; inc si
-	; mov [si], 0
 	;-----------------------------Obstacles and powerups-----------------------;
 	mov latestPos, 0
 	mov nowORthen, 0 ; 0 means now, 1 means then (POWERUPS)
@@ -2158,6 +2171,7 @@ ResetAllTrackData PROC
 	mov divider, 3H
 	mov helper, 1H
 	mov random, 0
+	mov PleaseFlag , 0
 
 	popa
 	ret

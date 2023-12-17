@@ -169,28 +169,20 @@ delayFunc macro
 endm delayFunc
 
 intialCarPosition macro
-    ; mov     ax, START_CAR_X
-    ; mov     user1_posX, ax
-    ; mov     user2_posX, ax
-    ; mov     ax, START_CAR_Y
-    ; mov     user1_posY, ax
-    ; mov     user2_posY, ax
+    mov     ax, START_CAR_X
+    mov     user1_posX, ax
+    mov     ax,START_CAR2_X
+    mov     user2_posX, ax
+    mov     ax, START_CAR_Y
+    mov     user1_posY, ax
+    mov     ax, START_CAR2_Y
+    mov     user2_posY, ax
 
 
-    mov     user1_posX, 50
-    mov     user1_posY, 180
-    mov     user2_posX, 250
-    mov     user2_posY, 180
-
-    mov     user1_current_frame, 0
-    mov     user2_current_frame, 0
-    mov     user1_current_dir, 0
-    mov     user2_current_dir, 0
-
-    ; mov     al, user1_current_frame
-    ; mov     user1_current_dir, al
-    ; mov     al, user2_current_frame
-    ; mov     user2_current_dir, al
+    mov     al, user1_current_frame
+    mov     user1_current_dir, al
+    mov     al, user2_current_frame
+    mov     user2_current_dir, al
 
     ; save the background of first car
     setStartPixel user1_posX, user1_posY
@@ -439,11 +431,11 @@ carMainLoop macro
                 add al,IsUser2Win
                 cmp ax,0
 
-                jnz dlkfgjlldf
-                jmp dslkfgj
-                   dlkfgjlldf:
+                jnz carMainLoop_extend
+                jmp carMainLoop_bridge
+                   carMainLoop_extend:
                    jmp skipallofthis
-                dslkfgj:   
+                carMainLoop_bridge:   
 
                 call              UpdateUsersScore
 
