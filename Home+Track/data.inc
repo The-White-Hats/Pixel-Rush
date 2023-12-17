@@ -110,9 +110,9 @@
          MIN_Y equ 10
          MAX_Y equ 170 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 25
+         LINE_WIDTH equ 15
          LINE_LENGTH equ 5
-		 HORIZONTAL_LINE_LENGTH equ 26
+		 HORIZONTAL_LINE_LENGTH equ 16
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
 		 END_LINE_LENGTH dw 6 ;!Finish Line
@@ -279,11 +279,16 @@
 
         ;! 0 means no powerup, 1 means speed up, 2 means slow down, 3 means drop obstacle, 4 means pass through obstacle
         user1_stored_powerup db 3
-        user2_stored_powerup db 0 
+        user2_stored_powerup db 3
 
         ;! stated in the doc that the car can pass through 1 obstacle (didn't mention limitid time)
         user1_obstacles_passed db 1
         user2_obstacles_passed db 1
+
+        current_dir db ?
+        current_posX dw ?
+        current_posY dw ?
+
         dt ?
         divider db 3H
 		helper db 1H
