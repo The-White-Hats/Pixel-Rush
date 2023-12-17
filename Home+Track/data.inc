@@ -4,47 +4,66 @@
     SCREEN_HEIGHT   equ 200
 
 ;---------------------Car-----------------------;
-    CAR_HEIGHT      equ 16
-    CAR_WIDTH       equ 16
+    CAR_HEIGHT      equ 11
+    CAR_WIDTH       equ 11
 
     BUFF_SIZE       equ CAR_HEIGHT*CAR_WIDTH
     
     CAR_OFFSET      equ 0
 
 
-    FILE_NAME_LEN   equ 10
+    FILE_NAME_LEN   equ 9
 
     START_CAR_SHIFT equ 10
     ;------------Files-------------;
-    carFile         db  'car10.bin', 0
-                    db  'car11.bin', 0
-                    db  'car12.bin', 0
-                    db  'car13.bin', 0
-                    db  'car14.bin', 0
-                    db  'car15.bin', 0
-                    db  'car16.bin', 0
-                    db  'car17.bin', 0
+    carFile         db  'car0.bin', 0
+                    db  'car1.bin', 0
+                    db  'car2.bin', 0
+                    db  'car3.bin', 0
+                    db  'car4.bin', 0
+                    db  'car5.bin', 0
+                    db  'car6.bin', 0
+                    db  'car7.bin', 0
 
     errorMsg        db  "Something went wrong with files !!", 10, "$"
     
     ;------------Car Directions---------;
-    car             db  8 dup (BUFF_SIZE dup(?))
-                    dt  ?
+    car1             db  8 dup (BUFF_SIZE dup(?))
+                     dt  ?
+    car2             db  8 dup (BUFF_SIZE dup(?))
+                     dt  ?
     ;-----------Saved Background---------;
-    current_background  db ((CAR_HEIGHT+(2*CAR_OFFSET))*(CAR_WIDTH+(2*CAR_OFFSET))) dup(?)
+    user1_current_background  db ((CAR_HEIGHT+(2*CAR_OFFSET))*(CAR_WIDTH+(2*CAR_OFFSET))) dup(?)
+                        dt  ?
+    user2_current_background  db ((CAR_HEIGHT+(2*CAR_OFFSET))*(CAR_WIDTH+(2*CAR_OFFSET))) dup(?)
                         dt  ?
 
     ; start from 0 on up and move clockwise
-    current_frame   db  0
-    current_dir     db  0
+    user1_current_frame   db  0
+    user1_prev_frame      db  ?
+    user1_current_dir     db  0
+    user1_prev_dir        db  ?
     
-    user1_posX      dw  ?                                                ; Position X
-    user1_posY      dw  ?                                                ; Position Y
-    user1_dir_bools db  7 dup(0)                                         ; up, right, down, left
-                    db  0                                                ; margin
+    user1_posX      dw  ?
+    user1_posY      dw  ?
+    user1_dir_bools db  7 dup(0)                ; up, right, down, left
+                    db  0                       ; margin
     user1_dir_arr   db  48h, 4dh, 50H, 4BH
-    prev_user1_posX dw  ?
-    prev_user1_posY dw  ?
+    user1_prev_posX dw  ?
+    user1_prev_posY dw  ?
+
+    user2_posX      dw  30 
+	user2_posY      dw  10
+	user2_dir_bools db  7 dup(0)          	    ; up, right, down, left
+	                dw  0                 	    ; margin
+	user2_dir_arr   db  11h, 20h, 1fH, 1eH
+	user2_prev_posX dw  0
+	user2_prev_posY dw  0
+                    db  0
+    user2_current_frame   db  0
+    user2_prev_frame      db  ?
+    user2_current_dir     db  0
+    user2_prev_dir        db  ?
                     db  0
     killSignal      db  0
                     dw  0
@@ -90,9 +109,9 @@
          MIN_Y equ 10
          MAX_Y equ 170 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 18
+         LINE_WIDTH equ 25
          LINE_LENGTH equ 5
-		 HORIZONTAL_LINE_LENGTH equ 19
+		 HORIZONTAL_LINE_LENGTH equ 26
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
 		 END_LINE_LENGTH equ 6 ;!Finish Line

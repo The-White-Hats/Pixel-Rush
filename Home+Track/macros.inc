@@ -60,7 +60,7 @@ shownum macro
        inc bx 
        cmp ax,0
      jnz l1     
-     mov [bx],'$' 
+     mov byte ptr [bx],'$' 
      mov cx, bx
      lea dx,s
      sub cx,dx  
@@ -169,18 +169,54 @@ delayFunc macro
 endm delayFunc
 
 intialCarPosition macro
-    mov     ax, START_CAR_X
-    mov     user1_posX, ax
-    mov     ax, START_CAR_Y
-    mov     user1_posY, ax
+    ; mov     ax, START_CAR_X
+    ; mov     user1_posX, ax
+    ; mov     user2_posX, ax
+    ; mov     ax, START_CAR_Y
+    ; mov     user1_posY, ax
+    ; mov     user2_posY, ax
 
-    ; save the background
+
+    mov     user1_posX, 50
+    mov     user1_posY, 180
+    mov     user2_posX, 250
+    mov     user2_posY, 180
+
+    mov     user1_current_frame, 0
+    mov     user2_current_frame, 0
+    mov     user1_current_dir, 0
+    mov     user2_current_dir, 0
+
+    ; mov     al, user1_current_frame
+    ; mov     user1_current_dir, al
+    ; mov     al, user2_current_frame
+    ; mov     user2_current_dir, al
+
+    ; save the background of first car
     setStartPixel user1_posX, user1_posY
+    mov     si, offset user1_current_background
     mov     bx, 1
     call    setBackground
 
-    ; draw the car
-    call    drawCar
+    ; draw the first car
+    setStartPixel user1_posX, user1_posY
+    mov           si, offset car1
+    mov           al, user1_current_frame
+    mov           bh, 1
+    call          handleCar
+
+    ; save the background of second car
+    setStartPixel user2_posX, user2_posY
+    mov     si, offset user2_current_background
+    mov     bx, 1
+    call    setBackground
+
+    ; draw the second car
+    setStartPixel user2_posX, user2_posY
+    mov           si, offset car2
+    mov           al, user2_current_frame
+    mov           bh, 1
+    call          handleCar
 endm intialCarPosition
 
 setStartPixel MACRO xpos, ypos
@@ -225,56 +261,171 @@ update_user1_pos MACRO
     
     finish_update1:
 
-    update_dir
+    update_dir1
 
+    mov dh, user1_current_dir
+    mov dl, user1_current_frame
     call update_frame
+    mov user1_current_frame, bl
 
 ENDM
 
-update_dir MACRO
+update_user2_pos MACRO
+    ; I am considering up as positive y and down as negative y
+    mov ax, 0101h ; ah -> x, al -> y
+
+    up2:
+    cmp user2_dir_bools, 00H
+    jz right2
+    dec word ptr user2_posY
+    inc al
+
+    right2:
+    cmp user2_dir_bools[2], 00H
+    jz down2
+    inc word ptr user2_posX
+    inc ah
+
+    down2:
+    cmp user2_dir_bools[4], 00H
+    jz left2
+    inc word ptr user2_posY
+    dec al
+
+    left2:
+    cmp user2_dir_bools[6], 00H
+    jz finish_update2
+    dec word ptr user2_posX
+    dec ah
+    
+    finish_update2:
+
+    update_dir2
+
+    mov dh, user2_current_dir
+    mov dl, user2_current_frame
+    call update_frame
+    mov user2_current_frame, bl
+
+ENDM
+
+update_dir1 MACRO
     ; I am making a table of all compinations of x and y to know and update the direction
 
     cmp ah, 0
-    jz left_dir
+    jz left_dir1
     cmp ah, 2
-    jz right_dir
+    jz right_dir1
     cmp al, 0
-    jz down_dir
+    jz down_dir1
     cmp al, 2
-    jz up_dir
+    jz up_dir1
 
-    jmp done_update
+    jmp done_update1
 
-    up_dir:
-    mov current_dir, 0
-    jmp done_update
+    up_dir1:
+    mov user1_current_dir, 0
+    jmp done_update1
 
-    down_dir:
-    mov current_dir, 4
-    jmp done_update
+    down_dir1:
+    mov user1_current_dir, 4
+    jmp done_update1
 
-    left_dir:
-    mov current_dir, 5
-    add current_dir, al
-    jmp done_update
+    left_dir1:
+    mov user1_current_dir, 5
+    add user1_current_dir, al
+    jmp done_update1
 
-    right_dir:
-    mov current_dir, 3
-    sub current_dir, al
+    right_dir1:
+    mov user1_current_dir, 3
+    sub user1_current_dir, al
 
-    done_update:
+    done_update1:
+ENDM
+
+update_dir2 MACRO
+    ; I am making a table of all compinations of x and y to know and update the direction
+
+    cmp ah, 0
+    jz left_dir2
+    cmp ah, 2
+    jz right_dir2
+    cmp al, 0
+    jz down_dir2
+    cmp al, 2
+    jz up_dir2
+
+    jmp done_update2
+
+    up_dir2:
+    mov user2_current_dir, 0
+    jmp done_update2
+
+    down_dir2:
+    mov user2_current_dir, 4
+    jmp done_update2
+
+    left_dir2:
+    mov user2_current_dir, 5
+    add user2_current_dir, al
+    jmp done_update2
+
+    right_dir2:
+    mov user2_current_dir, 3
+    sub user2_current_dir, al
+
+    done_update2:
 ENDM
 
 add_to_frame macro
     ; (current_frame + bl) % 8
-
+    ; current_frame is in dl
+    push ax
+    push dx
     mov ah, 0
-    mov al, current_frame
+    mov al, dl
     add al, bl
     mov cl, 8
     div cl
     mov bl, ah
+    pop dx
+    pop ax
 endm
+
+detectCollision macro current_frame, car
+    local collision
+    ; check for collision with the boundaries 1
+    push              di
+    mov               bl, BOUNDARY_COLOR1
+    mov               al, current_frame
+    mov               si, offset car
+    call              handleCar
+    cmp               bh, 1
+    jz                collision
+
+    ; check for collision with the boundaries 2
+    pop               di
+    push              di
+    mov               bl, BOUNDARY_COLOR2
+    mov               al, current_frame
+    mov               si, offset car
+    call              handleCar
+    cmp               bh, 1
+    jz                collision
+
+    ; check for collision with the obstacles
+    pop               di
+    push              di
+    mov               bl, OBSTACLE_COLOR
+    mov               al, current_frame
+    mov               si, offset car
+    call              handleCar
+    cmp               bh, 1
+    jz                collision
+
+    collision:
+    pop               di
+endm detectCollision
 
 carMainLoop macro
 
@@ -282,53 +433,167 @@ carMainLoop macro
 	int 21H    ; puts the millseconds in dl
 	mov PrevSec, dh ; contain hundreds of seconds
 
-    again:
+     again:      
 
+                call              UpdateUsersScore
 
-    call UpdateUsersScore
+     ; Delay Function
+                delayFunc
+                ;call              ShowInGamePowerUps
 
-    ; Delay Function
-             delayFunc
-             call ShowInGamePowerUps
-    ; update the location
-    ; copy the current postions into prev_postions
-             mov                 ax, user1_posX
-             mov                 prev_user1_posX, ax
-             mov                 ax, user1_posY
-             mov                 prev_user1_posY, ax
-             update_user1_pos
+     user1_check:
+     ; update the location of user 1
+     ; copy the current states into previous ones
+                 mov               ax, user1_posX
+                 mov               user1_prev_posX, ax
+                 mov               ax, user1_posY
+                 mov               user1_prev_posY, ax
+                 mov               al, user1_current_frame
+                 mov               user1_prev_frame, al
+                 mov               al, user1_current_dir
+                 mov               user1_prev_dir, al
+                 update_user1_pos
 
-    ; check if there is a change or not
-             mov                 ax, prev_user1_posX
-             cmp                 ax, user1_posX
-             jnz                 update1                             ; jump to the update if there is a change
-             mov                 ax, prev_user1_posY
-             cmp                 ax, user1_posY
-             jz                  done_all                            ; jump away if there is no change
+     ; check if there is a change or not
+                 mov               ax, user1_prev_posX
+                 cmp               ax, user1_posX
+                 jnz               update1                              ; jump to the update if there is a change
+                 mov               ax, user1_prev_posY
+                 cmp               ax, user1_posY
+                 jz                middle_jump1                            ; jump away if there is no change
 
-    update1: 
-    ; remove car and draw background
-             setStartPixel prev_user1_posX, prev_user1_posY
-             mov                bx, 0
-             call               setBackground
+     update1:    
+     ; remove car and draw background
+                 setStartPixel     user1_prev_posX, user1_prev_posY
+                 mov               si, offset user1_current_background
+                 mov               bx, 0
+                 call              setBackground
 
-    ; save the background
-             setStartPixel user1_posX, user1_posY
-             mov                bx, 1
-             call               setBackground
-    ; draw the car
-             call               drawCar
-    done_all:
+     ; check for collision
+                 setStartPixel     user1_posX, user1_posY
+                 mov               bh, 0
+                 detectCollision   user1_current_frame, car1
+                 cmp               bh, 1
+                 jz                user1_collision
+                 jmp               user1_no_collision
+
+     middle_jump1:
+                 jmp               user2_check
+
+    user1_no_collision:
+     ; save the background
+                 setStartPixel     user1_posX, user1_posY
+                 mov               si, offset user1_current_background
+                 mov               bx, 1
+                 call              setBackground
+     ; draw the car
+                 setStartPixel     user1_posX, user1_posY
+                 mov               si, offset car1
+                 mov               al, user1_current_frame
+                 mov               bh, 1
+                 call              handleCar
+
+                 jmp               user2_check
+
+     user1_collision:  
+     ; get previous postions
+                 mov               ax, user1_prev_posX
+                 mov               user1_posX, ax
+                 mov               ax, user1_prev_posY
+                 mov               user1_posY, ax
+                 mov               al, user1_prev_frame
+                 mov               user1_current_frame, al
+                 mov               al, user1_prev_dir
+                 mov               user1_current_dir, al
+     ; draw the car
+                 setStartPixel     user1_posX, user1_posY
+                 mov               si, offset car1
+                 mov               al, user1_current_frame
+                 mov               bh, 1
+                 call              handleCar
+
+     user2_check:
+     ; update the location of user 2
+     ; copy the current states into previous ones
+                 mov               ax, user2_posX
+                 mov               user2_prev_posX, ax
+                 mov               ax, user2_posY
+                 mov               user2_prev_posY, ax
+                 mov               al, user2_current_frame
+                 mov               user2_prev_frame, al
+                 mov               al, user2_current_dir
+                 mov               user2_prev_dir, al
+                 update_user2_pos
+
+     ; check if there is a change or not
+                 mov               ax, user2_prev_posX
+                 cmp               ax, user2_posX
+                 jnz               update2                              ; jump to the update if there is a change
+                 mov               ax, user2_prev_posY
+                 cmp               ax, user2_posY
+                 jz                middle_jump2                            ; jump away if there is no change
+
+     update2:    
+     ; remove car and draw background
+                 setStartPixel     user2_prev_posX, user2_prev_posY
+                 mov               si, offset user2_current_background
+                 mov               bx, 0
+                 call              setBackground
+
+     ; check for collision
+                 setStartPixel     user2_posX, user2_posY
+                 mov               bh, 0
+                 detectCollision   user2_current_frame, car2
+                 cmp               bh, 1
+                 jz                user2_collision
+                 jmp               user2_no_collision
+
+     middle_jump2:
+                 jmp               done_all
+
+     user2_no_collision:
+     ; save the background
+                 setStartPixel     user2_posX, user2_posY
+                 mov               si, offset user2_current_background
+                 mov               bx, 1
+                 call              setBackground
+     ; draw the car
+                setStartPixel      user2_posX, user2_posY
+                 mov               si, offset car2
+                 mov               al, user2_current_frame
+                 mov               bh, 1
+                 call              handleCar
+
+                 jmp               done_all
+
+     user2_collision:  
+     ; get previous postions
+                 mov               ax, user2_prev_posX
+                 mov               user2_posX, ax
+                 mov               ax, user2_prev_posY
+                 mov               user2_posY, ax
+                 mov               al, user2_prev_frame
+                 mov               user2_current_frame, al
+                 mov               al, user2_prev_dir
+                 mov               user2_current_dir, al
+     ; draw the car
+                 setStartPixel     user2_posX, user2_posY
+                 mov               si, offset car2
+                 mov               al, user2_current_frame
+                 mov               bh, 1
+                 call              handleCar
+     done_all:   
                call Timer
             ; check for winner         
                     
             call CheckForGameFinish  
-            cmp                 killSignal, 0H
-            jnz                 kill
+                cmp               killSignal, 0H
+                jnz               kill
  
-             jmp                 again
+                 jmp               again
 
-    kill:    
-    ; restore the original int 9h
-             restoreInt9    
+     kill:       
+     ; restore the original int 9h
+                 restoreInt9
+
 endm carMainLoop

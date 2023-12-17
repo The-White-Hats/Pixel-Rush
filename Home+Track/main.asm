@@ -19,7 +19,8 @@ GameMain PROC FAR
      ; initialize memory
           mov               ax , @DATA
           mov               ds , ax
-     call              GenerateTrackDirections
+          call              GenerateTrackDirections
+
      ; clear the screen
           clear
 

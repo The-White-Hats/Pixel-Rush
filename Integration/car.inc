@@ -1,4 +1,3 @@
-
 my_isr PROC
                  in                  al, 60H                                       ; put the scan code of the pressed or unpressed
 
@@ -41,6 +40,7 @@ my_isr PROC
                  out                 20h, al
                  iret
 my_isr endp
+
 
     ;-----------------------
 
@@ -207,44 +207,9 @@ ShowInGamePowerUps PROC
         ret
 
 ShowInGamePowerUps ENDP
-    ;-----------------------
-drawCar PROC
-                 setStartPixel user1_posX, user1_posY
-                 mov                 si, offset car
 
-    ; set the car frame
-                 mov                 cx, BUFF_SIZE
-                 mov                 al, current_frame
-                 mov                 ah, 0
-                 mul                 cx
-                 add                 si, ax
+    ;-----------------------    
 
-                 mov                 cx, CAR_HEIGHT                                ; number of lines to draw
-    car_outerLoop:   
-
-                 mov                 dx, CAR_WIDTH                                 ; number of pixels to draw
-    car_innerLoop:   
-                 cmp                 byte ptr [si], 250
-                 jz                  car_skip_pixel
-  
-                 movsb
-                 jmp                 car_continue
-
-    car_skip_pixel:        
-                 inc                 si
-                 inc                 di
-
-    car_continue:    
-                 dec                 dx
-                 jnz                 car_innerLoop
-
-                 add                 di, SCREEN_WIDTH - CAR_WIDTH                  ; move to next line 
-                 loop                car_outerLoop
-
-                 ret
-
-drawCar ENDP
-    ;-----------------------
 activatePowerUp PROC
     ; check for power up type
         cmp processed_power, 0  
@@ -409,3 +374,61 @@ PassObs PROC
         ret
 PassObs ENDP
 
+
+    ;-----------------------
+
+; At start
+; Set bl to the color to check collision with
+; bh => 1 to draw, 0 to detect collision
+
+; At end
+; bh => 1 if collision happened, 0 if not
+handleCar PROC
+                 setStartPixel user1_posX, user1_posY
+                 mov                 si, offset car
+
+    ; set the car frame
+                 mov                 cx, BUFF_SIZE
+                 mov                 al, current_frame
+                 mov                 ah, 0
+                 mul                 cx
+                 add                 si, ax
+
+                 mov                 cx, CAR_HEIGHT               ; number of lines to draw
+    car_outerLoop:   
+
+                 mov                 dx, CAR_WIDTH                ; number of pixels to draw
+    car_innerLoop:   
+                 cmp                 byte ptr [si], 250
+                 jz                  car_skip_pixel
+  
+                 cmp bh, 0
+                 jz car_collision
+                    
+                 ; draw car
+                 movsb
+                 jmp                 car_continue
+
+    car_collision:
+                 ; check for collision 
+                 cmp                 byte ptr es:[di], bl
+                 jnz                 car_skip_pixel
+            
+                 ; collision happened
+                 mov bh, 1
+                 ret
+
+    car_skip_pixel:        
+                 inc                 si
+                 inc                 di
+
+    car_continue:    
+                 dec                 dx
+                 jnz                 car_innerLoop
+
+                 add                 di, SCREEN_WIDTH - CAR_WIDTH   ; move to next line 
+                 loop                car_outerLoop
+
+                 mov                 bh, 0
+                 ret
+handleCar ENDP

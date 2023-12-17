@@ -1783,7 +1783,7 @@ DrawScoreBoard PROC
 		mov dh,20 ;*2.so the screen is 40*24 char  (24 by testing)
 		int 10h 
 
-	lea si , user1name
+	lea si ,user1name
 	mov cl,user1theme
 	mov stringcolor , cl
 	call DisplayString
