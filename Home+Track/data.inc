@@ -109,9 +109,9 @@
          MIN_Y equ 10
          MAX_Y equ 170 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 25
+         LINE_WIDTH equ 15
          LINE_LENGTH equ 5
-		 HORIZONTAL_LINE_LENGTH equ 26
+		 HORIZONTAL_LINE_LENGTH equ 16
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
 		 END_LINE_LENGTH equ 6 ;!Finish Line

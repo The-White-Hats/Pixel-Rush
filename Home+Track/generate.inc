@@ -2152,7 +2152,7 @@ ResetAllTrackData PROC
 	mov processed_power_holder, 0 ;! 1 means user1, 2 means user2
 	mov processed_power, 0 ;! 0 means no powerup, 1 means speed up, 2 means slow down, 
 	mov user1_stored_powerup, 3
-	mov user2_stored_powerup, 0 
+	mov user2_stored_powerup, 3
 	mov user1_obstacles_passed, 1
 	mov user2_obstacles_passed, 1
 	mov divider, 3H
