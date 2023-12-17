@@ -142,10 +142,9 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 30
+        MAX_PARTS equ 70
         TIME equ 0
 		WRONGTHRESHOLD equ 12
-        PleaseFlag db 0
 
         CountDownMin db 2
         CountDownSec db 0
@@ -294,6 +293,6 @@
         divider db 3H
 		helper db 1H
 		random db 0
-        resetTH db ?
+        resetTH db 0
         s db 0
     ;-----------------------------------;

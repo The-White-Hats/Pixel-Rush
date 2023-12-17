@@ -255,20 +255,6 @@ popa
 DrawTrack ENDP
 
 GenerateTrackDirections PROC 
-	Restart:
-		; mov ah, 2Ch
-		; int 21H    ; puts the millseconds in dl
-		; add dl,10		; threshold time
-		; mov al, dl ; contain hundreds of seconds
-		; mov bl,100
-		; mov ah,0
-		; xor dx,dx
-		; div bl
-		; mov resetTH,ah
-
-    ; mov ah,02h
-    ; mov dl,'a'
-    ; int 21h 
 	call ResetAllTrackData
 
     call RandomStart
@@ -297,17 +283,6 @@ GenerateTrackDirections PROC
     
 
 	GenerateTrackDir_loop:
-		; pusha
-		; mov ah, 2Ch
-		; int 21H    ; puts the millseconds in dl
-		; mov al, dl ; contain hundreds of seconds
-		; mov bl,100
-		; mov ah,0
-		; xor dx,dx
-		; div bl
-		; cmp ah,resetTH
-		; jge Restart
-		; popa
 
         mov ax,START_X
 		mov prev_start_x,ax
@@ -327,9 +302,6 @@ GenerateTrackDirections PROC
 		skipmove:  
 	    
     	call specifiedrandom
-        cmp PleaseFlag,1
-		jz Restart
-
 
         cmp random_part , 0 
 		jnz case1
@@ -744,7 +716,7 @@ GenerateTrackDirections PROC
 				inc ax
 				mov [bx-2],ax
 				pop bx
-				cmp ax,WRONGTHRESHOLD
+				cmp ax,2
 				jz dont_try
         	GenerateTrackDir_still:
         ;*-----------------------------------------------;
@@ -1242,35 +1214,19 @@ GenerateCorner PROC
 GenerateCorner ENDP
 
 randomizer PROC
-    pusha
+  pusha
   mov ah, 2Ch
   int 21H    ; puts the millseconds in dl
   mov al, dl ; contain hundreds of seconds
-	; pusha
-	; 	mov bl,100
-	; 	mov ah,0
-	; 	xor dx,dx
-	; 	div bl
-	; 	cmp ah,resetTH
-	;     jl randomizer_ldkjf
-	; 	mov PleaseFlag ,0
-	; 	popa 
-	; 	popa
-	; 	ret
-	; 	randomizer_ldkjf:
-	; popa
   mov ah, 0
+
   div helper ; divide ax by the helper which keep changing; puts the quotiant in al , and remainder in ah
   xor bx, bx
   xor dx, dx
   mov bl, divider
   div bx
-  mov random, dl ; puts the remainder in random
-	; mov ah,02h
-    ; mov dl,helper
-	; add dl,'0'
-    ; int 21h 
 
+  mov random, dl ; puts the remainder in random
   inc helper    ; increment helper to insure random value every time
   cmp helper, 9d ; return helper to 1 if it's ffh to avoid dividing by zero
   jne dontreturn
@@ -2283,7 +2239,6 @@ ResetAllTrackData PROC
 	mov divider, 3H
 	mov helper, 1H
 	mov random, 0
-	mov PleaseFlag , 0
 
 	popa
 	ret

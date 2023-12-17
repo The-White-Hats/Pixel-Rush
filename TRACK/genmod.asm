@@ -42,9 +42,9 @@ include draw.inc
          MIN_Y equ 1
          MAX_Y equ 150 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 18
-         LINE_LENGTH equ 7
-		 HORIZONTAL_LINE_LENGTH equ 19
+         LINE_WIDTH equ 25
+         LINE_LENGTH equ 5
+		 HORIZONTAL_LINE_LENGTH equ 26
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
 		 END_LINE_LENGTH equ 6 ;!Finish Line
@@ -70,7 +70,7 @@ include draw.inc
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 70
+        MAX_PARTS equ 60
         TIME equ 0
 		WRONGTHRESHOLD equ 12
 
@@ -184,15 +184,15 @@ main proc far
 		MOV    AH,0               
 		INT    16H
 
-		clear
+		; clear
 
-		mov ax ,0600h
-		mov bh,DefaultBackground
-		mov cx,0h
-		mov dx , 184fh
-		int 10h
+		; mov ax ,0600h
+		; mov bh,DefaultBackground
+		; mov cx,0h
+		; mov dx , 184fh
+		; int 10h
 
-	jmp stresstest
+	; mp stresstest
 
 	; call GenerateTrackDirections
 
@@ -301,7 +301,7 @@ Draw PROC
     add si, 2*MAX_PARTS-2
     mov ax,0
     modify_maxparts:
-	  cmp [si],3d
+	  cmp byte ptr [si],3d
 	  jle Draw_break
 	  inc ax
 	  sub si,2 
@@ -311,6 +311,7 @@ Draw PROC
     lea si,Directions
     mov cx,MAX_PARTS
 	sub cx,ax
+		mov TotalParts,cx
 	iterate:
 
 	   mov ax,[si]
@@ -395,7 +396,7 @@ GenerateTrackDirections PROC
     Restart:
 	mov ah, 2Ch
 	int 21H    ; puts the millseconds in dl
-	add dl,10		; threshold time
+	add dl,50		; threshold time
 	mov al, dl ; contain hundreds of seconds
 	mov bl,100
 	mov ah,0
@@ -1567,11 +1568,12 @@ GenerateHorizontalTrack PROC
 
     upOpened:
     mov dx, START_Y
-    sub dx, LINE_WIDTH
     sub dx, BOUNDARY_WIDTH
 
+
     exec:
-    mov si, BOUNDARY_WIDTH
+    mov si, LINE_WIDTH
+	add si, BOUNDARY_WIDTH
 
     open1:
     
@@ -1595,15 +1597,76 @@ GenerateHorizontalTrack PROC
         dec di
         cmp di,0
         jnz open11
-    inc dx
+    dec dx
     dec si
     cmp si,0
     jnz open1
-
+	call GenerateCorner
     final:
 	popa
 	ret
  GenerateHorizontalTrack  ENDP
+ 
+GenerateCorner PROC 
+	pusha
+	mov al, DASHESCOLOR
+	mov cx, START_X
+	mov dx, START_Y
+	mov si, LINE_WIDTH/2
+	sub si, DASHEDLINE_LENGTH
+	mov di, LINE_WIDTH/2
+	sub di, DASHEDLINE_LENGTH
+
+	cmp cornerType, 0
+	jnz upOpenedCorner
+	sub dx, DASHEDLINE_LENGTH
+	sub dx, BOUNDARY_WIDTH
+	jmp checkX
+	upOpenedCorner:
+	sub dx, LINE_WIDTH
+	add dx, DASHEDLINE_LENGTH
+
+	checkX:
+	cmp horizontalDirection, 0
+	jnz leftCorner
+	add cx, LINE_WIDTH/2
+	add cx, BOUNDARY_WIDTH
+	jmp drawCorner
+	leftCorner:
+	sub cx, LINE_WIDTH/2
+	sub cx,BOUNDARY_WIDTH
+	
+	drawCorner:
+	mov ah, 0ch	
+	DrawVerticalCorner:
+		int 10h
+		cmp cornerType, 0
+		jnz DrawUpOpenedCorner
+		dec dx
+		jmp DrawVerticalCornerCheck
+		DrawUpOpenedCorner:
+		inc dx
+		DrawVerticalCornerCheck:
+		dec si
+		cmp si, 0
+		jnz DrawVerticalCorner
+
+	DrawHorizontalCorner:
+		int 10h
+		cmp horizontalDirection, 0
+		jnz DrawLeftCorner
+		inc cx
+		jmp DrawHorizontalCornerCheck
+		DrawLeftCorner:
+		dec cx
+		DrawHorizontalCornerCheck:
+		dec di
+		cmp di, 0
+		jnz DrawHorizontalCorner
+	
+	popa
+	ret
+GenerateCorner ENDP
 
 randomizer PROC
   pusha
