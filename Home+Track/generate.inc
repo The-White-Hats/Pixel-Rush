@@ -1261,7 +1261,8 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	sub ax,CAR_HEIGHT/2
 	mov START_CAR_X,ax
 
-	mov current_frame,6
+	mov user1_current_frame,6
+	mov user2_current_frame,6
 
 	mov divider,3H
 	mov lastRandom,3
@@ -1292,7 +1293,8 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	add ax,CAR_HEIGHT/2
 	mov START_CAR_X,ax
 
-	mov current_frame,2
+	mov user1_current_frame,2
+	mov user2_current_frame,2
 
 	mov divider,3H
 	mov lastRandom,2
@@ -1319,7 +1321,8 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov START_CAR_X,ax
 	add START_CAR_X,START_CAR_SHIFT
 
-	mov current_frame,0
+	mov user1_current_frame,0
+	mov user2_current_frame,0
 
 	mov divider,3H
 	mov lastRandom,0
@@ -1344,7 +1347,8 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	add ax,CAR_HEIGHT/2
 	mov START_CAR_Y,ax
 
-	mov current_frame,4
+	mov user1_current_frame,4
+	mov user2_current_frame,4
 
 	mov ax,START_X
 	mov START_CAR_X,ax
