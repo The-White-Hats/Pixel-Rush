@@ -141,7 +141,7 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 70
+        MAX_PARTS equ 10
         TIME equ 0
 		WRONGTHRESHOLD equ 12
 
@@ -277,11 +277,16 @@
 
         ;! 0 means no powerup, 1 means speed up, 2 means slow down, 3 means drop obstacle, 4 means pass through obstacle
         user1_stored_powerup db 3
-        user2_stored_powerup db 0 
+        user2_stored_powerup db 3
 
         ;! stated in the doc that the car can pass through 1 obstacle (didn't mention limitid time)
         user1_obstacles_passed db 1
         user2_obstacles_passed db 1
+
+        current_dir db ?
+        current_posX dw ?
+        current_posY dw ?
+
         dt ?
         divider db 3H
 		helper db 1H

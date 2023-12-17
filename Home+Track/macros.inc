@@ -449,7 +449,7 @@ carMainLoop macro
 
      ; Delay Function
                 delayFunc
-                ;call              ShowInGamePowerUps
+                call              ShowInGamePowerUps
 
      user1_check:
      ; update the location of user 1
