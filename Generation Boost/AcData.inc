@@ -5,7 +5,7 @@ start_X_ofpress equ 5
 
 user_lastaction db ?
 
-closeprogram db 'Program Closed$'
+closeprogram db 'Program Closed                    $'
 closeprogramsize equ $-closeprogram-1  
 f1 db 'Entering Chatting ...                    $' 
 f1size equ $-f1-1   
