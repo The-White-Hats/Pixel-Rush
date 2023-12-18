@@ -47,11 +47,7 @@ MAIN PROC FAR
          drawButtons
 
          call              GetAction
-    
-    ; wait for a key input to not close the screen
-         MOV               AH, 0
-         INT               16h
-
+         
          UltraGraphicsMode
 
          MOV               AH,4CH
