@@ -539,6 +539,7 @@ carMainLoop macro
                 carMainLoop_bridge:   
 
                 call              UpdateUsersScore
+                call              UpdatePowerUps
 
      ; Delay Function
                 delayFunc

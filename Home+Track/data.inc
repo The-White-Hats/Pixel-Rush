@@ -146,16 +146,16 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 30
+        MAX_PARTS equ 50
         TIME equ 0
-		WRONGTHRESHOLD equ 12
+		WRONGTHRESHOLD equ 200
 
         CountDownMin db 2
         CountDownSec db 0
 
         PrevSec db ?
 
-        starttime db ?
+        Expectedfinishtime db 0
 
 		prev_start_x dw ?
 		prev_start_y dw ?
@@ -253,6 +253,11 @@
         user2nextpart db 1
         user_posX dw ?
         user_posY dw ? 
+        Speedname db 'TURBO$'
+        Obstcalpass db 'GHOST$'
+        Obstcaldraw db 'ROCK $'
+        Slowname db 'SLOW $'
+        Delete_Powerup db '     $'
 		;*--------------------------------------------------------------------------------------------------;
 		
 		compilationPowerupsClrs db MAX_PARTS dup(0) 

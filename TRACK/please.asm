@@ -74,6 +74,8 @@ include draw.inc
         TIME equ 0
 		WRONGTHRESHOLD equ 150
 
+        Expectedfinishtime db ?
+		WORKING_TIME equ 5
 		prev_start_x dw ?
 		prev_start_y dw ?
         
@@ -96,6 +98,15 @@ include draw.inc
 		PrevStart  dw (MAX_PARTS+1)*2 dup(0) ;! START_X,START_Y
 
 		PartWrongs dw (MAX_PARTS+1) dup(0) ;! number of wrongs for each part
+
+ DirectionsBest dw MAX_PARTS+1 dup(0)
+
+        ClosedAreaBest dw (MAX_PARTS+1)*4 dup(0) ;! Xmin, Xmax, Ymin, Ymax
+        
+		PrevStartBest  dw (MAX_PARTS+1)*2 dup(0) ;! START_X,START_Y
+
+        TotalPartsBest dw 0 ;? check for all track parts so far 
+ 
 
 		PartWrongsOffset dw 0
 
@@ -141,6 +152,7 @@ include draw.inc
 		casse9 db 0,0,0
 		casse10 db 3,3,3
 		casse11 db 0,0,0
+		 
 		s db ?
         
 .code
@@ -170,6 +182,9 @@ main proc far
       	call RandomStart
 
         mov helper,1
+		mov TotalPartsBest,0
+		 mov TotalParts,0
+		mov Expectedfinishtime,0
 		call GenerateTrackDirections
 
 		call Draw
@@ -293,10 +308,12 @@ Draw PROC
 	mov START_Y,ax
     add bx,4
     ;*--------------------------------------Check that the last direction is horizontal or vertical------;
-    add si, 2*MAX_PARTS-2
+    add si,TotalParts
+	add si,TotalParts
+	sub si,2
     mov ax,0
     modify_maxparts:
-	  cmp [si],3d
+	  cmp byte ptr [si],3d
 	  jle Draw_break
 	  inc ax
 	  sub si,2 
@@ -304,8 +321,9 @@ Draw PROC
     Draw_break:
     ;*--------------------------------------------------------------------------------------------------;
     lea si,Directions
-    mov cx,MAX_PARTS
+    mov cx,TotalParts
 	sub cx,ax
+	mov TotalParts,cx
 	iterate:
 
 	   mov ax,[si]
@@ -388,7 +406,16 @@ Draw ENDP
 
 GenerateTrackDirections PROC 
 
-	mov cx,0
+	mov ah, 2Ch
+	int 21H    
+	add dh,WORKING_TIME
+	mov al, dh ; contain hundreds of seconds
+	mov bl,60
+	mov ah,0
+	xor dx,dx
+	div bl
+    mov Expectedfinishtime,ah
+    
 	lea si,Directions
 	lea di,ClosedArea
     lea bx,PrevStart
@@ -411,7 +438,6 @@ GenerateTrackDirections PROC
 	mov [bx+2],ax
 	add bx,4
     
-    mov TotalParts,0
 
 	GenerateTrackDir_loop:
 
@@ -419,7 +445,7 @@ GenerateTrackDirections PROC
 		mov prev_start_x,ax
 		mov ax,START_Y
 		mov prev_start_y,ax
-        
+      
 		cmp si,startoffsetdirection
 		jz resetlastrandom
 		mov ax,[si-2]
@@ -431,14 +457,8 @@ GenerateTrackDirections PROC
 		mov lastRandom,al
 
 		skipmove:  
-		
+	    
     	call specifiedrandom
-        
-		pusha
-		mov ax,TotalParts
-		shownum 
-		endl
-		popa
 
         cmp random_part , 0 
 		jnz case1
@@ -797,7 +817,9 @@ GenerateTrackDirections PROC
 			add PartWrongsOffset,2
 		
 			inc TotalParts
-		    
+
+            call SaveBestGenration		;* update best if its better than the previous best
+
 			jmp GenerateTrackDir_still
 			
             GenerateTrackDir_mid3:
@@ -824,7 +846,6 @@ GenerateTrackDirections PROC
 			jnz GenerateTrackDir_still
 			    dont_try:
 
-                dec cx
 				mov WrongCounter,0
 	
 				cmp TotalParts,0
@@ -832,9 +853,6 @@ GenerateTrackDirections PROC
 
 			
 				sub si,2
-
-				; mov ax,[si-2]
-		        ; mov lastRandom,al
 
 				sub di,8
 
@@ -857,15 +875,163 @@ GenerateTrackDirections PROC
 				inc ax
 				mov [bx-2],ax
 				pop bx
-				cmp ax,10
+				cmp ax,20
 				jz dont_try
         	GenerateTrackDir_still:
         ;*-----------------------------------------------;
-
-		cmp TotalParts,MAX_PARTS
+		push bx
+		push dx
+		mov ah, 2Ch
+		int 21H    
+		mov al, dh 
+		mov bl,60
+		mov ah,0
+		xor dx,dx
+		div bl
+		pop dx
+		pop bx
+		cmp ah,Expectedfinishtime
+	jge youcantdoit
+	cmp TotalParts,MAX_PARTS
 	jnz GenerateTrackDir_mid6
+    ret
+	youcantdoit:
+	call RetrieveBestGenration
+	   	
 	ret
 GenerateTrackDirections ENDP	
+SaveBestGenration PROC
+	pusha
+	;  mov ax,TotalPartsBest
+	; shownum 
+	; endl
+	; mov ax,TotalParts
+	; shownum 
+	; endl
+     mov ax,TotalParts
+     cmp TotalPartsBest,ax
+	 jl iamnotthebest
+	  popa
+      ret
+    iamnotthebest:
+    ;*--------------------------Directions-----------------------------
+
+	lea si,Directions
+	lea di,DirectionsBest
+	mov cx,TotalParts
+	saveDirections:
+	mov ax,[si]
+	mov [di],ax
+	add si,2
+	add di,2
+	loop saveDirections
+
+    ;*--------------------------ClosedArea-----------------------------
+	lea si,ClosedArea
+	lea di,ClosedAreaBest
+	mov cx,TotalParts
+	saveClosedArea:
+	mov ax,[si]
+	mov [di],ax
+
+	mov ax,[si+2]
+	mov [di+2],ax
+
+	mov ax,[si+4]
+	mov [di+4],ax
+
+	mov ax,[si+6]
+	mov [di+6],ax
+	add si,8
+	add di,8
+	loop saveClosedArea
+	;*--------------------------prevstart-----------------------------
+
+	lea si,PrevStart
+	lea di,PrevStartBest
+	mov cx,TotalParts
+	mov ax,[si]
+	mov [di],ax
+	mov ax,[si+2]
+	mov [di+2],ax
+	add si,4
+    add di,4
+	saveprevstart:
+
+	mov ax,[si]
+	mov [di],ax
+	mov ax,[si+2]
+	mov [di+2],ax
+    add si,4
+	add di,4
+
+	loop saveprevstart
+
+    mov ax,TotalParts
+	mov TotalPartsBest,ax
+
+	popa
+	ret
+SaveBestGenration ENDP
+;*----------------Retrieve  the best directions reached -------------------------------
+RetrieveBestGenration PROC
+	pusha
+	mov ax,TotalPartsBest
+	mov TotalParts,ax
+    ;*--------------------------Directions-----------------------------
+	lea si,DirectionsBest
+	lea di,Directions
+	mov cx,TotalParts
+	RetrieveDirections:
+	mov ax,[si]
+	mov [di],ax
+	add si,2
+	add di,2
+	loop RetrieveDirections
+    ;*--------------------------ClosedArea-----------------------------
+	lea di,ClosedArea
+	lea si,ClosedAreaBest
+	mov cx,TotalParts
+	RetrieveClosedArea:
+	mov ax,[si]
+	mov [di],ax
+
+	mov ax,[si+2]
+	mov [di+2],ax
+
+	mov ax,[si+4]
+	mov [di+4],ax
+
+	mov ax,[si+6]
+	mov [di+6],ax
+	add si,8
+	add di,8
+	loop RetrieveClosedArea
+	;*--------------------------prevstart-----------------------------
+
+	lea di,PrevStart
+	lea si,PrevStartBest
+	mov cx,TotalParts
+
+	mov ax,[si]
+	mov [di],ax
+	mov ax,[si+2]
+	mov [di+2],ax
+	add si,4
+    add di,4
+	Retrieveprevstart:
+
+	mov ax,[si]
+	mov [di],ax
+	mov ax,[si+2]
+	mov [di+2],ax
+    add si,4
+	add di,4
+	loop Retrieveprevstart
+    
+	popa
+	ret
+RetrieveBestGenration ENDP
 
 ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values of x,y. they should be updated before calling this procedure
 	pusha

@@ -190,7 +190,7 @@ DrawTrack PROC
 
 		dec cx
 		cmp cx,0 
-		jg iterate_mid 
+	jg iterate_mid 
     ;*--------------------------------------Draw Obstacles----------------------------------------------;
 	pusha 
 	lea si, obstacles
@@ -660,7 +660,7 @@ GenerateTrackDirections PROC
 			add PartWrongsOffset,2
 		
 			inc TotalParts
-		    
+
 			jmp GenerateTrackDir_still
 			
             GenerateTrackDir_mid3:
@@ -716,13 +716,14 @@ GenerateTrackDirections PROC
 				inc ax
 				mov [bx-2],ax
 				pop bx
-				cmp ax,2
+				cmp ax,20
 				jz dont_try
         	GenerateTrackDir_still:
         ;*-----------------------------------------------;
 
-		cmp TotalParts,MAX_PARTS
+	cmp TotalParts,MAX_PARTS
 	jnz GenerateTrackDir_mid6
+
 	ret
 GenerateTrackDirections ENDP	
 
@@ -2084,6 +2085,92 @@ DrawScore PROC
 	ret
 DrawScore ENDP
 
+UpdatePowerUps PROC
+	pusha 
+	mov ah,2           
+	mov dl,10  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dh,23 ;*2.so the screen is 40*24 char  (24 by testing)
+	int 10h 
+    mov al,user1theme
+	mov stringcolor,al
+
+	cmp user1_stored_powerup,1
+	jnz checkuser1_2
+	lea si,Speedname
+	call DisplayString
+	jmp gotouser2
+checkuser1_2:
+
+	cmp user1_stored_powerup,2
+	jnz checkuser1_3
+	lea si,Slowname
+	call DisplayString
+	jmp gotouser2
+checkuser1_3:
+
+	cmp user1_stored_powerup,3
+	jnz checkuser1_4
+	lea si,Obstcaldraw
+	call DisplayString
+	jmp gotouser2
+checkuser1_4:
+	cmp user1_stored_powerup,4
+	jnz deletepowerupname
+	lea si,Obstcalpass
+	call DisplayString
+jmp gotouser2
+deletepowerupname:
+
+    lea si,Delete_Powerup
+	call DisplayString
+
+   gotouser2:
+
+  mov al,user2theme
+	mov stringcolor,al
+
+	mov ah,2 
+	mov dl,20 
+	mov dh,23 
+	int 10h
+
+	cmp user2_stored_powerup,1
+	jnz checkuser2_2
+	lea si,Speedname
+	call DisplayString
+	jmp out1235
+checkuser2_2:
+
+	cmp user2_stored_powerup,2
+	jnz checkuser2_3
+	lea si,Slowname
+	call DisplayString
+	jmp out1235
+checkuser2_3:
+
+	cmp user2_stored_powerup,3
+	jnz checkuser2_4
+	lea si,Obstcaldraw
+	call DisplayString
+	jmp out1235
+checkuser2_4:
+	cmp user2_stored_powerup,4
+	jnz deletepowerupname2
+	lea si,Obstcalpass
+	call DisplayString
+  jmp out1235
+deletepowerupname2:
+
+ lea si,Delete_Powerup
+	call DisplayString
+
+out1235:
+
+	popa
+	ret
+UpdatePowerUps	ENDP 
+
+
 BackgroundColoring PROC
     ;---------------------------------------Screen Coloring--------------------------------------------;
 	mov ax ,0600h
@@ -2155,7 +2242,6 @@ Timer PROC
 	ret
 Timer ENDP
 
-;description
 ResetAllTrackData PROC
 	pusha
 	;-----------------------------------Positions------------------------------;
@@ -2239,7 +2325,6 @@ ResetAllTrackData PROC
 	mov divider, 3H
 	mov helper, 1H
 	mov random, 0
-
 	popa
 	ret
 ResetAllTrackData ENDP
