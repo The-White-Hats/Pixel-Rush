@@ -1379,15 +1379,17 @@ randomizer PROC
   mov ah, 2Ch
   int 21H    ; puts the millseconds in dl
   mov al, dl ; contain hundreds of seconds
-
   mov ah, 0
-  div helper ; divide ax by the helper which keep changing; puts the quotiant in al , and remainder in ah
-  mov ah, 0  
-  div divider
-  mov random, ah ; puts the remainder in random
 
+  div helper ; divide ax by the helper which keep changing; puts the quotiant in al , and remainder in ah
+  xor bx, bx
+  xor dx, dx
+  mov bl, divider
+  div bx
+
+  mov random, dl ; puts the remainder in random
   inc helper    ; increment helper to insure random value every time
-  cmp helper, 09h ; return helper to 1 if it's ffh to avoid dividing by zero
+  cmp helper, 9d ; return helper to 1 if it's ffh to avoid dividing by zero
   jne dontreturn
   mov helper, 1h
   dontreturn:
@@ -2040,6 +2042,20 @@ DrawPower PROC
 DrawPower ENDP
 	
 ;*--------------------------------------------display string  in si and with color 'stringcolor'------------------------------------------	
+showColoredMsg MACRO str, color, strSize, row, column
+    lea bp, str
+    mov cx, strSize
+
+    ; Print the string in red color at position (100, 50)
+    mov ah, 13h
+    mov al, 0 ; sub-function 0: use BL as color and do not update cursor
+    mov bh, 0 ; page number
+    mov bl, color ; red color
+    mov dh, row ; row
+    mov dl, column ; column
+    int 10h
+ENDM showColoredMsg
+
 DisplayString PROC
 	pusha
 	display_string:
@@ -2245,6 +2261,8 @@ DrawScore ENDP
 
 UpdatePowerUps PROC
 	pusha 
+	MOV               AX,@DATA
+		mov               es, ax 
 	mov ah,2           
 	mov dl,10  ;*1.the row can write up to 40 characters one character takes 8 pixels
 	mov dh,23 ;*2.so the screen is 40*24 char  (24 by testing)
@@ -2254,33 +2272,28 @@ UpdatePowerUps PROC
 
 	cmp user1_stored_powerup,1
 	jnz checkuser1_2
-	lea si,Speedname
-	call DisplayString
+	showColoredMsg Speedname,user1theme,5,23,10
 	jmp gotouser2
 checkuser1_2:
 
 	cmp user1_stored_powerup,2
 	jnz checkuser1_3
-	lea si,Slowname
-	call DisplayString
+	showColoredMsg Slowname,user1theme,5,23,10
 	jmp gotouser2
 checkuser1_3:
 
 	cmp user1_stored_powerup,3
 	jnz checkuser1_4
-	lea si,Obstcaldraw
-	call DisplayString
+	showColoredMsg Obstcaldraw,user1theme,5,23,10
 	jmp gotouser2
 checkuser1_4:
 	cmp user1_stored_powerup,4
 	jnz deletepowerupname
-	lea si,Obstcalpass
-	call DisplayString
+	showColoredMsg Obstcalpass,user1theme,5,23,10
 jmp gotouser2
 deletepowerupname:
 
-    lea si,Delete_Powerup
-	call DisplayString
+	showColoredMsg Delete_Powerup,user1theme,5,23,10
 
    gotouser2:
 
@@ -2294,36 +2307,32 @@ deletepowerupname:
 
 	cmp user2_stored_powerup,1
 	jnz checkuser2_2
-	lea si,Speedname
-	call DisplayString
+	showColoredMsg Speedname,user2theme,5,23,20
 	jmp out1235
 checkuser2_2:
 
 	cmp user2_stored_powerup,2
 	jnz checkuser2_3
-	lea si,Slowname
-	call DisplayString
+	showColoredMsg Slowname,user2theme,5,23,20
 	jmp out1235
 checkuser2_3:
 
 	cmp user2_stored_powerup,3
 	jnz checkuser2_4
-	lea si,Obstcaldraw
-	call DisplayString
+	showColoredMsg Obstcaldraw,user2theme,5,23,20
 	jmp out1235
 checkuser2_4:
 	cmp user2_stored_powerup,4
 	jnz deletepowerupname2
-	lea si,Obstcalpass
-	call DisplayString
+	showColoredMsg Obstcalpass,user2theme,5,23,20
   jmp out1235
 deletepowerupname2:
 
- lea si,Delete_Powerup
-	call DisplayString
+	showColoredMsg Delete_Powerup,user2theme,5,23,20
 
 out1235:
-
+ mov               ax, 0A000h
+          mov               es, ax
 	popa
 	ret
 UpdatePowerUps	ENDP 

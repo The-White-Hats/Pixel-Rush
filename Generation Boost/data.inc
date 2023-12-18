@@ -148,7 +148,7 @@
         
         MAX_PARTS equ 70
         TIME equ 0
-		WRONGTHRESHOLD equ 150
+		WRONGTHRESHOLD equ 200
 
         Expectedfinishtime db ?
 		WORKING_TIME equ 2

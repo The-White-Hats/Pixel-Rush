@@ -36,4 +36,4 @@ nameInputY equ 21
 lineHeight equ 16D
 
 goaltime db ?
-waittime db 3
+waittime db 2

@@ -41,7 +41,7 @@ WinnerScreen PROC
     user2isthewinner:
 	mov ax,0
 	mov al,name2Size
-    showColoredMsg user2name, GOLD,ax,21, 36+part1size ;* username
+    showColoredMsg user2name, GOLD,ax,21, 26+part1size ;* username
     WinnerScreen_part2:
     showColoredMsg WinnerMessagePart2, GOLD, part2size, 22, 35 ;* part2
     jmp WinnerScreen_drawscores
