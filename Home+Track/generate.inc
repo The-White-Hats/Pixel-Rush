@@ -716,7 +716,7 @@ GenerateTrackDirections PROC
 				inc ax
 				mov [bx-2],ax
 				pop bx
-				cmp ax,20
+				cmp ax, 20
 				jz dont_try
         	GenerateTrackDir_still:
         ;*-----------------------------------------------;
