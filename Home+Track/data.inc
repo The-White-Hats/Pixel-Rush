@@ -114,9 +114,9 @@
          MIN_Y equ 10
          MAX_Y equ 180 
          ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 25
+         LINE_WIDTH equ 40
          LINE_LENGTH equ 5
-		 HORIZONTAL_LINE_LENGTH equ 26
+		 HORIZONTAL_LINE_LENGTH equ 60
 
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
 		 END_LINE_LENGTH dw 6 ;!Finish Line
@@ -146,9 +146,9 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 30
+        MAX_PARTS equ 10
         TIME equ 0
-		WRONGTHRESHOLD equ 12
+		WRONGTHRESHOLD equ 200
 
         CountDownMin db 2
         CountDownSec db 0
@@ -294,6 +294,9 @@
         user1_obstacles_passed db 0
         user2_obstacles_passed db 0
 
+        user1FirstTimeHuh db 0 ;! 1 means first time, 0 means not first time
+        user2FirstTimeHuh db 0 ;! 1 means first time, 0 means not first time
+        
         current_dir db ?
         current_posX dw ?
         current_posY dw ?

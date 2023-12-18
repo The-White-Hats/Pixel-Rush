@@ -388,6 +388,13 @@ endm
 
 detectCollision macro current_frame, car, user_obstacles_passed
     local collision
+    local Obscollision
+    local user2_collisionCount
+    local endCollision
+    local user2_collision
+    local endendCollision
+
+
 
     ; check for collision with the boundaries 1
     push              di
@@ -413,14 +420,48 @@ detectCollision macro current_frame, car, user_obstacles_passed
 
     ; check for collision with the obstacles
     push              di
-    cmp               user_obstacles_passed, 1
-    jz                collision
+    cmp               user_obstacles_passed, 0
+    jg                Obscollision
     mov               al, current_frame
     mov               si, offset car
     mov               bl, OBSTACLE_COLOR
     call              handleCar
+    jmp endendCollision
+
+    Obscollision:
+    pusha 
+    mov al, car
+    cmp al, car1
+    jnz user2_collision
+    mov user1FirstTimeHuh, 0
+    user2_collision:
+    mov user2FirstTimeHuh, 0
+    popa
 
     collision:
+    pusha 
+    mov al, car
+    cmp al, car1
+
+    jnz user2_collisionCount
+    cmp user1FirstTimeHuh, 0
+    jnz endCollision
+    cmp user_obstacles_passed, 0
+    jz endCollision
+    dec user_obstacles_passed
+    jmp endCollision
+    user2_collisionCount:
+    cmp user2FirstTimeHuh, 0
+    jnz endCollision
+    cmp user_obstacles_passed, 0
+    jz endCollision
+    dec user_obstacles_passed
+    endCollision:
+    popa
+
+    endendCollision:
+    
+    
     pop               di
 endm detectCollision
 

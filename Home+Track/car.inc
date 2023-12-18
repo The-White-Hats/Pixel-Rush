@@ -262,22 +262,26 @@ SpeedUp PROC
     jz SpeedUp_user2
     ret
     SpeedUp_user1:
-        inc user1_speed
-        mov ax, 0
+        mov user1_speed, 3
         mov al, CountDownSec
-        add ax, 5
-        mov cl, 60
-        div cl
-        mov user1_speedUpCounter, ah
+        mov user1_speedUpCounter, al
+        cmp al, 5
+        jl SpeedUp_user1_add_minute
+        sub user1_speedUpCounter, 5
+        ret
+        SpeedUp_user1_add_minute:
+        add user1_speedUpCounter, 55
         ret
     SpeedUp_user2:
-        inc user2_speed
-        mov ax, 0
+        mov user2_speed, 3
         mov al, CountDownSec
-        add ax, 5
-        mov cl, 60
-        div cl
-        mov user2_speedUpCounter, ah
+        mov user2_speedUpCounter, al
+        cmp al, 5
+        jl SpeedUp_user2_add_minute
+        sub user2_speedUpCounter, 5
+        ret
+        SpeedUp_user2_add_minute:
+        add user2_speedUpCounter, 55
         ret
 SpeedUp ENDP
     ;-----------------------
@@ -288,22 +292,26 @@ SpeedDown PROC
     jz SpeedDown_user2
     ret
     SpeedDown_user1:
-        dec user2_speed
-        mov ax, 0
+        mov user2_speed, 1
         mov al, CountDownSec
-        add ax, 5
-        mov cl, 60
-        div cl
-        mov user2_slowDownCounter, ah
+        mov user2_slowDownCounter, al
+        cmp al, 5
+        jl SlowDowm_user1_add_minute
+        sub user2_slowDownCounter, 5
+        ret
+        SlowDowm_user1_add_minute:
+        add user2_slowDownCounter, 55
         ret
     SpeedDown_user2:
-        dec user1_speed
-        mov ax, 0
+        mov user1_speed, 1
         mov al, CountDownSec
-        add ax, 5
-        mov cl, 60
-        div cl
-        mov user1_slowDownCounter, ah
+        mov user1_slowDownCounter, al
+        cmp al, 5
+        jl SlowDowm_user2_add_minute
+        sub user1_slowDownCounter, 5
+        ret
+        SlowDowm_user2_add_minute:
+        add user1_slowDownCounter, 55
         ret
 SpeedDown ENDP
     ;-----------------------
@@ -430,10 +438,12 @@ PassObs PROC
     PassObs_user1:
         ;! now the user1_obstacles_passed is 0, it must be checked in the collision logic to pass this user through one obstacle
         ;! and then it must be set to 1 again
-        mov user1_obstacles_passed, 1  
+        mov user1_obstacles_passed, 0fh
+        mov user1FirstTimeHuh, 1
         jmp PassObs_end
     PassObs_user2:
-        mov user2_obstacles_passed, 1
+        mov user2_obstacles_passed, 0fh
+        mov user2FirstTimeHuh, 1
         jmp PassObs_end
     PassObs_end:
         popa
@@ -456,6 +466,7 @@ UpdateSpeeds PROC
     jmp UpdateSpeeds_end
 
     UpdateSpeeds_user1:
+        
         mov user1_speed, 2
         jmp UpdateSpeeds_end
     UpdateSpeeds_user2:
