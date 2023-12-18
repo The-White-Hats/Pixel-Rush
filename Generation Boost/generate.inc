@@ -1,214 +1,3 @@
-
-include draw.inc
-.286
-.model small
-.stack 128
-.data
-    ;*----------------------------------COLORS------------------------------------------------------;
-         TEXT_COLOR equ 0    ; DefaultBackground text on BOUNDARY_COLOR2 background
-         SCREEN_ATTR equ 0F0h ; BOUNDARY_COLOR2 background (high nibble) and DefaultBackground text (low nibble)
-         DASHEDLINEATTR equ 0F0h ; 
-         RED equ 04h
-         LIGHT_GREEN equ 0Ah
-         GREEN equ 02h
-         LIGHT_GRAY equ 07h
-         GRAY equ 08h
-         WHITE equ 0Fh
-         BLACK equ 00h
-		 CYAN equ 03h
-		 LIGHT_CYAN equ 0bh	
-		 Magenta equ 05h
-		 Brown equ 06h
-		 BLUE equ 01h
-		 BOUNDARY_COLOR1 equ BLUE
-		 BOUNDARY_COLOR2 equ RED
-
-		 EndTrackColor1 db BOUNDARY_COLOR1 ;!Finish Line
-		 EndTrackColor2 db BOUNDARY_COLOR2 ;!Finish Line
-
-		
-
-         DefaultBackground equ GREEN
-         DASHESCOLOR equ LIGHT_GRAY
-         ;*----------------------------------Positions-------------------------------------------------;      
-		 START_X dw 2
-         START_Y dw 150
-         START_DIR db 0
-         END_X dw ?
-         END_Y dw ?
-         ;*----------------------------------BOUNDARY-------------------------------------------------;      
-         MIN_X equ 1
-         MAX_X equ 319
-         MIN_Y equ 1
-         MAX_Y equ 150 
-         ;*----------------------------------Dimensions-------------------------------------------------;
-         LINE_WIDTH equ 25
-         LINE_LENGTH equ 5
-		 HORIZONTAL_LINE_LENGTH equ 26
-
-		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
-		 END_LINE_LENGTH equ 6 ;!Finish Line
-		 END_LINE_DASHEDLINE_LENGTH equ 2 ;!Finish Line
-         EndTrackWidthToggle equ 2
-
-         BOUNDARY_WIDTH equ 1
-         BOUNDARY_LENGTH equ 4
-         DASHEDLINE_LENGTH equ 6
-         ;*----------------------------------Variables-------------------------------------------------;
-		 posx dw 0
-		 posy dw 0
-		 toggleboundarycolor db 0
-		 toggletrackmiddle db 0
-		 boundaryflag db  0
-		 middletrackflag db 0
-         verticaldirection db 0 ;! 0 up 1 down
-
-         cornerFlag db 1  ;! 0 means no corner, 1 means corner
-         cornerType db 1 ;! 1 means up, 0 means down
-         horizontalDirection db 1 ;! 1 left 0 right
-		 isvertical db 0 ;! 1 vertical ,0 horizontal
-		 isup_right db 0 ;! 1 up or right 0 oppisite
-        ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
-        
-        MAX_PARTS equ 70
-        TIME equ 0
-		WRONGTHRESHOLD equ 150
-
-        Expectedfinishtime db ?
-		WORKING_TIME equ 2
-		prev_start_x dw ?
-		prev_start_y dw ?
-        
-        x_max_new dw ?
-        x_min_new dw ?
-
-        x_max_old dw ?
-        x_min_old dw ?
-
-        y_max_new dw ?
-        y_min_new dw ?
-
-        y_max_old dw ?
-        y_min_old dw ?
-
-        Directions dw MAX_PARTS+1 dup(0)
-
-        ClosedArea dw (MAX_PARTS+1)*4 dup(0) ;! Xmin, Xmax, Ymin, Ymax
-        
-		PrevStart  dw (MAX_PARTS+1)*2 dup(0) ;! START_X,START_Y
-
-		PartWrongs dw (MAX_PARTS+1) dup(0) ;! number of wrongs for each part
-
- DirectionsBest dw MAX_PARTS+1 dup(0)
-
-        ClosedAreaBest dw (MAX_PARTS+1)*4 dup(0) ;! Xmin, Xmax, Ymin, Ymax
-        
-		PrevStartBest  dw (MAX_PARTS+1)*2 dup(0) ;! START_X,START_Y
-
-        TotalPartsBest dw 0 ;? check for all track parts so far 
- 
-
-		PartWrongsOffset dw 0
-
-        SingleCheckFlag db 1 ;? check for single part in track
-
-		TrackCheckFlag db 1 ;? check for all track parts with the new part
-
-		TotalParts dw 0 ;? check for all track parts so far
-
-		WrongCounter dw 0 ;? count number of consecutive wrong parts
-
-		startoffsetdirection dw 0 
-		startoffsetclosedarea dw 0 
-		startoffsetprevstart dw 0 
-
-        ;*----------------------------------Track Generation Variables------------------------------------------------
-        CurrentCase dw 0 
-        
-        ;*----------------------------------Random Proc Variables------------------------------------------------
-        seed DW 1234H       ; Initial seed value
-		multiplier Dw 1d51H
-		increment Dw 8c45H
-		modulus DW 0F4bFh 
-		random_part db 0 ; 4 bytes of memory to store the random seed
-        
-		helper db 1H
-		divider db 3H
-		random db 0
-		resetTH db 0
-		;*------------------------------------------- CASES -------------------------------------------; 
-		lastRandom db 0
-        currentRandom db 0
-		validationFlag db 0
-		casse0 db 0,5,7
-		casse1 db 8,10,1
-		casse2 db 2,6,11
-		casse3 db 3,4,9
-		casse4 db 1,1,1
-		casse5 db 2,2,2
-		casse6 db 1,1,1
-		casse7 db 3,3,3
-		casse8 db 2,2,2
-		casse9 db 0,0,0
-		casse10 db 3,3,3
-		casse11 db 0,0,0
-		 
-		s db ?
-        
-.code
-main proc far
-    mov ax, @data
-    mov ds, ax
-  
-    clear
-    
-    ; Remove Blinking from the screen and allowing to use 16 colors as background
-        mov AX , 1003h
-		mov BL ,00h  ; 00h background intensity enabled , 01h blink enabled
-		mov BH , 00h ; to avoid problems on some adapters
-        int 10h
-	;---------------------------------------Screen Coloring------------------------------------------------;
-		mov ax ,0600h
-		mov bh,DefaultBackground
-		mov cx,0h
-		mov dx , 184fh
-    	int 10h
-    ;-----------------------------------------------------------------------------------------------------;
-
-
-    stresstest:
-
-	
-		call GenerateTrackDirections
-
-		call Draw
-
-		call FinalLine
-
-		MOV    AH,0               
-		INT    16H
-
-		clear
-
-		mov ax ,0600h
-		mov bh,DefaultBackground
-		mov cx,0h
-		mov dx , 184fh
-		int 10h
-
-	jmp stresstest
-
-	; call GenerateTrackDirections
-
- 	; call Draw
-
-    MOV    AH,0               
-    INT    16H
-
-    mov ah, 4ch        
-    INT 21h         
-main endp
-
 SelectType PROC
 	 cmp CurrentCase , 0 
 		jnz casee1
@@ -292,7 +81,15 @@ SelectType PROC
 		ret
 SelectType ENDP
 
-Draw PROC
+DrawTrack PROC
+	pusha
+	mov saveObstaclesCounter,0
+	mov saveCompilationPowerupsCounter,0
+	mov saveCompilationPowerupsClrsCounter,0
+	mov saveInGamePowerupsCounter,0
+	mov saveInGamePowerupsClrsCounter,0
+	mov loadCompilationPowerupsClrsCounter,0
+
 	lea si,Directions
     lea bx,PrevStart
 	
@@ -302,7 +99,7 @@ Draw PROC
 	mov START_Y,ax
     add bx,4
     ;*--------------------------------------Check that the last direction is horizontal or vertical------;
-    add si,TotalParts
+     add si,TotalParts
 	add si,TotalParts
 	sub si,2
     mov ax,0
@@ -314,10 +111,11 @@ Draw PROC
     loop modify_maxparts 
     Draw_break:
     ;*--------------------------------------------------------------------------------------------------;
-    lea si,Directions
+   	lea si,Directions
     mov cx,TotalParts
 	sub cx,ax
 	mov TotalParts,cx
+
 	iterate:
 
 	   mov ax,[si]
@@ -394,12 +192,74 @@ Draw PROC
 
 		dec cx
 		cmp cx,0 
-		jg iterate_mid 
+	jg iterate_mid 
+    ;*--------------------------------------Draw Obstacles----------------------------------------------;
+	pusha 
+	lea si, obstacles
+	mov cx, 0
+	finalDrawObstaclesLoop:
+	call DrawObstacle
+	add si, 4
+	add cx, 4
+	cmp cx, saveObstaclesCounter
+	jl finalDrawObstaclesLoop
+	popa
+
+	pusha ;*--------------------------------------Draw Powerups----------------------------------------------;
+	mov generatedPowerupSource, 0
+	lea si, compilationPowerups
+	finalDrawPowerupsLoop:
+	call DrawPower
+	add si, 4
+	add loadCompilationPowerupsClrsCounter, 1
+	mov ax, loadCompilationPowerupsClrsCounter
+	cmp ax, saveCompilationPowerupsClrsCounter
+	jl finalDrawPowerupsLoop
+	popa
+    
+	lea si,Directions
+    	;*-------------------Close start line------------------
+    lea bx,PrevStart
+
+	mov ax,START_X
+	mov x_max_new,ax
+	mov ax,START_Y
+	mov y_max_new,ax
+
+    mov ax,CurrentCase
+	mov x_min_new,ax
+
+	mov ax,[bx]
+	mov START_X,ax
+	mov ax,[bx+2]
+	mov START_Y,ax
+   
+    mov ax,[si]
+	mov CurrentCase ,ax
+    mov END_LINE_LENGTH,LINE_WIDTH+BOUNDARY_WIDTH
+	mov EndTrackColor1,LIGHT_ORANGE
+	mov EndTrackColor2,ORANGE_RED
+    
+	call SingleLine
+
+	mov ax,x_max_new
+	mov START_X,ax
+	mov ax,y_max_new
+	mov START_Y,ax
+    mov ax,x_min_new
+	mov CurrentCase,ax
+    mov END_LINE_LENGTH,6
+	mov EndTrackColor1,BLACK
+	mov EndTrackColor2,WHITE
+
+popa
 	ret
-Draw ENDP
+DrawTrack ENDP
 
 GenerateTrackDirections PROC 
-    Restart:
+
+	Restart:
+
 	call ResetAllTrackData
 
     call RandomStart
@@ -893,13 +753,6 @@ GenerateTrackDirections PROC
 	    jmp Restart
 	PleaseBridge:
 
-	 mov ax,TotalPartsBest
-	shownum 
-	endl
-	mov ax,TotalParts
-	shownum 
-	endl
-
 	call RetrieveBestGenration
 	   	
 	ret
@@ -1033,8 +886,10 @@ RetrieveBestGenration PROC
 	ret
 RetrieveBestGenration ENDP
 
+
 ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values of x,y. they should be updated before calling this procedure
 	pusha
+	
 	;---------------------------check for bounadry conditions---------------------------------;
 			cmp x_min_new,MIN_X
 			jge ValidateTrack_check1
@@ -1060,8 +915,9 @@ ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values 
    jz ValidateTrack_skip
    lea si,ClosedArea
    mov cx,0
-   for1:
 
+   for1:
+    
 	mov ax,[si]
 	mov x_min_old,ax
 
@@ -1091,6 +947,7 @@ ValidateTrack PROC ;! Change Value of ax and si and dependent on the new values 
 	ret 
    
     wrong:
+
     mov TrackCheckFlag,0
 	popa
 	ret
@@ -1234,7 +1091,7 @@ GenerateVerticalTrack PROC ;! Dependent on the START_X and START_Y  and does not
 				mov ah,0ch
 				int 10h
                 
-				;---------------------------------------change posy according to vertical direction if up dec and cmp with start - length if down inc and cmp with start+length ----------------------------------------------;
+				;--------change posy according to vertical direction if up dec and cmp with start - length if down inc and cmp with start+length --------;
 				cmp verticaldirection ,0 
 				jnz down  
 				dec posy
@@ -1404,11 +1261,12 @@ GenerateHorizontalTrack PROC
 
     upOpened:
     mov dx, START_Y
-    sub dx, LINE_WIDTH
     sub dx, BOUNDARY_WIDTH
 
+
     exec:
-    mov si, BOUNDARY_WIDTH
+    mov si, LINE_WIDTH
+	add si, BOUNDARY_WIDTH
 
     open1:
     
@@ -1432,15 +1290,89 @@ GenerateHorizontalTrack PROC
         dec di
         cmp di,0
         jnz open11
-    inc dx
+    dec dx
     dec si
     cmp si,0
     jnz open1
+	call GenerateCorner
+
 
     final:
 	popa
+	pusha
+	mov ax ,TotalParts
+	sub ax,cx
+    cmp ax,2
+	jle leaveleave
+	add ax,2
+	cmp ax,TotalParts
+	jge leaveleave
+	call GenerateObstaclesPowerUps
+    leaveleave:
+	popa
 	ret
  GenerateHorizontalTrack  ENDP
+
+GenerateCorner PROC 
+	pusha
+	mov al, DASHESCOLOR
+	mov cx, START_X
+	mov dx, START_Y
+	mov si, LINE_WIDTH/2
+	sub si, DASHEDLINE_LENGTH
+	mov di, LINE_WIDTH/2
+	sub di, DASHEDLINE_LENGTH
+
+	cmp cornerType, 0
+	jnz upOpenedCorner
+	sub dx, DASHEDLINE_LENGTH
+	sub dx, BOUNDARY_WIDTH
+	jmp checkX
+	upOpenedCorner:
+	sub dx, LINE_WIDTH
+	add dx, DASHEDLINE_LENGTH
+
+	checkX:
+	cmp horizontalDirection, 0
+	jnz leftCorner
+	add cx, LINE_WIDTH/2
+	add cx, BOUNDARY_WIDTH
+	jmp drawCorner
+	leftCorner:
+	sub cx, LINE_WIDTH/2
+	sub cx,BOUNDARY_WIDTH
+	
+	drawCorner:
+	mov ah, 0ch	
+	DrawVerticalCorner:
+		int 10h
+		cmp cornerType, 0
+		jnz DrawUpOpenedCorner
+		dec dx
+		jmp DrawVerticalCornerCheck
+		DrawUpOpenedCorner:
+		inc dx
+		DrawVerticalCornerCheck:
+		dec si
+		cmp si, 0
+		jnz DrawVerticalCorner
+
+	DrawHorizontalCorner:
+		int 10h
+		cmp horizontalDirection, 0
+		jnz DrawLeftCorner
+		inc cx
+		jmp DrawHorizontalCornerCheck
+		DrawLeftCorner:
+		dec cx
+		DrawHorizontalCornerCheck:
+		dec di
+		cmp di, 0
+		jnz DrawHorizontalCorner
+	
+	popa
+	ret
+GenerateCorner ENDP
 
 randomizer PROC
   pusha
@@ -1480,7 +1412,7 @@ specifiedrandom PROC
 	mov random_part,al
 	popa
 	ret
-ENDP
+specifiedrandom ENDP 
 
 Delay PROC
 	    pusha
@@ -1511,6 +1443,23 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov START_Y,LINE_WIDTH+2*BOUNDARY_WIDTH
 	RandomStart_skip:
 
+    mov ax,START_Y
+	mov START_CAR_Y,ax
+	sub START_CAR_Y,START_CAR_SHIFT
+	mov START_CAR2_Y,ax
+	sub START_CAR2_Y,START_CAR_SHIFT+SPACE_BETWEEN
+   
+	mov ax,START_X
+	sub ax,CAR_HEIGHT/2+1
+	mov START_CAR_X,ax
+    mov START_CAR2_X,ax
+   
+    mov isvertical,1
+	mov isup_right,1
+
+	mov user1_current_frame,6
+	mov user2_current_frame,6
+
 	mov divider,3H
 	mov lastRandom,3
 	mov START_DIR,3
@@ -1526,11 +1475,28 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov ax,0
 	mov al,random
 	mov START_Y,ax
-
+    
 	cmp al,LINE_WIDTH+2*BOUNDARY_WIDTH
 	jge RandomStart_skip2
 	mov START_Y,LINE_WIDTH+2*BOUNDARY_WIDTH
 	RandomStart_skip2:
+
+    mov ax,START_Y
+	mov START_CAR_Y,ax
+	sub START_CAR_Y,START_CAR_SHIFT
+	mov START_CAR2_Y,ax
+	sub START_CAR2_Y,START_CAR_SHIFT+SPACE_BETWEEN
+
+	mov ax,START_X
+	add ax,CAR_HEIGHT/2+1
+	mov START_CAR_X,ax
+	mov START_CAR2_X,ax
+    
+	mov isvertical,1
+	mov isup_right,1
+
+	mov user1_current_frame,2
+	mov user2_current_frame,2
 
 	mov divider,3H
 	mov lastRandom,2
@@ -1548,6 +1514,24 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov al,random
 	mov START_X,ax
 	add START_X,10
+
+    mov ax,START_Y
+	sub ax,CAR_HEIGHT/2+1
+	mov START_CAR_Y,ax
+	mov START_CAR2_Y,ax
+
+	mov ax,START_X
+	mov START_CAR_X,ax
+	add START_CAR_X,START_CAR_SHIFT
+	mov START_CAR2_X,ax
+	add START_CAR2_X,START_CAR_SHIFT+SPACE_BETWEEN
+
+	mov isvertical,0
+	mov isup_right,1
+
+	mov user1_current_frame,0
+	mov user2_current_frame,0
+
 	mov divider,3H
 	mov lastRandom,0
 	mov START_DIR,0
@@ -1566,6 +1550,24 @@ RandomStart PROC  ;! first select i will be on the X_MAX,X_MIN,Y_MAX,Y_MIN ->0,1
 	mov lastRandom,1
 	mov START_DIR,1
 	mov helper,1h
+
+	mov ax,START_Y
+	add ax,CAR_HEIGHT/2+1
+	mov START_CAR_Y,ax
+	mov START_CAR2_Y,ax
+
+	mov user1_current_frame,4
+	mov user2_current_frame,4
+
+	mov isvertical,0
+	mov isup_right,1
+
+	mov ax,START_X
+	mov START_CAR_X,ax
+	add START_CAR_X,START_CAR_SHIFT
+	mov START_CAR2_X,ax
+	add START_CAR2_X,START_CAR_SHIFT+SPACE_BETWEEN
+
 	ret
 RandomStart ENDP
 
@@ -1574,15 +1576,9 @@ FinalLine PROC
 
     call ModifyDirection
 
-    ;call SingleLine
-
 	mov cx,END_LINE_WIDTH
 
-    mov EndTrackColor2,BLACK
-    mov EndTrackColor1,WHITE
     mov ax ,0
-	
-
 	drawfinalline:
 
      cmp ax,EndTrackWidthToggle
@@ -1598,13 +1594,6 @@ FinalLine PROC
      inc ax
 
 	loop drawfinalline
-
-   ; mov EndTrackColor1,BOUNDARY_COLOR1
-   ; mov EndTrackColor2,BOUNDARY_COLOR2
-
-	;call ModifyEachIteration
-	;call SingleLine
-
 	ret
 FinalLine ENDP
 SingleLine PROC
@@ -1665,6 +1654,7 @@ SingleLine PROC
 
 			FinalLine_skip:
 		loop drawsingleline
+
         popa
 		ret
 SingleLine ENDP
@@ -1704,7 +1694,24 @@ ModifyDirection PROC
 
     cmp CurrentCase,0
 	jnz FinalLine_case1
+
 	mov isup_right,0
+	mov ax,START_X
+	mov finish_x_min,ax
+
+	mov ax,START_Y
+	add ax,END_LINE_LENGTH
+	dec ax
+	mov finish_y_max,ax 
+
+	mov ax,START_Y
+	mov finish_y_min,ax 
+
+	mov ax,LINE_WIDTH
+	add ax,START_X
+	dec ax
+	mov finish_x_max,ax
+
 	ret
 
     FinalLine_case1:
@@ -1712,6 +1719,18 @@ ModifyDirection PROC
 	cmp CurrentCase,1
 	jnz FinalLine_case2
 	mov isup_right,1
+	mov ax,START_X
+	mov finish_x_min,ax
+	mov ax,START_Y
+	mov finish_y_max,ax  
+	mov ax,START_Y
+	sub ax,END_LINE_LENGTH
+    inc ax 
+	mov finish_y_min,ax 
+	mov ax,LINE_WIDTH
+	add ax,START_X
+	dec ax
+	mov finish_x_max,ax
 	ret
 
     FinalLine_case2:
@@ -1721,10 +1740,752 @@ ModifyDirection PROC
 	cmp CurrentCase,2d
 	jnz lefthorizontal1
 	mov isup_right,0
+
+	mov ax,START_X
+	sub ax,END_LINE_LENGTH
+	inc ax
+	mov finish_x_min,ax
+
+	mov ax,START_Y
+	mov finish_y_max,ax  
+
+	mov ax,START_Y
+	sub ax,LINE_WIDTH
+    inc ax 
+	mov finish_y_min,ax 
+
+
+	mov ax,START_X
+	mov finish_x_max,ax
+
 	ret
 
     lefthorizontal1:
 	mov isup_right,1 
+
+	mov ax,START_X
+	add ax,END_LINE_LENGTH
+	dec ax
+	mov finish_x_max,ax
+
+	mov ax,START_Y
+	mov finish_y_max,ax  
+
+	mov ax,START_Y
+	sub ax,LINE_WIDTH
+    inc ax 
+	mov finish_y_min,ax 
+
+
+	mov ax,START_X
+	mov finish_x_min,ax
+
     ret
 ModifyDirection ENDP
-end main
+
+GenerateObstaclesPowerUps PROC
+	pusha
+	cmp isLastPowerup, 1
+	jz forceObs
+	mov divider, 12h
+	call randomizer ; randomize the existence of an obstacle
+	cmp random, 02h
+	jg power1
+	forceObs:
+	mov isLastPowerup, 0
+	mov al, OBSTACLE_COLOR
+	jmp initiateDraw2
+	power1:
+
+	mov isLastPowerup, 1
+	mov al, isLastPowerupShown
+	mov nowORthen, al
+	xor isLastPowerupShown, 1
+
+	typeRandomizer:
+	call randomizer ; randomize the type of the powerup
+	cmp random, 0
+	jnz power34
+	call randomizer
+	cmp random, 0
+	jnz power2
+	mov al, POWERUP1_COLOR
+	jmp initiateDraw
+	power2:
+	mov al, POWERUP2_COLOR
+	jmp initiateDraw
+	power34:
+	call randomizer
+	cmp random, 0
+	jnz power4
+	mov al, POWERUP3_COLOR
+	jmp initiateDraw
+	power4:
+	mov al, POWERUP4_COLOR
+
+
+
+	initiateDraw:
+	cmp al, lastType
+	jz typeRandomizer
+	cmp al, latestType
+	jz typeRandomizer
+	mov ah, lastType
+	mov latestType, ah
+	mov lastType, al
+	initiateDraw2:
+	mov divider, 3H
+	call randomizer ; randomize the position of the obstacle
+	cmp random, 0
+	jnz secondPlace
+	mov cx, START_X
+	cmp horizontalDirection, 0
+	jnz leftDrawObs
+	add cx, LINE_LENGTH/4
+	jmp yPosition
+	leftDrawObs:
+	sub cx, LINE_LENGTH/4
+	jmp yPosition
+
+	secondPlace:
+	cmp random, 1
+	jnz thirdPlace
+	mov cx, START_X
+	cmp horizontalDirection, 0
+	jnz leftDrawObs2
+	add cx, LINE_LENGTH/2
+	jmp yPosition
+	leftDrawObs2:
+	sub cx, LINE_LENGTH/2
+	jmp yPosition
+
+
+	thirdPlace:
+	mov cx, START_X
+	cmp horizontalDirection, 0
+	jnz leftDrawObs3
+	add cx, 3*LINE_LENGTH/4
+	jmp yPosition
+	leftDrawObs3:
+	sub cx, 3*LINE_LENGTH/4
+	jmp yPosition
+
+	
+
+	yPosition:
+	mov dx, START_Y
+	sub dx, BOUNDARY_WIDTH
+	push ax
+	randomizerLoop:
+		call randomizer
+		mov ah, random
+		mov al, latestPos
+		cmp ah, al
+		jz randomizerLoop
+		mov latestPos, ah
+	pop ax
+	
+	cmp random, 1
+	jnz secondYPlace
+	sub dx, 3  ; to make it above the track boundary
+	jmp saveObs
+	secondYPlace:
+	cmp random, 0
+	jnz thirdYPlace
+	sub dx, LINE_WIDTH/3
+	jmp saveObs
+	thirdYPlace:
+
+	sub dx, 2*LINE_WIDTH/3
+
+	saveObs:
+	cmp horizontalDirection, 0 
+	jnz saveLeft1
+	cmp al, OBSTACLE_COLOR
+	jnz centerPowerUps
+	add cx, OBSTACLE_WIDTH/2 ; to save the center of the obstacle (x-axis)
+	jmp saveObs1
+	centerPowerUps:
+	add cx, POWERUP_WIDTH/2
+	jmp saveObs1
+	saveLeft1:
+	cmp al, OBSTACLE_COLOR
+	jnz savePowerUps2
+	sub cx, OBSTACLE_WIDTH/2
+	jmp saveObs1
+	savePowerUps2:
+	sub cx, POWERUP_WIDTH/2
+
+
+	saveObs1:
+	cmp al, OBSTACLE_COLOR
+	jnz savePowerUps
+	lea si, obstacles
+	add si, saveObstaclesCounter
+
+	mov [si], cx
+	mov [si+2], dx
+	add saveObstaclesCounter, 4
+	jmp endGenerateObstaclesPowerUps
+
+	savePowerUps:
+	cmp nowORthen, 1
+	jnz saveForLater
+	lea si, compilationPowerups
+	add si, saveCompilationPowerupsCounter
+	mov [si], cx
+	mov [si+2], dx
+	add saveCompilationPowerupsCounter, 4
+	lea si, compilationPowerupsClrs
+	add si, saveCompilationPowerupsClrsCounter
+	mov [si], al
+	add saveCompilationPowerupsClrsCounter, 1
+	jmp endGenerateObstaclesPowerUps
+
+	saveForLater:
+	lea si, inGamePowerups
+	add si, saveInGamePowerupsCounter
+	mov [si], cx
+	mov [si+2], dx
+	add saveInGamePowerupsCounter, 4
+	lea si, inGamePowerupsClrs
+	add si, saveInGamePowerupsClrsCounter
+	mov [si], al
+	add saveInGamePowerupsClrsCounter, 1
+
+
+	endGenerateObstaclesPowerUps:
+	popa
+	ret
+GenerateObstaclesPowerUps ENDP
+
+DrawObstacle PROC
+	pusha
+	mov bx, [si]
+	sub bx, OBSTACLE_WIDTH/2
+	mov dx, [si+2]
+	mov horizontalDirection, 0
+	mov ah, 0ch
+	mov si, OBSTACLE_WIDTH
+	mov al, OBSTACLE_COLOR
+	drawObsLoop:
+	mov di, OBSTACLE_LENGTH
+	mov cx, bx
+		drawObsLoop2:
+		int 10h
+		cmp horizontalDirection, 0
+		jnz leftDrawObs4
+		inc cx
+		jmp drawObsLoop3
+		leftDrawObs4:
+		dec cx
+		drawObsLoop3:
+		dec di
+		cmp di, 0
+		jnz drawObsLoop2
+		dec dx
+		dec si
+		cmp si, 0
+		jnz drawObsLoop
+
+		popa
+	ret
+DrawObstacle ENDP
+
+DrawPower PROC
+	pusha
+	mov bx, [si]
+	sub bx, POWERUP_WIDTH/2
+	mov dx, [si+2]
+	mov horizontalDirection, 0
+	mov si, POWERUP_WIDTH
+	push bx
+	cmp generatedPowerupSource, 0
+	jnz drawInGamePowerup
+	lea bx, compilationPowerupsClrs
+	add bx, loadCompilationPowerupsClrsCounter
+	jmp continueDrawPower
+
+	drawInGamePowerup:
+	lea bx, inGamePowerupsClrs
+	add bx, loadInGamePowerupsClrsCounter
+
+
+	continueDrawPower:
+	mov al, [bx]
+	pop bx
+	mov ah, 0ch
+	drawPowLoop:
+	mov di, POWERUP_LENGTH
+	mov cx, bx
+		drawPowLoop2:
+		int 10h
+		cmp horizontalDirection, 0
+		jnz leftDrawPow4
+		inc cx
+		jmp drawPowLoop3
+		leftDrawPow4:
+		dec cx
+		drawPowLoop3:
+		dec di
+		cmp di, 0
+		jnz drawPowLoop2
+		dec dx
+		dec si
+		cmp si, 0
+		jnz drawPowLoop
+
+	popa
+	ret
+DrawPower ENDP
+	
+;*--------------------------------------------display string  in si and with color 'stringcolor'------------------------------------------	
+DisplayString PROC
+	pusha
+	display_string:
+		mov ah,9          ;Display
+		mov bh,0          ;!Page does not work here like normal text mode so leave it 0 so that i work properly (noticed this by testing)
+		mov al,[si]       
+		mov cx,1d               ;1 times
+		mov bl,stringcolor       ;?colors are diffrent from text mode
+		int 10h
+		mov ah,2           
+		inc dl
+		int 10h 
+		inc si
+		mov al,[si]
+		cmp al,'$'
+	jnz display_string
+	popa
+	ret
+DisplayString ENDP
+
+DrawScoreBoard PROC
+	pusha
+	;----------------------------------------Display user names and scores----------------------------;
+		;---------------------------Moving Cursor-------------------;
+		mov ah,2           
+		mov dl,1  ;*1.the row can write up to 40 characters one character takes 8 pixels
+		mov dh,23 ;*2.so the screen is 40*24 char  (24 by testing)
+		int 10h 
+
+	lea si , user1name
+	mov cl,user1theme
+	mov stringcolor , cl
+	call DisplayString
+     
+		mov dh,24 
+		int 10h 
+
+	lea si ,scorename
+    call DisplayString
+
+		mov dl,30 
+		mov dh,23 
+		int 10h
+
+	lea si ,user2name
+	mov cl,user2theme
+	mov stringcolor , cl
+    call DisplayString
+    
+		mov dh,24
+		int 10h
+
+	lea si ,scorename
+    call DisplayString
+
+	popa
+	ret
+;--------------------------------------------------------------------------------------------------;
+DrawScoreBoard ENDP
+
+UpdateUserScore PROC
+	pusha
+	lea si,ClosedArea
+	mov cx,TotalParts
+	mov ax,0
+	mov al,usernextpart
+	mov bl,8
+	mul bl
+	add si,ax
+	
+	mov ax,[si]
+	mov x_min_old,ax
+
+	mov ax,[si+2]
+	mov x_max_old,ax
+
+	mov ax,[si+4]
+	mov y_min_old,ax
+
+	mov ax,[si+6]
+	mov y_max_old,ax
+    ;---------------------------------------check for finish line-----------------------------
+	mov ax,finish_x_min
+	cmp user_posX,ax
+	jl checknormalll
+
+	
+	mov ax,finish_x_max
+	cmp user_posX,ax
+	jg checknormalll
+
+	mov ax,finish_y_max
+	cmp user_posY,ax
+	jg checknormalll
+
+	mov ax,finish_y_min
+	cmp user_posY,ax
+	jl checknormalll
+
+	mov userscore,100
+	popa
+	ret 
+
+	checknormalll:
+
+	mov ax,x_min_old
+	cmp user_posX,ax
+	jl notpassed
+
+	
+	mov ax,x_max_old
+	cmp user_posX,ax
+	jg notpassed
+
+	mov ax,y_max_old
+	cmp user_posY,ax
+	jg notpassed
+
+	mov ax,y_min_old
+	cmp user_posY,ax
+	jl notpassed
+
+	mov ax,0
+    mov al,usernextpart
+	dec al
+	mov bl,100
+	mul bl
+	mov bx,0
+    mov bx,TotalParts
+	div bl
+	mov userscore,al
+	inc usernextpart
+
+	notpassed:
+	popa
+	ret
+UpdateUserScore ENDP
+
+UpdateUsersScore PROC
+	;-----------------------------------------user1--------------------------------------;
+	mov ax,user1_posX
+    mov user_posX,ax
+    mov ax,user1_posY
+    mov user_posY,ax
+    mov al,user1nextpart
+    mov usernextpart,al
+    mov al,user1score
+    mov userscore,al
+
+    call UpdateUserScore
+	
+    mov al,usernextpart
+    mov user1nextpart,al
+    mov al,userscore
+    mov user1score,al
+
+	;-----------------------------------------user2--------------------------------------;
+	mov ax,user2_posX
+    mov user_posX,ax
+    mov ax,user2_posY
+    mov user_posY,ax
+    mov al,user2nextpart
+    mov usernextpart,al
+    mov al,user2score
+    mov userscore,al
+
+    call UpdateUserScore
+
+    mov al,usernextpart
+    mov user2nextpart,al
+    mov al,userscore
+    mov user2score,al
+
+	call DrawScore
+
+	ret
+UpdateUsersScore ENDP
+
+DrawScore PROC
+	mov ah,2           
+	mov dl,7  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dh,24 ;*2.so the screen is 40*24 char  (24 by testing)
+	int 10h 
+
+	pusha
+	mov ax,0
+	mov al,user1score
+	shownum
+	popa
+
+	mov ah,2           
+	mov dl,36  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dh,24 ;*2.so the screen is 40*24 char  (24 by testing)
+	int 10h 
+
+	pusha
+	mov ax,0
+	mov al,user2score
+	shownum
+	popa
+	ret
+DrawScore ENDP
+
+UpdatePowerUps PROC
+	pusha 
+	mov ah,2           
+	mov dl,10  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dh,23 ;*2.so the screen is 40*24 char  (24 by testing)
+	int 10h 
+    mov al,user1theme
+	mov stringcolor,al
+
+	cmp user1_stored_powerup,1
+	jnz checkuser1_2
+	lea si,Speedname
+	call DisplayString
+	jmp gotouser2
+checkuser1_2:
+
+	cmp user1_stored_powerup,2
+	jnz checkuser1_3
+	lea si,Slowname
+	call DisplayString
+	jmp gotouser2
+checkuser1_3:
+
+	cmp user1_stored_powerup,3
+	jnz checkuser1_4
+	lea si,Obstcaldraw
+	call DisplayString
+	jmp gotouser2
+checkuser1_4:
+	cmp user1_stored_powerup,4
+	jnz deletepowerupname
+	lea si,Obstcalpass
+	call DisplayString
+jmp gotouser2
+deletepowerupname:
+
+    lea si,Delete_Powerup
+	call DisplayString
+
+   gotouser2:
+
+  mov al,user2theme
+	mov stringcolor,al
+
+	mov ah,2 
+	mov dl,20 
+	mov dh,23 
+	int 10h
+
+	cmp user2_stored_powerup,1
+	jnz checkuser2_2
+	lea si,Speedname
+	call DisplayString
+	jmp out1235
+checkuser2_2:
+
+	cmp user2_stored_powerup,2
+	jnz checkuser2_3
+	lea si,Slowname
+	call DisplayString
+	jmp out1235
+checkuser2_3:
+
+	cmp user2_stored_powerup,3
+	jnz checkuser2_4
+	lea si,Obstcaldraw
+	call DisplayString
+	jmp out1235
+checkuser2_4:
+	cmp user2_stored_powerup,4
+	jnz deletepowerupname2
+	lea si,Obstcalpass
+	call DisplayString
+  jmp out1235
+deletepowerupname2:
+
+ lea si,Delete_Powerup
+	call DisplayString
+
+out1235:
+
+	popa
+	ret
+UpdatePowerUps	ENDP 
+
+
+BackgroundColoring PROC
+    ;---------------------------------------Screen Coloring--------------------------------------------;
+	mov ax ,0600h
+	mov bh,DefaultBackground
+	mov cx,0h
+	mov dl , 79d
+	mov dh , 18d
+	int 10h
+	;-----------------------------------------------------------------------------------------------------; 
+	;----------------------------------------Separating Line----------------------------------------------;
+	mov al,SEPARATING_LINE_COLOR
+	mov cx,0
+	mov dx,MAX_Y+1
+	SEPARATING_LINE_draw:
+		mov ah,0ch
+		int 10h
+		inc cx
+		cmp cx,320
+	jl SEPARATING_LINE_draw
+	;-------------------------------------------------------------------------------------------------;
+	ret
+BackgroundColoring ENDP
+
+Timer PROC
+	pusha
+	mov ah, 2Ch
+	int 21H    ; puts the millseconds in dl
+	cmp PrevSec, dh ; contain hundreds of seconds
+	jz Timer_leave
+    mov PrevSec,dh
+	cmp CountDownSec,0
+	jz decrementmin
+	dec CountDownSec
+    jmp Timer_leave
+	
+	decrementmin:
+	mov CountDownSec,59
+	cmp CountDownMin,0
+	jz Timer_finished
+	dec CountDownMin
+    jmp Timer_leave
+
+	Timer_finished:
+	mov killSignal,1
+    jmp Timer_return
+
+	Timer_leave:
+    mov ah,2           
+	mov dl,0  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dh,0 ;*2.so the screen is 40*24 char  (24 by testing)
+	int 10h
+	mov ax,0
+	mov al,CountDownMin
+	shownum 
+	mov dl,':'
+	mov ah,2
+	int 21h
+	cmp CountDownSec,10
+	jge show2
+	mov dl,'0'
+	mov ah,2
+	int 21h
+	show2:
+	mov ax,0
+	mov al,CountDownSec
+	shownum
+	Timer_return:
+	popa
+	ret
+Timer ENDP
+
+ResetAllTrackData PROC
+	pusha
+	;-----------------------------------Positions------------------------------;
+	mov START_X, 2H
+	mov START_Y, 150H
+	mov START_CAR_X, 2H
+	mov START_CAR_Y, 150H
+	mov START_DIR, 0H
+	;-----------------------------------Variables------------------------------;
+	mov posx, 0H
+	mov posy, 0H
+	mov toggleboundarycolor, 0H
+	mov toggletrackmiddle, 0H
+	mov boundaryflag,  0H
+	mov middletrackflag, 0H
+	mov verticaldirection, 0H ;! 0 up 1 down
+
+	mov cornerFlag, 1H  ;! 0 means no corner, 1 means corner
+	mov cornerType, 1H ;! 1 means up, 0 means down
+	mov horizontalDirection, 1H ;! 1 left 0 right
+	mov isvertical, 0H ;! 1 vertical ,0 horizontal
+	mov isup_right, 0H ;! 1 up or right 0 oppisite
+
+	mov CountDownMin, 2H
+	mov CountDownSec, 0H 
+	mov TotalParts,0
+	mov TotalPartsBest,0
+	mov TotalParts,0
+	mov Expectedfinishtime,0
+	;--------------------------------------------------------------------------;
+	;TODO add data in the data.inc line 175
+
+	mov PartWrongsOffset, 0H
+	mov SingleCheckFlag, 1H ;? check for single part in track
+	mov TrackCheckFlag, 1H ;? check for all track parts with the new part
+	mov TotalParts, 0H ;? check for all track parts so far
+	mov WrongCounter, 0H ;? count number of consecutive wrong parts
+	mov startoffsetdirection, 0H 
+	mov startoffsetclosedarea, 0H 
+	mov startoffsetprevstart, 0H 
+
+	mov CurrentCase, 0H 
+	;*----------------------Random Proc Variables-------------------------------;
+	mov seed, 1234H       ; Initial seed value
+	mov multiplier, 1d51H
+	mov increment, 8c45H
+	mov modulus, 0F4bFh 
+	mov random_part, 0 ; 4 bytes of memory to store the random seed
+	;-------------------------------Casses--------------------------------------;
+	mov lastRandom, 0
+	mov currentRandom, 0
+	mov validationFlag, 0
+	;-----------------------------Obstacles and powerups-----------------------;
+	mov latestPos, 0
+	mov nowORthen, 0 ; 0 means now, 1 means then (POWERUPS)
+	mov lastType, POWERUP1_COLOR
+	mov latestType, POWERUP2_COLOR
+	;------------------------------User data-----------------------------------;
+	mov userscore, 0H
+	mov usernextpart,  1H
+	mov user1nextpart, 1H
+	mov user2nextpart, 1H
+
+	mov saveObstaclesCounter, 0 ;! offset to add for obstacles array 
+	mov savePowerObstaclesCounter, 0 ;! offset to add for obstacles array (MADE FROM POWERUPS)
+
+	mov saveCompilationPowerupsCounter, 0 ;! offset to add for compilationPowerups array
+	mov saveCompilationPowerupsClrsCounter, 0 ;! offset to add for compilationPowerupsClrs array
+	mov loadCompilationPowerupsClrsCounter, 0 ;! offset to add for compilationPowerupsClrs array
+	mov saveInGamePowerupsCounter, 0 ;! offset to add for inGamePowerups array (Insertion)
+	mov saveInGamePowerupsClrsCounter, 0 ;! offset to add for inGamePowerupsClrs array (Insertion)
+	mov loadInGamePowerupsCounter, 0 ;! offset to add for inGamePowerups array (Loading)
+	mov loadInGamePowerupsClrsCounter, 0 ;! offset to add for inGamePowerupsClrs array (Loading)
+	mov generatedPowerupSource, 0 ;! 0 means compilationPowerups, 1 means inGamePowerups
+	mov showPowerupsCounter, POWERUP_SHOW_DELAY
+
+	;-----------------------------------Equipping Powerups------------------------;
+	mov processed_power_holder, 0 ;! 1 means user1, 2 means user2
+	mov processed_power, 0 ;! 0 means no powerup, 1 means speed up, 2 means slow down, 
+	mov user1_stored_powerup, 0
+	mov user2_stored_powerup, 0 
+	mov user1_obstacles_passed, 0
+	mov user2_obstacles_passed, 0
+	mov divider, 3H
+	mov helper, 1H
+	mov random, 0
+	popa
+	ret
+ResetAllTrackData ENDP
