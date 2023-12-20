@@ -1,8 +1,13 @@
-
+*.exe
+*.map
+*.obj
+*.td
 *.OBJ
 *.LIB
 *.EXE
 *.MAP
 *.CRF
-*.td
 rndm3.asm
+*.png
+*.py
+.vscode/
