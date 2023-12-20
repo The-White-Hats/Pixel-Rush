@@ -1,6 +1,4 @@
 
-;---------------------Procedures---------------------;
-
 CheckDir PROC
     ; move user_dir_arr offset into si
     ; move user_dir_bools offset into di
@@ -27,49 +25,6 @@ CheckDir PROC
     ret
 CheckDir ENDP
 
-
-;---------------------Macros---------------------;
-
-clear macro 
-    mov ah, 0
-    mov al, 13h
-    int 10h
-endm clear
-
-rmBlink macro
-    mov ax, 1003h
-    mov bl, 00h     ; 00h background intensity enabled , 01h blink enabled
-    mov bh, 00h     ; to avoid problems on some adapters
-    int 10h
-endm rmBlink
-
-; put filename in dx
-openFile macro
-    mov ah, 03Dh
-    mov al, 0       ; open attribute: 0 - read-only, 1 - write-only, 2 -read&write
-    int 21h
-endm openFile
-
-readFile macro BUFF_SIZE, car
-    mov bx, ax
-    mov ah, 03Fh
-    mov cx, BUFF_SIZE   ; number of bytes to read
-    lea dx, car         ; were to put read data
-    add dx, bp          ; add offset to dx
-    int 21h
-endm readFile
-
-closeFile macro
-    mov ah, 3Eh
-    int 21h
-endm closeFile
-
-showMsg macro str
-    mov ah, 09h
-    lea dx, str
-    int 21h  
-endm showMsg 
-
 clear_prev_location MACRO xpos, ypos
     mov     ax, ypos
     sub     ax, CAR_HEIGHT/2
@@ -95,7 +50,6 @@ setStartPixel MACRO
 
     mov     di, ax
 ENDM
-
 update_user1_pos MACRO
     ; I am considering up as positive y and down as negative y
     mov ax, 0101h ; ah -> x, al -> y

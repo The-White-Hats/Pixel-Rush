@@ -13,7 +13,7 @@
     CAR_WIDTH       equ 11
 
     BUFF_SIZE       equ CAR_HEIGHT * CAR_WIDTH
-    
+
     CAR_OFFSET      equ 5
 
     SCREEN_WIDTH    equ 320
@@ -23,10 +23,12 @@
     ;------------Files-------------;
     carFile         db  'car.bin', 0
 
+
     errorMsg        db  "Something went wrong with files !!", 10, "$"
     
     ;------------Car Directions---------;
     car             db  BUFF_SIZE dup(?)
+
 
                     dt  ?
 
@@ -119,7 +121,6 @@ MAIN PROC FAR
                  mov                 bp, 0
                  mov                 dx, offset carFile
                  call                inputFile
-
     ; ------------------------------draw the intial position of the players--------------------------;
     ; draw user
                  mov                 user1_posX, SCREEN_WIDTH/2
@@ -230,6 +231,7 @@ drawCar PROC
                  mov                 si, offset car
 
     ; set the car frame
+
 
                  mov                 al, BACK_GROUND
 
