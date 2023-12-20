@@ -1,109 +1,209 @@
-
-; You may customize this and other start-up templates; 
-; The location of this template is c:\emu8086\inc\0_com_template.txt
-         include draw.inc
-		.MODEL SMALL
-		.STACK 64
-		.DATA   
-		;----------------------------------COLORS------------------------------------------------------;
-		 TEXT_COLOR equ 0    ; Black text on white background
-         SCREEN_ATTR equ 0FCh ; White background (high nibble) and black text (low nibble)
+include hPart.inc
+include circSect.inc
+include draw.inc
+.model small
+.stack 64
+.data
+    ;*----------------------------------COLORS------------------------------------------------------;
+         TEXT_COLOR equ 0    ; DefaultBackground text on white background
+         SCREEN_ATTR equ 0F0h ; White background (high nibble) and DefaultBackground text (low nibble)
          DASHEDLINEATTR equ 0F0h ; 
-		 WHITE equ 0Fh
          RED equ 04h
-		 LIGHT_GREEN equ 0Ah
-		 GREEN equ 02h
-		 LIGHT_GRAY equ 07h
-		 GRAY equ 08h
-         ;----------------------------------Positions-------------------------------------------------;      
-         START_X dw 150
-		 START_Y dw 150
-		 ;----------------------------------BOUNDARY-------------------------------------------------;      
-		 MIN_X equ 0
-		 MAX_X equ 320
-		 MIN_Y equ 0
-		 MAX_Y equ 150 
-         ;----------------------------------Dimensions-------------------------------------------------;
-		 LINE_WIDTH dw 20
-		 LINE_LENGTH dw 30
-		 BOUNDARY_WIDTH equ 1
-		 BOUNDARY_LENGTH equ 4
-		 DASHEDLINE_LENGTH equ 6
-	     ;----------------------------------Variables-------------------------------------------------;
+         LIGHT_GREEN equ 0Ah
+         GREEN equ 02h
+         LIGHT_GRAY equ 07h
+         GRAY equ 08h
+         WHITE equ 0Fh
+         BLACK equ 00h
+         DefaultBackground equ BLACK
+         DASHESCOLOR equ LIGHT_GRAY
+         ;*----------------------------------Positions-------------------------------------------------;      
+         START_X dw 171
+         START_Y dw 150
+         END_X dw ?
+         END_Y dw ?
+         ;*----------------------------------BOUNDARY-------------------------------------------------;      
+         MIN_X equ 0
+         MAX_X equ 320
+         MIN_Y equ 0
+         MAX_Y equ 150 
+         ;*----------------------------------Dimensions-------------------------------------------------;
+         LINE_WIDTH equ 20
+         LINE_LENGTH equ 30
+         BOUNDARY_WIDTH equ 1
+         BOUNDARY_LENGTH equ 4
+         DASHEDLINE_LENGTH equ 6
+          ;*----------------------------------Variables-------------------------------------------------;
 		 posx dw 0
 		 posy dw 0
 		 toggleboundarycolor db 0
 		 toggletrackmiddle db 0
 		 boundaryflag db  0
 		 middletrackflag db 0
-         verticaldirection db 0 ; 0 up 1 down
-		 Vertical_Track_Delete_Flag db 0
-         TIME equ 6
-     	.CODE
+         verticaldirection db 0 ;! 0 up 1 down
 
+         cornerFlag db 1  ;! 0 means no corner, 1 means corner
+         cornerType db 1 ;! 1 means up, 0 means down
+         horizontalDirection db 1 ;! 1 left 0 right
 
-MAIN 	PROC FAR
-     	MOV AX , @DATA
-      	MOV DS , AX  
-
-      	clear
-        
-		; Remove Blinking from the screen and allowing to use 16 colors as background
+.code
+main proc far
+    mov ax, @data
+    mov ds, ax
+  
+    clear
+    
+    ; Remove Blinking from the screen and allowing to use 16 colors as background
         mov AX , 1003h
 		mov BL ,00h  ; 00h background intensity enabled , 01h blink enabled
 		mov BH , 00h ; to avoid problems on some adapters
         int 10h
 		
 
-		;---------------------------------------Screen Coloring------------------------------------------------
-		mov ax ,0600h
-		mov bh,GREEN
-		mov cx,0h
-		mov dx , 184fh
-     	int 10h
-		;    xor cx,cx
-		; 	xor dx,dx
-		;     mov cl,0 ;x axis
-		; 	mov dl,0 ;y axis
-		; 	mov al,GREEN
-		; 	mov ah,0ch
-		; back:	int 10h
-		;   inc cx
-		;   cmp cx,320
-		;   jnz back
-		;   mov cx,0
-		;   inc dl
-		;   cmp dl,200
-		;   jnz back
-        ;------------------------------------Vertical Line-------------------------------------------;  
-			mov cx,START_X
-			mov dx,START_Y
-			mov posx,cx
-			mov posy,dx
-		   ; call  GenerateVerticalTrack 
-			; mov cx,START_X2
-			; mov dx,START_Y2
-			; mov START_X,cx
-			; mov START_Y,dx
-			; mov posx,cx
-			; mov posy,dx
+	;---------------------------------------Screen Coloring------------------------------------------------;
+		;mov ax ,0600h
+;		mov bh,DefaultBackground
+;		mov cx,0h
+;		mov dx , 184fh
+;     	int 10h
+    ;-----------------------------------------------------------------------------------------------------;    
+    mov cornerFlag,1
+	mov cornerType,0
+	mov horizontalDirection,1
+	call  CheckHorizontalTrack
+    
+    mov horizontalDirection,1
+    mov cornerFlag,0
+    mov START_X,141
+    call  CheckHorizontalTrack 
+	mov START_X,111
+    call  CheckHorizontalTrack 
+    mov ah, 4ch        
+    INT 21h         
 
-		    call  GenerateVerticalTrack 
-            mov START_Y,120
-			call  GenerateVerticalTrack 
+main endp
+
+CheckHorizontalTrack PROC 
+	    mov bx,0
+		mov cx, START_X
+		mov dx, START_Y
+        ;---------------------------check for bounadry conditions---------------------------------;
+		    ;--------------------------------put the final position of dx and check with it---------------------------------;
+	        cmp horizontalDirection ,1
+				jnz down4
+				sub cx,LINE_LENGTH ;dx
+				jmp skip4
+				down4:
+				add cx,LINE_LENGTH ;dx
+				skip4:
+
+				cmp dx,MAX_Y
+				jle Hcheck1
+				jmp return1
+            ;----------------------------------------------------------------------------------------------------------------;
+			Hcheck1: 
+				sub dx,LINE_WIDTH
+				sub dx,BOUNDARY_WIDTH*2
+				cmp dx,MIN_Y
+				jge Hcheck2
+				jmp return1
+
+			Hcheck2:
+				cmp cx,MAX_X ;dx
+				jle Hcheck3
+				jmp return1
+
+			Hcheck3:
+				cmp cx,MIN_X ;dx
+				jge checkcolor1
+				jmp return1
+
+		checkcolor1:
+		;-------------------------- horizontal line check = ---------------------------------;
+        mov bx,0
+        mov cx,START_X
+		checkHorizontal1:
+		    mov dx,START_Y
+
+
+		    cmp bx,LINE_LENGTH
+			jz checkVertical_pre1
+			inc bx ; inc counter untill reach the length of the line
+
+             ;-----------------------------update dx according to horizontalDirection -----------------------------------------;
+			cmp horizontalDirection ,1
+			jnz down5
+			dec cx
+			jmp skip5
+			down5:
+			inc cx
+			skip5:
+             ;----------------------------------------------------------------------------------------------------------------;
 			
-        MOV AH, 4CH         ; Function to exit program
-        INT 21H             ; Call DOS interrupt to exit
-
-MAIN ENDP
-
-Delay PROC
-		MOV AH, 86h ; BIOS delay function
-		XOR CX, CX ; High order word of delay
-		MOV DX, 10000*TIME ; Low order word of delay (1,000,000 microseconds = 1 second)
-		INT 15h ; Call BIOS delay
+			mov ah,0dh
+			int 10h
+			cmp al,DefaultBackground  
+            
+		jz checkHorizontalparallel1 ;if not DefaultBackground return
 		ret
-Delay ENDP
+
+		checkHorizontalparallel1:
+
+			sub dx,LINE_WIDTH  
+			sub dx,BOUNDARY_WIDTH*2 ;same y-axis but x-axis is increased by the width of the line and the boundary
+            inc dx
+
+			mov ah,0dh
+			int 10h  
+			cmp al,DefaultBackground
+          
+		jz checkHorizontal1  ;if not DefaultBackground return
+		ret 
+        
+		;--------------------------vertical line check | | ---------------------------------;
+		checkVertical_pre1:
+		mov bx,0
+        mov dx,START_Y
+		checkVertical1:
+            mov cx,LINE_WIDTH
+            add cx,BOUNDARY_WIDTH*2
+		    cmp bx,cx
+			jz break1
+			inc bx
+
+            mov cx,START_X
+
+			dec dx
+
+			mov ah,0dh
+			int 10h 
+			cmp al,DefaultBackground
+           
+		jz checkVerticalparallel1
+		ret
+
+		checkVerticalparallel1:
+
+			cmp horizontalDirection ,1
+			jnz down6
+			sub cx ,LINE_LENGTH
+			jmp skip6
+			down6:
+			add cx ,LINE_LENGTH
+			skip6:
+
+			mov ah,0dh
+			int 10h
+			cmp al,DefaultBackground
+		jz checkVertical1
+         ret 
+		 
+		 return1:
+		 ret
+         break1:
+		horizontalPart START_X, START_Y, horizontalDirection
+        ret 
+CheckHorizontalTrack ENDP
 
 CheckVerticalTrack PROC
 	    mov bx,0
@@ -142,7 +242,7 @@ CheckVerticalTrack PROC
 
 		checkcolor:
 		;-------------------------- vertical line check | | ---------------------------------;
-        mov bx,0
+        mov bx,1
 		mov dx,START_Y
 		checkvertical:
 		    mov cx,START_X
@@ -163,20 +263,20 @@ CheckVerticalTrack PROC
 			
 			mov ah,0dh
 			int 10h
-			cmp al,GREEN
-		jz checkverticalparallel ;if not green return
+			cmp al,DefaultBackground
+		jz checkverticalparallel ;if not DefaultBackground return
 		ret
 
 		checkverticalparallel:
 
 			add cx,LINE_WIDTH  
 			add cx,BOUNDARY_WIDTH*2 ;same y-axis but x-axis is increased by the width of the line and the boundary
-
+            dec cx
 			mov ah,0dh
 			int 10h
-			cmp al,GREEN
+			cmp al,DefaultBackground
 
-		jz checkvertical  ;if not green return
+		jz checkvertical  ;if not DefaultBackground return
 		ret 
         
 		;--------------------------horizontal line check = ---------------------------------;
@@ -193,8 +293,8 @@ CheckVerticalTrack PROC
 			inc cx
 
 			mov ah,0dh
-			int 10h
-			cmp al,GREEN
+			int 10
+			cmp al,DefaultBackground
 
 		jz checkhorizontalparallel
 		ret
@@ -204,14 +304,16 @@ CheckVerticalTrack PROC
 			cmp verticaldirection ,0
 			jnz down2
 			sub dx ,LINE_LENGTH
+            inc dx
 			jmp skip2
 			down2:
 			add dx ,LINE_LENGTH
+            dec dx
 			skip2:
 
 			mov ah,0dh
 			int 10h
-			cmp al,GREEN
+			cmp al,DefaultBackground
 		jz checkhorizontal
          ret 
 		 
@@ -223,13 +325,14 @@ CheckVerticalTrack PROC
 CheckVerticalTrack ENDP
 
 GenerateVerticalTrack PROC 
-	        mov cx,START_X
-			mov dx,START_Y
-			mov posx,cx
-			mov posy,dx
+
+        mov cx,START_X
+        mov dx,START_Y
+        mov posx,cx
+        mov posy,dx
+
 		movehorizontal:      
 			mov boundaryflag ,  0
-			call Delay
 			drawvertical:
 			    mov cx,posx
 				mov dx,posy
@@ -266,7 +369,7 @@ GenerateVerticalTrack PROC
 				add bx,LINE_WIDTH
                 cmp posx,bx
                 jge boundarycoloring 
-                mov toggleboundarycolor,0
+
                 ;--------------- if it is not the middle track then jump to next ,equation  bx = START_X + BOUNDARY_WIDTH + LINE_WIDTH/2 ------------------------------;
 
 				push ax
@@ -287,7 +390,7 @@ GenerateVerticalTrack PROC
 				jnz normaltrackcoloring
                 cmp middletrackflag,0   ;Checl if i will color white incase of middle track
 				jnz normaltrackcoloring ; else normal coloring
-				mov al,LIGHT_GRAY
+				mov al,DASHESCOLOR
 				jmp middeltrackcheck
 
 				mid4:
@@ -363,4 +466,5 @@ GenerateVerticalTrack PROC
 		RET
 	GenerateVerticalTrack endp
 
-END MAIN
+
+end main

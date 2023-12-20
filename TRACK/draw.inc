@@ -47,3 +47,30 @@ showmes macro str
     int 21h  
 endm showmes  
   
+shownum macro
+    local l1     
+    local l2
+     lea bx, s
+     mov cx,10
+     mov dx,0
+     l1:
+       mov dx,0
+       div cx     
+       add dl,30h
+       mov [bx],dl
+       inc bx 
+       cmp ax,0
+     jnz l1     
+     mov [bx],'$' 
+     mov cx, bx
+     lea dx,s
+     sub cx,dx  
+     dec bx
+     l2:
+         mov ah,2
+         mov dl,[bx]
+         int 21h
+         dec bx
+         cmp dh,0
+     loop l2      
+endm shownum
