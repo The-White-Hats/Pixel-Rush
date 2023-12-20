@@ -2,3 +2,11 @@
 *.map
 *.obj
 *.td
+*.OBJ
+*.LIB
+*.EXE
+*.MAP
+*.CRF
+*.png
+*.py
+.vscode/

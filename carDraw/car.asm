@@ -174,10 +174,11 @@ MAIN 	PROC FAR
 		mov ah,0ch
 		int 10h
 		
+		label2:
+
 		cmp killSignal, 0H
 		jnz kill
 
-		label2:
     jmp again
 
 		kill:
