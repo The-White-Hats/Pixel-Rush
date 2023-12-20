@@ -4,3 +4,5 @@
 *.EXE
 *.MAP
 *.CRF
+*.png
+*.py
