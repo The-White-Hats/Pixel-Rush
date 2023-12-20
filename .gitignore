@@ -1,4 +1,7 @@
 *.exe
+*.map
+*.obj
+*.td
 *.OBJ
 *.LIB
 *.EXE
@@ -6,3 +9,4 @@
 *.CRF
 *.png
 *.py
+.vscode/
