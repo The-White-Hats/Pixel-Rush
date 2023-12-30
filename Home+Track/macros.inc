@@ -620,6 +620,14 @@ carMainLoop macro
                  call              setBackground
 
      ; check for collision
+                 call              carCollision
+                 cmp bp, 1
+                 jz                middle_jump111
+                 jmp               no_middle_jump111
+                 middle_jump111:
+                 jmp               far ptr user1_collision
+
+                 no_middle_jump111:
                  setStartPixel     user1_posX, user1_posY
                  mov               bh, 0
                  detectCollision   user1_current_frame, car1, user1_obstacles_passed
@@ -630,17 +638,19 @@ carMainLoop macro
                  middle_jump11:
                  jmp               far ptr user1_collision
 
-                 no_middle_jump11:
+                 no_middle_jump11:     
                  detectPowerUp     user1_current_frame, car1, user1_stored_powerup
                  mov               user1_stored_powerup, cl
                  cmp               bh, 1
                  jz                user1_powerUp
+
                  jmp               user1_no_collision
 
 
     user1_powerUp:
                  getPowerUpColor   user1_stored_powerup
                  call              clearPowerUp
+
     user1_no_collision:
      ; save the background
                  setStartPixel     user1_posX, user1_posY
@@ -705,6 +715,14 @@ carMainLoop macro
                  call              setBackground
 
      ; check for collision
+                 call              carCollision
+                 cmp bp, 1
+                 jz                middle_jump222
+                 jmp               no_middle_jump222
+                 middle_jump222:
+                 jmp               far ptr user2_collision
+
+                 no_middle_jump222:
                  setStartPixel     user2_posX, user2_posY
                  mov               bh, 0
                  detectCollision   user2_current_frame, car2, user2_obstacles_passed
