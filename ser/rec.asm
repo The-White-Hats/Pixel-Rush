@@ -81,7 +81,28 @@ mov al,00011011b
 ; 11:8bits
 out dx,al
 
-
+;? Home
+;! 1- user1 F2 -> request to start game (send meassage to user2)
+;! 2- user2 F2 -> accept to start game
+;? Generate Track
+;! 1- Generate Track at user1
+;! 2- Send Flag to user2 to start taking the track ';'
+;? Sent Data
+;TODO: 1- Directions (array)
+;TODO: 2- ClosedArea (array)
+;TODO: 3- PrevStart (array)
+;TODO: 4- TotalParts (word)
+;TODO: 5- obstacles (array)
+;TODO: 6- compilationPowerups (array)
+;TODO: 7- compilationPowerupsClrs (array)
+;TODO: 8- inGamePowerups (array)
+;TODO: 9- inGamePowerupsClrs (array)
+;TODO: 10- saveObstaclesCounter (word)
+;TODO: 11- savePowerObstaclesCounter (word)
+;TODO: 12- saveCompilationPowerupsCounter (word)
+;TODO: 13- saveCompilationPowerupsClrsCounter (word)
+;TODO: 14- saveInGamePowerupsCounter (word)
+;TODO: 15- saveInGamePowerupsClrsCounter (word)
 
 ;----------------------recieve
 checkreceive:
