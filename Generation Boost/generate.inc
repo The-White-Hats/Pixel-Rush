@@ -1,3 +1,30 @@
+shownum proc     
+    pusha
+     lea bx, s
+     mov cx,10
+     mov dx,0
+    shownum_l1:
+       mov dx,0
+       div cx     
+       add dl,30h
+       mov [bx],dl
+       inc bx 
+       cmp ax,0
+     jnz shownum_l1     
+     mov byte ptr [bx],'$' 
+     mov cx, bx
+     lea dx,s
+     sub cx,dx  
+     dec bx
+    shownum_l2:
+         mov ah,2
+         mov dl,[bx]
+         int 21h
+         dec bx
+     loop  shownum_l2     
+     popa
+     ret    
+ shownum   endp 
 SelectType PROC
 	 cmp CurrentCase , 0 
 		jnz casee1
@@ -80,8 +107,75 @@ SelectType PROC
 	    Done:
 		ret
 SelectType ENDP
-
-DrawTrack PROC
+SelectTypeObsPows PROC
+        cmp CurrentCase, 1
+        jg caseee2
+        ret
+        caseee2:
+        cmp CurrentCase , 2
+        jnz caseee3
+        ;*-------------------------------Case2--------------------------------;
+            mov horizontalDirection,0
+            jmp Donee
+        ;*--------------------------------------------------------------------;
+        caseee3:
+        cmp CurrentCase , 3
+        jnz caseee4
+        ;*-------------------------------Case3--------------------------------;
+            mov horizontalDirection,1
+            jmp Donee
+        ;*--------------------------------------------------------------------;
+        caseee4:
+        cmp CurrentCase , 4
+        jz exee4
+        cmp CurrentCase , 5
+        jnz caseee6
+        ;*-------------------------------Case4/5--------------------------------;
+         exee4:    
+            mov horizontalDirection,0
+            jmp Donee
+        ;*--------------------------------------------------------------------;
+        caseee6:
+        cmp CurrentCase , 6
+        jz exee6
+        cmp CurrentCase , 7
+        jnz caseee8
+        ;*-------------------------------Case6/7--------------------------------;
+         exee6:
+            mov horizontalDirection,1
+            jmp Donee    
+        ;*--------------------------------------------------------------------;
+        caseee8:
+        cmp CurrentCase , 8
+        jz exee8
+        cmp CurrentCase , 9
+        jnz caseee10
+        ;*-------------------------------Case8/9--------------------------------;
+         exee8:    
+            mov horizontalDirection,0
+            jmp Donee
+        ;*--------------------------------------------------------------------;
+        ;*-------------------------------Case10/11--------------------------------;
+        caseee10:
+            mov horizontalDirection,1
+        Donee:
+           pusha
+			mov ax ,TotalParts
+			sub ax,cx
+			cmp ax,2
+			jle leaveleave
+			add ax,2
+			cmp ax,TotalParts
+			jge leaveleave
+			call GenerateObstaclesPowerUps
+            ; mov ax, saveObstaclesCounter
+			; call shownum 
+			; endl
+			leaveleave:
+	    	popa
+        ret
+SelectTypeObsPows ENDP
+GenerateAllObsPowers PROC
 	pusha
 	mov saveObstaclesCounter,0
 	mov saveCompilationPowerupsCounter,0
@@ -99,22 +193,144 @@ DrawTrack PROC
 	mov START_Y,ax
     add bx,4
     ;*--------------------------------------Check that the last direction is horizontal or vertical------;
-     add si,TotalParts
+    add si,TotalParts
 	add si,TotalParts
 	sub si,2
     mov ax,0
-    modify_maxparts:
+    modify_maxparts1:
 	  cmp byte ptr [si],3d
-	  jle Draw_break
+	  jle Draw_break1
 	  inc ax
 	  sub si,2 
-    loop modify_maxparts 
-    Draw_break:
+    loop modify_maxparts1 
+    Draw_break1:
     ;*--------------------------------------------------------------------------------------------------;
    	lea si,Directions
     mov cx,TotalParts
 	sub cx,ax
 	mov TotalParts,cx
+
+	iterate1:
+
+	   mov ax,[si]
+	   mov CurrentCase ,ax
+	   cmp CurrentCase,4d
+	   jnz nextCase1
+	   		inc START_X
+			jmp ClearToGo1
+	   nextCase1:
+	   cmp CurrentCase,6d
+	   jnz nextCase21
+	   		dec START_X
+			jmp ClearToGo1
+	   nextCase21:
+       cmp CurrentCase,7d
+	   jnz nextCase31
+			mov ax,START_X
+			add ax,LINE_WIDTH
+			add ax,BOUNDARY_WIDTH*2
+			dec ax
+			mov START_X,ax
+			jmp ClearToGo1
+			iterate_mid1:
+			jmp iterate1
+       nextCase31:
+	   cmp CurrentCase,8d
+	   jnz nextCase41
+			mov ax,START_Y
+			add ax,LINE_WIDTH
+			add ax,BOUNDARY_WIDTH*2
+			dec ax
+			mov START_Y,ax
+			jmp ClearToGo1
+	   nextCase41:
+	   cmp CurrentCase,9d
+	   jnz nextCase51
+			inc START_X
+			jmp ClearToGo1
+	   nextCase51:
+        cmp CurrentCase,10d
+	   jnz nextCase61
+	        mov ax,0
+			
+	        mov ax,START_X
+			add ax,LINE_WIDTH
+			add ax,BOUNDARY_WIDTH*2
+			dec ax
+			mov START_X,ax
+            
+			mov ax,START_Y
+			add ax,LINE_WIDTH
+			add ax,BOUNDARY_WIDTH*2
+			dec ax
+
+			mov START_Y,ax	
+			jmp ClearToGo1
+		nextCase61:	
+        cmp CurrentCase,11d
+	    jnz ClearToGo1
+		  dec START_X
+
+        ClearToGo1: 
+
+		jmp GenerateAllObsPowers_bridge
+            iterate_mid12:
+			jmp iterate_mid1
+
+        GenerateAllObsPowers_bridge:
+	  call SelectTypeObsPows
+	   mov ax,[bx]
+	   mov START_X,ax
+	   mov ax,[bx+2]
+	   mov START_Y,ax
+	   add bx,4
+
+       add si,2 
+
+		dec cx
+		cmp cx,0 
+	jg iterate_mid12 
+	popa
+   ret
+GenerateAllObsPowers ENDP
+
+DrawTrack PROC
+	pusha
+	;  mov ax, saveObstaclesCounter
+	; 		call shownum 
+			; endl
+	; mov saveObstaclesCounter,0
+	; mov saveCompilationPowerupsCounter,0
+	; mov saveCompilationPowerupsClrsCounter,0
+	; mov saveInGamePowerupsCounter,0
+	; mov saveInGamePowerupsClrsCounter,0
+	; mov loadCompilationPowerupsClrsCounter,0
+
+	lea si,Directions
+    lea bx,PrevStart
+	
+	mov ax,[bx]
+	mov START_X,ax
+	mov ax,[bx+2]
+	mov START_Y,ax
+    add bx,4
+    ;*--------------------------------------Check that the last direction is horizontal or vertical------;
+     add si,TotalParts
+	; add si,TotalParts
+	; sub si,2
+    ; mov ax,0
+    ; modify_maxparts:
+	;   cmp byte ptr [si],3d
+	;   jle Draw_break
+	;   inc ax
+	;   sub si,2 
+    ; loop modify_maxparts 
+    ; Draw_break:
+    ;*--------------------------------------------------------------------------------------------------;
+   	lea si,Directions
+    mov cx,TotalParts
+	; sub cx,ax
+	; mov TotalParts,cx
 
 	iterate:
 
@@ -826,7 +1042,9 @@ SaveBestGenration PROC
 	popa
 	ret
 SaveBestGenration ENDP
+
 ;*----------------Retrieve  the best directions reached -------------------------------
+
 RetrieveBestGenration PROC
 	pusha
 	mov ax,TotalPartsBest
@@ -1298,17 +1516,6 @@ GenerateHorizontalTrack PROC
 
 
     final:
-	popa
-	pusha
-	mov ax ,TotalParts
-	sub ax,cx
-    cmp ax,2
-	jle leaveleave
-	add ax,2
-	cmp ax,TotalParts
-	jge leaveleave
-	call GenerateObstaclesPowerUps
-    leaveleave:
 	popa
 	ret
  GenerateHorizontalTrack  ENDP
@@ -1805,8 +2012,9 @@ GenerateObstaclesPowerUps PROC
 	xor isLastPowerupShown, 1
 
 	typeRandomizer:
+	mov divider, 2h
 	call randomizer ; randomize the type of the powerup
-	cmp random, 0
+	cmp random, 1
 	jnz power34
 	call randomizer
 	cmp random, 0
@@ -2269,7 +2477,7 @@ DrawScore PROC
 	pusha
 	mov ax,0
 	mov al,user2score
-	shownum
+	call shownum
 	popa
 
 	mov ah,2           
@@ -2280,7 +2488,7 @@ DrawScore PROC
 	pusha
 	mov ax,0
 	mov al,user1score
-	shownum
+	call shownum
 	popa
 	ret
 DrawScore ENDP
@@ -2417,7 +2625,7 @@ Timer PROC
 	int 10h
 	mov ax,0
 	mov al,CountDownMin
-	shownum 
+	call shownum 
 	mov dl,':'
 	mov ah,2
 	int 21h
@@ -2429,7 +2637,7 @@ Timer PROC
 	show2:
 	mov ax,0
 	mov al,CountDownSec
-	shownum
+	call shownum
 	Timer_return:
 	popa
 	ret
