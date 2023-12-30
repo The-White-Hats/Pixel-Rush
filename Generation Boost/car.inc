@@ -216,7 +216,11 @@ ShowInGamePowerUps PROC
     mov showPowerupsCounter, POWERUP_SHOW_DELAY
     ShowInGamePowerUps_end:
         dec showPowerupsCounter
+        ret
     ShowInGamePowerUps_end2:
+        mov loadInGamePowerupsCounter, 0
+        mov loadInGamePowerupsClrsCounter, 0
+        mov showPowerupsCounter, POWERUP_SHOW_DELAY
         ret
 
 ShowInGamePowerUps ENDP

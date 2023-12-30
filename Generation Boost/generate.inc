@@ -1805,8 +1805,9 @@ GenerateObstaclesPowerUps PROC
 	xor isLastPowerupShown, 1
 
 	typeRandomizer:
+	mov divider, 2h
 	call randomizer ; randomize the type of the powerup
-	cmp random, 0
+	cmp random, 1
 	jnz power34
 	call randomizer
 	cmp random, 0
