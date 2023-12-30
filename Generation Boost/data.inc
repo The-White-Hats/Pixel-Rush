@@ -17,14 +17,15 @@
     START_CAR_SHIFT equ 8
     SPACE_BETWEEN   equ 10
     ;------------Files-------------;
-    carFile         db  'car0.bin', 0
-                    db  'car1.bin', 0
-                    db  'car2.bin', 0
-                    db  'car3.bin', 0
-                    db  'car4.bin', 0
-                    db  'car5.bin', 0
-                    db  'car6.bin', 0
-                    db  'car7.bin', 0
+    carFile         db  '/i/ca0.bin', 0
+                    db  '/i/ca1.bin', 0
+                    db  '/i/ca2.bin', 0
+                    db  '/i/ca3.bin', 0
+                    db  '/i/ca4.bin', 0
+                    db  '/i/ca5.bin', 0
+                    db  '/i/ca6.bin', 0
+                    db  '/i/ca7.bin', 0
+    FILE_NAME_LEN2  equ ($-carFile)/8
 
     errorMsg        db  "Something went wrong with files !!", 10, "$"
     
