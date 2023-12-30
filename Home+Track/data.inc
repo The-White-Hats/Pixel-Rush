@@ -298,6 +298,10 @@
         ;! stated in the doc that the car can pass through 1 obstacle (didn't mention limitid time)
         user1_obstacles_passed db 0
         user2_obstacles_passed db 0
+        user1_isColliding db 0
+        user2_isColliding db 0
+        isColliding db 0
+        user_obstacles_passed db 0
 
         user1FirstTimeHuh db 0 ;! 1 means first time, 0 means not first time
         user2FirstTimeHuh db 0 ;! 1 means first time, 0 means not first time
