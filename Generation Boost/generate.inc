@@ -168,9 +168,9 @@ SelectTypeObsPows PROC
 			cmp ax,TotalParts
 			jge leaveleave
 			call GenerateObstaclesPowerUps
-            mov ax, saveObstaclesCounter
-			call shownum 
-			endl
+            ; mov ax, saveObstaclesCounter
+			; call shownum 
+			; endl
 			leaveleave:
 	    	popa
         ret
@@ -193,7 +193,7 @@ GenerateAllObsPowers PROC
 	mov START_Y,ax
     add bx,4
     ;*--------------------------------------Check that the last direction is horizontal or vertical------;
-     add si,TotalParts
+    add si,TotalParts
 	add si,TotalParts
 	sub si,2
     mov ax,0
@@ -214,16 +214,15 @@ GenerateAllObsPowers PROC
 
 	   mov ax,[si]
 	   mov CurrentCase ,ax
-
-	    cmp CurrentCase,4d
+	   cmp CurrentCase,4d
 	   jnz nextCase1
 	   		inc START_X
-			jmp ClearToGo
+			jmp ClearToGo1
 	   nextCase1:
 	   cmp CurrentCase,6d
 	   jnz nextCase21
 	   		dec START_X
-			jmp ClearToGo
+			jmp ClearToGo1
 	   nextCase21:
        cmp CurrentCase,7d
 	   jnz nextCase31
@@ -297,9 +296,9 @@ GenerateAllObsPowers ENDP
 
 DrawTrack PROC
 	pusha
-	 mov ax, saveObstaclesCounter
-			call shownum 
-			endl
+	;  mov ax, saveObstaclesCounter
+	; 		call shownum 
+			; endl
 	; mov saveObstaclesCounter,0
 	; mov saveCompilationPowerupsCounter,0
 	; mov saveCompilationPowerupsClrsCounter,0
