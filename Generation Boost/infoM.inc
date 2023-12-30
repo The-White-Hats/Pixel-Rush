@@ -118,19 +118,20 @@ ENDM
 
 ;get a string in a buffer with a limit on size
 getSizedStr PROC
-    ; set the input size in cx and the buffer in di
+    ; set the input size in ch and the buffer in di
     push di
     xor bh, bh
     getSizedStrLoop:
     mov ah, 0h          ; get the char
     int 16h
-    showchar al
+    
     cmp al, 0DH         ; pressed enter
     je getSizedStrEnd   
     cmp al, 8H          ; pressed backspace
     jne notBackspace
-    cmp bh, 0           ; handle pressing backspace when no previous input
+    showchar al
     showchar 0
+    cmp bh, 0           ; handle pressing backspace when no previous input
     jz getSizedStrLoop
     dec di
     mov [di], byte ptr '$'
@@ -138,8 +139,14 @@ getSizedStr PROC
     showchar 8H
     jmp getSizedStrLoop
     notBackspace:
-    stosb
     inc bh
+    cmp bh, ch
+    jl getSizedStrSkipInc
+    dec bh
+    jmp getSizedStrLoop
+    getSizedStrSkipInc:
+    showchar al
+    stosb
     cmp bh, ch
     jnz getSizedStrLoop
     getSizedStrEnd:

@@ -2076,19 +2076,45 @@ DisplayString PROC
 	ret
 DisplayString ENDP
 
+DisplayFirstWord PROC
+	pusha
+	DisplayFirstWord_display_string:
+		mov ah,9          ;Display
+		mov bh,0          ;!Page does not work here like normal text mode so leave it 0 so that i work properly (noticed this by testing)
+		mov al,[si]       
+		mov cx,1d               ;1 times
+		mov bl,stringcolor       ;?colors are diffrent from text mode
+		int 10h
+		mov ah,2           
+		inc dl
+		int 10h 
+		inc si
+		mov al,[si]
+	cmp al,' '
+	jz DisplayFirstWord_finish
+	cmp al,'$'
+	jnz DisplayFirstWord_display_string
+	DisplayFirstWord_finish:
+	popa
+	ret
+DisplayFirstWord ENDP
+
 DrawScoreBoard PROC
 	pusha
 	;----------------------------------------Display user names and scores----------------------------;
 		;---------------------------Moving Cursor-------------------;
+		
+		;*1.the row can write up to 40 characters one character takes 8 pixels
+		;*2.so the screen is 40*24 char  (24 by testing)
 		mov ah,2           
-		mov dl,1  ;*1.the row can write up to 40 characters one character takes 8 pixels
-		mov dh,23 ;*2.so the screen is 40*24 char  (24 by testing)
-		int 10h 
+		mov dl,30 
+		mov dh,23 
+		int 10h
 
 	lea si , user1name
 	mov cl,user1theme
 	mov stringcolor , cl
-	call DisplayString
+	call DisplayFirstWord
      
 		mov dh,24 
 		int 10h 
@@ -2096,14 +2122,14 @@ DrawScoreBoard PROC
 	lea si ,scorename
     call DisplayString
 
-		mov dl,30 
+		mov dl,1  
 		mov dh,23 
-		int 10h
+		int 10h 
 
 	lea si ,user2name
 	mov cl,user2theme
 	mov stringcolor , cl
-    call DisplayString
+    call DisplayFirstWord
     
 		mov dh,24
 		int 10h
@@ -2242,7 +2268,7 @@ DrawScore PROC
 
 	pusha
 	mov ax,0
-	mov al,user1score
+	mov al,user2score
 	shownum
 	popa
 
@@ -2253,7 +2279,7 @@ DrawScore PROC
 
 	pusha
 	mov ax,0
-	mov al,user2score
+	mov al,user1score
 	shownum
 	popa
 	ret
@@ -2272,28 +2298,28 @@ UpdatePowerUps PROC
 
 	cmp user1_stored_powerup,1
 	jnz checkuser1_2
-	showColoredMsg Speedname,user1theme,5,23,10
+	showColoredMsg Speedname,user1theme,5,23,24
 	jmp gotouser2
 checkuser1_2:
 
 	cmp user1_stored_powerup,2
 	jnz checkuser1_3
-	showColoredMsg Slowname,user1theme,5,23,10
+	showColoredMsg Slowname,user1theme,5,23,24
 	jmp gotouser2
 checkuser1_3:
 
 	cmp user1_stored_powerup,3
 	jnz checkuser1_4
-	showColoredMsg Obstcaldraw,user1theme,5,23,10
+	showColoredMsg Obstcaldraw,user1theme,5,23,24
 	jmp gotouser2
 checkuser1_4:
 	cmp user1_stored_powerup,4
 	jnz deletepowerupname
-	showColoredMsg Obstcalpass,user1theme,5,23,10
+	showColoredMsg Obstcalpass,user1theme,5,23,24
 jmp gotouser2
 deletepowerupname:
 
-	showColoredMsg Delete_Powerup,user1theme,5,23,10
+	showColoredMsg Delete_Powerup,user1theme,5,23,24
 
    gotouser2:
 
@@ -2307,28 +2333,28 @@ deletepowerupname:
 
 	cmp user2_stored_powerup,1
 	jnz checkuser2_2
-	showColoredMsg Speedname,user2theme,5,23,20
+	showColoredMsg Speedname,user2theme,5,23,10
 	jmp out1235
 checkuser2_2:
 
 	cmp user2_stored_powerup,2
 	jnz checkuser2_3
-	showColoredMsg Slowname,user2theme,5,23,20
+	showColoredMsg Slowname,user2theme,5,23,10
 	jmp out1235
 checkuser2_3:
 
 	cmp user2_stored_powerup,3
 	jnz checkuser2_4
-	showColoredMsg Obstcaldraw,user2theme,5,23,20
+	showColoredMsg Obstcaldraw,user2theme,5,23,10
 	jmp out1235
 checkuser2_4:
 	cmp user2_stored_powerup,4
 	jnz deletepowerupname2
-	showColoredMsg Obstcalpass,user2theme,5,23,20
+	showColoredMsg Obstcalpass,user2theme,5,23,10
   jmp out1235
 deletepowerupname2:
 
-	showColoredMsg Delete_Powerup,user2theme,5,23,20
+	showColoredMsg Delete_Powerup,user2theme,5,23,10
 
 out1235:
  mov               ax, 0A000h
@@ -2386,7 +2412,7 @@ Timer PROC
 
 	Timer_leave:
     mov ah,2           
-	mov dl,0  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dl,18  ;*1.the row can write up to 40 characters one character takes 8 pixels
 	mov dh,0 ;*2.so the screen is 40*24 char  (24 by testing)
 	int 10h
 	mov ax,0
