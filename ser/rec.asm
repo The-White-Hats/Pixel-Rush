@@ -88,10 +88,12 @@ out dx,al
 ;! 1- Generate Track at user1
 ;! 2- Send Flag to user2 to start taking the track ';'
 ;? Sent Data
+;***************Track********************
 ;TODO: 1- Directions (array)
 ;TODO: 2- ClosedArea (array)
 ;TODO: 3- PrevStart (array)
 ;TODO: 4- TotalParts (word)
+;***************Obs-Powers********************
 ;TODO: 5- obstacles (array)
 ;TODO: 6- compilationPowerups (array)
 ;TODO: 7- compilationPowerupsClrs (array)
