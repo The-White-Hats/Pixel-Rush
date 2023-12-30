@@ -3,6 +3,7 @@
 ;---------------------------------------
 .286
 extrn GameMain:far
+extrn chatRoom:far
 public user1name,user2name
 extrn IsUser1Win:BYTE
 extrn IsUser2Win:BYTE

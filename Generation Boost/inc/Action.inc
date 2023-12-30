@@ -103,8 +103,26 @@ GetAction PROC
 			;-------------------------------------------------------------------------------------------------------------;
 			checkF1:
 			cmp user_lastaction,3bh         ; compare with F1 scan code 
-			jnz checkF2 
+			jnz mid_jump_to_checkF2 
 			showColoredMsg f1, TEXT_COLOR, f1size, start_Y_ofpress, start_X_ofpress 
+			pusha
+			call chatRoom
+			popa
+			; restore all the settings
+			MOV AX,@DATA
+			MOV DS,AX
+			mov es, ax
+			UltraGraphicsMode
+			putWallPaperM 14, 10, 0, 0
+
+			jmp dont_mid_jump_to_checkF2
+			mid_jump_to_checkF2: jmp checkF2
+			dont_mid_jump_to_checkF2:
+
+			drawLogo
+			paintAreaM 0, 430d, 640d, 50d, 0H
+			drawButtons
+
 			jmp finish 
 			
 
