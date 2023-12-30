@@ -146,7 +146,7 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 70
+        MAX_PARTS equ 10
         TIME equ 0
 		WRONGTHRESHOLD equ 200
 
@@ -323,8 +323,7 @@
        
     ;*----------------------------------------------------------------------------------------------------;
     ;*--------------------------------------------Transimission Data--------------------------------------;
-        isSender db 1 ;? Check if this is the sender 
-        
+        isSender db 1 ;? Check if this is the sender  
         
         
         

@@ -33,7 +33,7 @@ GameMain PROC FAR
           GenerateTheTrack:
 
           call              GenerateTrackDirections
-          call              GenerateAllObsPowers  
+          ;call              GenerateAllObsPowers  
           call              TrackTransmission_Send
           jmp LetsPlay
 
@@ -42,7 +42,7 @@ GameMain PROC FAR
           call              TrackTransmission_Recieve
 
           LetsPlay:
-
+          
      ; clear the screen
           clear
 
@@ -74,7 +74,6 @@ GameMain PROC FAR
          
           call              DrawTrack
           call              FinalLine
-
      ; draw intial position of the player's cars
           intialCarPosition
 
