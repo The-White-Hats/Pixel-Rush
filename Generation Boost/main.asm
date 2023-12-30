@@ -20,7 +20,7 @@ GameMain PROC FAR
           mov               ax , @DATA
           mov               ds , ax
           call              GenerateTrackDirections
-
+          call              GenerateAllObsPowers  
      ; clear the screen
           clear
 
@@ -52,7 +52,7 @@ GameMain PROC FAR
          
           call              DrawTrack
           call              FinalLine
-
+          
 
      ; draw intial position of the player's cars
           intialCarPosition
