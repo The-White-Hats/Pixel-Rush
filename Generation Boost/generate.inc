@@ -248,7 +248,7 @@ DrawTrack PROC
 	mov START_Y,ax
     mov ax,x_min_new
 	mov CurrentCase,ax
-    mov END_LINE_LENGTH,6
+    mov END_LINE_LENGTH,CONST_END_LINE_LENGTH
 	mov EndTrackColor1,BLACK
 	mov EndTrackColor2,WHITE
 

@@ -115,11 +115,11 @@
          MAX_Y equ 180 
          ;*----------------------------------Dimensions-------------------------------------------------;
          LINE_WIDTH equ 25
-         LINE_LENGTH equ 5
+         LINE_LENGTH equ 6
 		 HORIZONTAL_LINE_LENGTH equ 26
-
+         CONST_END_LINE_LENGTH equ 7
 		 END_LINE_WIDTH equ LINE_WIDTH ;!Finish Line
-		 END_LINE_LENGTH dw 6 ;!Finish Line
+		 END_LINE_LENGTH dw CONST_END_LINE_LENGTH ;!Finish Line
 		 END_LINE_DASHEDLINE_LENGTH equ 2 ;!Finish Line
          EndTrackWidthToggle equ 2
 
