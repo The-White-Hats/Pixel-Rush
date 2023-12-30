@@ -1,4 +1,4 @@
-include macros.inc
+include ./inc/macros.inc
 .286
 public GameMain
 public IsUser1Win,IsUser2Win,user1score,user2score
@@ -7,13 +7,13 @@ extrn user2name:BYTE
 .MODEL SMALL
 .STACK 128
 .DATA
-          include data.inc
-          include logoData.inc
+          include ./inc/data.inc
+          include ./inc/logoData.inc
 
 .CODE
-          include           generate.inc
-          include           car.inc
-          include           draw.inc
+          include           ./inc/generate.inc
+          include           ./inc/car.inc
+          include           ./inc/draw.inc
 
 GameMain PROC FAR
      ; initialize memory

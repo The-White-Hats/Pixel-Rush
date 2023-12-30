@@ -12,9 +12,9 @@ extrn user2score:BYTE
 .STACK 32
 ;---------------------------------------
 .DATA
-                include LogoData.inc
-                include userData.inc
-                include AcData.inc
+                include ./inc/LogoData.inc
+                include ./inc/userData.inc
+                include ./inc/AcData.inc
     s           db      ?
                 dt      ?
     scorestring db      ?
@@ -22,9 +22,9 @@ extrn user2score:BYTE
 
     ;---------------------------------------
 .code
-         include           draw.inc
-         include           infoM.inc
-         include           Action.inc
+         include           ./inc/draw.inc
+         include           ./inc/infoM.inc
+         include           ./inc/Action.inc
 
 
 
