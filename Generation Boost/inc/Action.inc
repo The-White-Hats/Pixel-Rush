@@ -85,6 +85,7 @@ WinnerScreen ENDP
 
 GetAction PROC
     pusha
+	mov sendValue, ';'
 	checkStartUp:
 		;Check that Data Ready ; check that I recieved something
 		mov dx , 3FDH		; Line Status Register
@@ -94,9 +95,9 @@ GetAction PROC
 		; get what I recieved
 		mov dx , 03F8H
 		in al , dx 
-		mov RecievedValue , al
-		cmp RecievedValue, ";"
-		jz sendRecNames
+		cmp al, ";"
+		jnz sendRecNames
+		mov sendValue, "-"
 
 		checkStartUpchecksend:
 		;Check that Transmitter Holding Register is Empty
@@ -105,9 +106,11 @@ GetAction PROC
 		AND al , 00100000b
 		jz checkStartUp
 
-		mov al, ";"
+		mov al, sendvalue
 		mov dx, 03f8h
 		out dx, al
+		cmp al, '-'
+		jz sendRecNames
 	jmp checkStartUp
 	
 	sendRecNames:
