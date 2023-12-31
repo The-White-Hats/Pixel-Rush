@@ -85,6 +85,72 @@ WinnerScreen ENDP
 
 GetAction PROC
     pusha
+	checkStartUp:
+		;Check that Data Ready ; check that I recieved something
+		mov dx , 3FDH		; Line Status Register
+		in al , dx 
+		AND al , 1
+		JZ checkStartUpchecksend
+		; get what I recieved
+		mov dx , 03F8H
+		in al , dx 
+		mov RecievedValue , al
+		cmp RecievedValue, ";"
+		jz sendRecNames
+
+		checkStartUpchecksend:
+		;Check that Transmitter Holding Register is Empty
+		mov dx , 3FDH		; Line Status Register
+		In al , dx 			;Read Line Status
+		AND al , 00100000b
+		jz checkStartUp
+
+		mov al, ";"
+		mov dx, 03f8h
+		out dx, al
+	jmp checkStartUp
+	
+	sendRecNames:
+	mov ch, 16
+	mov cl, 16
+
+	lea si, user1name
+	lea di, user2name
+
+
+	recLoop:
+		test ch, cl
+		jz GetAction_again
+		mov dx , 3FDH		; Line Status Register
+		in al , dx 
+		AND al , 1
+		JZ checkStartUpchecksend
+		; get what I recieved
+		cmp cl, 0
+		jz checkStartUpchecksend
+		mov dx , 03F8H
+		in al , dx 
+		mov [di] , al
+		inc di
+		dec cl
+
+		checkStartUpchecksend:
+		;Check that Transmitter Holding Register is Empty
+		mov dx , 3FDH		; Line Status Register
+		In al , dx 			;Read Line Status
+		AND al , 00100000b
+		jz recLoop
+		cmp ch, 0
+		jz recLoop
+		mov al, [si]
+		mov dx, 03f8h
+		out dx, al
+		inc si
+		dec ch
+
+		jmp recLoop
+
+
     GetAction_again:      
 			;------------------------move the cursor to the pressed key message location ---------------------------------;
 
