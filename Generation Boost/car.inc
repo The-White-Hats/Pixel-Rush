@@ -3,6 +3,9 @@ pusha
 pushf
                  in                 al, 60H                                       ; put the scan code of the pressed or unpressed
                  
+                 cmp sending, 1
+                 jz dontKill
+
                  cmp                al, 3eh                                        ; pressing the f4 key
                  jz                 midKill
                   

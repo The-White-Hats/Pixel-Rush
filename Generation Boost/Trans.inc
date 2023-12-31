@@ -485,7 +485,7 @@ receiveCommand PROC
     jz                  midKill2
     
     cmp                al, 38h
-    jnz                continue_whatever2
+    jnz                dontKill2
     mov                processed_power_holder, 2
     mov                al, user2_stored_powerup
     mov                processed_power, al
@@ -503,109 +503,87 @@ receiveCommand PROC
     ret
 receiveCommand ENDP
 
-sendCommand PROC
+sendMove PROC
     pusha
+
+    mov sending, 1
+
     call checksend
+
+    s_up:
+    mov al, 0
+    cmp user1_dir_bools[0], 1
+    jnz s_right
+    or al, 1b
+    s_right:
+    cmp user1_dir_bools[2], 1
+    jnz s_down
+    or al, 10b
+    s_down:
+    cmp user1_dir_bools[4], 1
+    jnz s_left
+    or al, 100b
+    s_left:
+    cmp user1_dir_bools[6], 1
+    jnz sm_done
+    or al, 1000b
+
+    sm_done:
     mov dx, 03f8h
-
-    ; up:
-    ; cmp al, 48h
-    ; jnz s_up_r
-    ; mov al, 11h
-    ; jmp s_done
-
-    ; s_up_r:
-    ; cmp al, 48h + 80h
-    ; jnz s_down
-    ; mov al, 11h + 80h
-    ; jmp s_done
-
-    ; s_down:
-    ; cmp al, 4dh
-    ; jnz s_down_r
-    ; mov al, 20h
-    ; jmp s_done
-
-    ; s_down_r:
-    ; cmp al, 4dh + 80h
-    ; jnz s_right
-    ; mov al, 20h + 80h
-    ; jmp s_done
-
-    ; s_right:
-    ; cmp al, 50h
-    ; jnz s_right_r
-    ; mov al, 1fh
-    ; jmp s_done
-
-    ; s_right_r:
-    ; cmp al, 50h + 80h
-    ; jnz s_left
-    ; mov al, 1fh + 80h
-    ; jmp s_done
-
-    ; s_left:
-    ; cmp al, 4bh
-    ; jnz s_left_r
-    ; mov al, 1eh
-    ; jmp s_done
-
-    ; s_left_r:
-    ; cmp al, 4bh + 80h
-    ; jnz s_powerUp
-    ; mov al, 1eh + 80h
-    ; jmp s_done
-
-    lea si, user1_dir_bools
-    mov cx, 4
-    s_again:
-    cmp al, [si]
-
-    s_done:
     out dx, al
 
+    done_sr:
+    mov sending, 0
     popa
     ret
-sendCommand ENDP
+sendMove ENDP
 
-receiveCommand PROC
+receiveMove PROC
     pusha
     mov dx , 3FDH		; Line Status Register
     in al , dx 
     AND al , 1
-    jnz continue_inReceive
+    jnz continue_inReceive2
     popa
     ret
-    continue_inReceive:
+    continue_inReceive2:
     mov dx , 03F8H
-    in al , dx
-
-    cmp                 al, 3eh                                        ; pressing the f4 key
-    jz                  midKill2
+    in al , dx        
     
-    cmp                al, 38h                                       ; pressing the 'p' key for first player power up
-    jnz                continue_whatever2
-    mov                processed_power_holder, 1
-    mov                al, user2_stored_powerup
-    mov                processed_power, al
-    mov                user2_stored_powerup, 0
-    call               activatePowerUp
-    jmp                dontKill2          
-    
+    r_up:
+    push ax
+    mov user2_dir_bools[0], 0
+    and al, 1b
+    jz r_right
+    mov user2_dir_bools[0], 1
 
-    continue_whatever2:
-    lea                 si, user2_dir_arr
-    lea                 di, user2_dir_bools
-    call                CheckDir
+    r_right:
+    pop ax
+    push ax
+    mov user2_dir_bools[2], 0
+    and al, 10b
+    jz r_down
+    mov user2_dir_bools[2], 1
 
-    jmp                 dontKill2
+    r_down:
+    pop ax
+    push ax
+    mov user2_dir_bools[4], 0
+    and al, 100b
+    jz r_left
+    mov user2_dir_bools[4], 1
 
-    midKill2:     
-    mov                 al, 1H
-    mov                 killSignal, al                                ; Call DOS interrupt to exit
+    r_left:
+    pop ax
+    push ax
+    mov user2_dir_bools[6], 0
+    and al, 1000b
+    jz r_done
+    mov user2_dir_bools[6], 1
 
-    dontKill2:
+    r_done:
+    pop ax
         
     popa
     ret
-receiveCommand ENDP
+receiveMove ENDP

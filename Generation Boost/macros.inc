@@ -165,7 +165,7 @@ delayFunc macro
     pusha
     mov    ax, 8600H   ; AH = 86h (Delay function), AL = 00h (not used)
     xor    cx, cx      ; CH = high order byte of delay count, CL = not used
-    mov    dx, 090FFH  ; DL = low order byte of delay count, DH = not used
+    mov    dx, 080FFH  ; DL = low order byte of delay count, DH = not used
     int    15H         ; Call BIOS delay function
     popa
 endm delayFunc
@@ -275,6 +275,7 @@ update_user1_pos MACRO
     dec ah
     
     finish_update1:
+    call    sendMove
 
     update_dir1
 
@@ -289,6 +290,8 @@ update_user2_pos MACRO
     ; I am considering up as positive y and down as negative y
     mov ax, 0101h ; ah -> x, al -> y
     mov bx, word ptr user2_speed
+
+    call    receiveMove
 
     up2:
     cmp user2_dir_bools, 00H
@@ -570,6 +573,9 @@ carMainLoop macro
 	mov PrevSec, dh ; contain hundreds of seconds
 
      again:   
+                ; call sendCommand
+                ; call receiveCommand
+
                 mov ax,0
                 add al,IsUser1Win
                 add al,IsUser2Win
@@ -593,7 +599,6 @@ carMainLoop macro
      user1_check:
      ; update the location of user 1
      ; copy the current states into previous ones
-                 call sendCommand
                  mov               ax, user1_posX
                  mov               user1_prev_posX, ax
                  mov               ax, user1_posY
@@ -640,7 +645,7 @@ carMainLoop macro
                  mov al, user1_obstacles_passed
                  mov user_obstacles_passed, al
 
-                 detectCollision   user1_current_frame, car1
+                 ;detectCollision   user1_current_frame, car1
 
                  mov al, user_obstacles_passed
                  mov user1_obstacles_passed, al
@@ -703,7 +708,6 @@ carMainLoop macro
      user2_check:
      ; update the location of user 2
      ; copy the current states into previous ones
-     call receiveCommand
                  mov               ax, user2_posX
                  mov               user2_prev_posX, ax
                  mov               ax, user2_posY
@@ -750,7 +754,7 @@ carMainLoop macro
                  mov al, user2_obstacles_passed
                  mov user_obstacles_passed, al
 
-                 detectCollision   user2_current_frame, car2
+                 ;detectCollision   user2_current_frame, car2
 
                  mov al, user_obstacles_passed
                  mov user2_obstacles_passed, al
