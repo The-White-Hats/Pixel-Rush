@@ -1,4 +1,4 @@
-serial1=directserial realport:com3
+serial1=directserial realport:com1
 tasm home2
 tasm main
 tasm chat

@@ -2043,6 +2043,7 @@ DrawPower ENDP
 	
 ;*--------------------------------------------display string  in si and with color 'stringcolor'------------------------------------------	
 showColoredMsg MACRO str, color, strSize, row, column
+pusha
     lea bp, str
     mov cx, strSize
 
@@ -2054,6 +2055,7 @@ showColoredMsg MACRO str, color, strSize, row, column
     mov dh, row ; row
     mov dl, column ; column
     int 10h
+popa
 ENDM showColoredMsg
 
 DisplayString PROC

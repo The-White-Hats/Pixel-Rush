@@ -22,6 +22,7 @@ showmes macro str
 endm showmes 
 
 showColoredMsg MACRO str, color, strSize, row, column
+pusha
     lea bp, str
     mov cx, strSize
 
@@ -33,6 +34,7 @@ showColoredMsg MACRO str, color, strSize, row, column
     mov dh, row ; row
     mov dl, column ; column
     int 10h
+popa
 ENDM showColoredMsg
 
 showchar macro char

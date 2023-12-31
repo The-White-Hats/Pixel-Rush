@@ -155,13 +155,18 @@ GetAction PROC
 			mov dx, 03f8h
 			out dx, al
 			cmp sendvalue, 01d ; check if I send a termination code
-			jz exit
+			jz exitMid
 			cmp sendvalue, ConfirmationCode
-			jnz finish ; if we didn't agree on something, then jump back to check recieve
+			jnz goFinish1 ; if we didn't agree on something, then jump back to check recieve
 			mov al, RecievedValue
 			mov AgreedValue, al
+			jmp skipPlz
+			goFinish1:
+			jmp goFinish
+			skipPlz:
 			;-----------------------------------------------excute the operatoin
 			excuteoperation:
+
 			showColoredMsg agreed, TEXT_COLOR, agreedSize, start_Y_ofpress, start_X_ofpress
 			;------------------------------------------------------------
 			
@@ -174,29 +179,37 @@ GetAction PROC
 			
 
 			; ;-------------------------------------------------------------------------------------------------------------;
-			; checkF1:
-			; cmp user_lastaction,3bh         ; compare with F1 scan code 
+			checkF1:
+			cmp AgreedValue,3bh         ; compare with F1 scan code 
+			; TODO: return this to normal
 			; jnz mid_jump_to_checkF2 
-			; showColoredMsg f1, TEXT_COLOR, f1size, start_Y_ofpress, start_X_ofpress 
-			; pusha
-			; call chatRoom
-			; popa
-			; ; restore all the settings
-			; MOV AX,@DATA
-			; MOV DS,AX
-			; mov es, ax
-			; UltraGraphicsMode
-			; putWallPaperM 14, 10, 0, 0
+			jnz goFinish12
+			pusha
+			call chatRoom
+			popa
+			jmp skipPlz2
+			goFinish12:
+			jmp goFinish
+			skipPlz2:
+			; restore all the settings
+			MOV AX,@DATA
+			MOV DS,AX
+			mov es, ax
+			UltraGraphicsMode
+			putWallPaperM 14, 10, 0, 0
 
-			; jmp dont_mid_jump_to_checkF2
-			; mid_jump_to_checkF2: jmp checkF2
-			; dont_mid_jump_to_checkF2:
+			jmp dont_mid_jump_to_checkF2
+			mid_jump_to_checkF2: jmp finish
+			exitMid:
+			jmp exit
+			dont_mid_jump_to_checkF2:
 
-			; drawLogo
-			; paintAreaM 0, 430d, 640d, 50d, 0H
-			; drawButtons
-
-			; jmp finish 
+			drawLogo
+			paintAreaM 0, 430d, 640d, 50d, 0H
+			drawButtons
+			goFinish:
+			jmp finish
+			
 			
 
 			; ;-------------------------------------------------------------------------------------------------------------;
