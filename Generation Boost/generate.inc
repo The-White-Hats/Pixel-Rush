@@ -315,7 +315,7 @@ DrawTrack PROC
 	mov START_Y,ax
     add bx,4
     ;*--------------------------------------Check that the last direction is horizontal or vertical------;
-     add si,TotalParts
+    ; add si,TotalParts
 	; add si,TotalParts
 	; sub si,2
     ; mov ax,0

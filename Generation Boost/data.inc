@@ -289,9 +289,9 @@
 
 		saveCompilationPowerupsCounter dw 0 ;! offset to add for compilationPowerups array
 		saveCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
-		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
 		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array (Insertion)
 		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array (Insertion)
+		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
         loadInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array (Loading)
         loadInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array (Loading)
 
@@ -333,5 +333,11 @@
 		helper db 1H
 		random db 0
         resetTH db 0
+       
+    ;*----------------------------------------------------------------------------------------------------;
+    ;*--------------------------------------------Transimission Data--------------------------------------;
+        isSender db 1 ;? Check if this is the sender  
+              
+        
+        
         s db 0
-    ;-----------------------------------;

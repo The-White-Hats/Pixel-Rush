@@ -14,13 +14,36 @@ extrn user2name:BYTE
           include           generate.inc
           include           car.inc
           include           draw.inc
+          include           Trans.inc
 
 GameMain PROC FAR
      ; initialize memory
           mov               ax , @DATA
           mov               ds , ax
+
+          call              InitailizeConnection
+
+
+     ;?   check if this user if the sender if true make him generate and send the data 
+     ;?   else make him recieve the data from the other user
+          cmp isSender,1
+          jz GenerateTheTrack
+          jmp RecieveTrack 
+
+          GenerateTheTrack:
+
           call              GenerateTrackDirections
           call              GenerateAllObsPowers  
+          call              TrackTransmission_Send
+          call              ObsPowerTransmission_Send
+          jmp LetsPlay
+
+          RecieveTrack:
+          
+          call              TrackTransmission_Receive
+          call              ObsPowerTransmission_Receive
+          LetsPlay:
+          
      ; clear the screen
           clear
 
@@ -52,8 +75,6 @@ GameMain PROC FAR
          
           call              DrawTrack
           call              FinalLine
-          
-
      ; draw intial position of the player's cars
           intialCarPosition
 
