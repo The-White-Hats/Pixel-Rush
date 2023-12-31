@@ -85,37 +85,11 @@ WinnerScreen ENDP
 
 GetAction PROC
     pusha
-	; mov sendValue, ';'
-	; checkStartUp:
-	; 	;Check that Data Ready ; check that I recieved something
-	; 	mov dx , 3FDH		; Line Status Register
-	; 	in al , dx 
-	; 	AND al , 1
-	; 	JZ checkStartUpchecksend
-	; 	; get what I recieved
-	; 	mov dx , 03F8H
-	; 	in al , dx 
-	; 	cmp al, ";"
-	; 	jnz sendRecNames
-	; 	mov sendValue, "-"
-
-	; 	checkStartUpchecksend:
-	; 	;Check that Transmitter Holding Register is Empty
-	; 	mov dx , 3FDH		; Line Status Register
-	; 	In al , dx 			;Read Line Status
-	; 	AND al , 00100000b
-	; 	jz checkStartUp
-
-	; 	mov al, sendvalue
-	; 	mov dx, 03f8h
-	; 	out dx, al
-	; 	cmp al, '-'
-	; 	jz sendRecNames
-	; jmp checkStartUp
+	
 	
 	sendRecNames:
-	mov ch, 16
-	mov cl, 16
+	mov ch, 17
+	mov cl, 17
 
 	lea si, user1name
 	lea di, user2name
@@ -185,7 +159,7 @@ GetAction PROC
 			mov dx , 3FDH		; Line Status Register
 			in al , dx 
 			AND al , 1
-			JZ checksend
+			JZ checksendBridg
 			; get what I recieved
 			mov dx , 03F8H
 			in al , dx 
@@ -197,11 +171,40 @@ GetAction PROC
 			jmp exit
 			not_exit:
 			; show something
-			showColoredMsg sentToMe, TEXT_COLOR, sentToMeSize, start_Y_ofpress, start_X_ofpress
+			cmp RecievedValue, f1SC
+			jnz not_f1SC
+			
+			mov ax, 0
+			mov al, name2Size
+			showColoredMsg user2name, TEXT_COLOR, ax, start_Y_ofpress, start_X_ofpress
+			mov al, start_X_ofpress
+			add al, name2Size
+			inc al
+			mov maloshlazma, al
+			showColoredMsg f1RecievedMsg, TEXT_COLOR, f1RecievedMsgSize, start_Y_ofpress, maloshlazma
+			not_f1SC:
+			jmp bridg11
+			checksendBridg:
+				jmp checksend
+			checkrecieveBridge:
+				jmp checkreceive
+			bridg11:
+			cmp RecievedValue, f2SC
+			jnz not_f2SC
+			mov ax, 0
+			mov al, name2Size
+			showColoredMsg user2name, TEXT_COLOR, ax, start_Y_ofpress, start_X_ofpress
+			mov al, start_X_ofpress
+			add al, name2Size
+			inc al
+			mov maloshlazma, al
+			showColoredMsg f2RecievedMsg, TEXT_COLOR, f2RecievedMsgSize, start_Y_ofpress, maloshlazma
+			not_f2SC:
 			; then check if it was a confirmation code to some invitation
 			cmp RecievedValue, ConfirmationCode
 			jnz checksend
 			; if he agreed, then save my action that he agreed on
+			mov sender, 0
 			mov al, sendvalue
 			mov AgreedValue, al
 			jmp excuteoperation ; now excute the action that we agreed on
@@ -212,23 +215,29 @@ GetAction PROC
 			mov dx , 3FDH		; Line Status Register
 			In al , dx 			;Read Line Status
 			AND al , 00100000b
-			jz checkreceive
+			jz checkrecieveBridge
 			; check if a key was pressed
 			mov ah,1
 			int 16h
-			jz checkreceive ; jum if there wasn't a key press
+			jz checkrecieveBridge ; jum if there wasn't a key press
 			; get the pressed key
 			mov ah,0
 			int 16h
 			; check that it is f1, f2 or esc
 			cmp ah, 3bh ; f1
 			jnz not_f1
-			showColoredMsg f1, TEXT_COLOR, f1size, start_Y_ofpress, start_X_ofpress
+			showColoredMsg f1, TEXT_COLOR, f1size, start_Y_ofpress-1, start_X_ofpress
+			mov bx, 0
+			mov bl, name2Size
+			showColoredMsg user2name, TEXT_COLOR, bx, start_Y_ofpress-1, start_X_ofpress+30
 			jmp handle_my_keys
 			not_f1:
 			cmp ah, 3ch ; f2
 			jnz not_f2
-			showColoredMsg f2, TEXT_COLOR, f2size, start_Y_ofpress, start_X_ofpress
+			showColoredMsg f2, TEXT_COLOR, f2size, start_Y_ofpress-1, start_X_ofpress
+			mov bx, 0
+			mov bl, name2Size
+			showColoredMsg user2name, TEXT_COLOR, bx, start_Y_ofpress-1, start_X_ofpress+30
 			jmp handle_my_keys
 			not_f2:
 			cmp ah, 01h ; esc
@@ -239,6 +248,7 @@ GetAction PROC
 			jnz didnt_agree
 			; if I agreed to the other player request, then do this
 			mov SendValue, ConfirmationCode
+			mov sender, 1
 			jmp sendtobuffer
 			didnt_agree:
 			mov SendValue, ah
@@ -281,7 +291,7 @@ GetAction PROC
 			popa
 			jmp skipPlz2
 			goFinish12:
-			jmp goFinish
+			jmp checkF2
 			skipPlz2:
 			; restore all the settings
 			MOV AX,@DATA
@@ -291,7 +301,7 @@ GetAction PROC
 			putWallPaperM 14, 10, 0, 0
 
 			jmp dont_mid_jump_to_checkF2
-			mid_jump_to_checkF2: jmp finish
+			mid_jump_to_checkF2: jmp checkF2
 			exitMid:
 			jmp exit
 			dont_mid_jump_to_checkF2:
@@ -304,44 +314,44 @@ GetAction PROC
 			
 			
 
-			; ;-------------------------------------------------------------------------------------------------------------;
-			; checkF2:
-			; cmp user_lastaction,3ch        ; compare with F2 scan code 
-			; jnz tonot_pressed
-			; jmp GetAction_bridge
-			;     tonot_pressed:
-      ;           jmp not_pressed
-      ;       GetAction_bridge:
-			; showColoredMsg f2, TEXT_COLOR, f2size, start_Y_ofpress, start_X_ofpress 
-			; pusha
-			; call GameMain
-			; popa
-			; MOV AX,@DATA
-			; MOV DS,AX
-			; mov es, ax
-			; UltraGraphicsMode
+			;-------------------------------------------------------------------------------------------------------------;
+			checkF2:
+			cmp AgreedValue,3ch        ; compare with F2 scan code 
+			jnz tonot_pressed
+			jmp GetAction_bridge
+			    tonot_pressed:
+                jmp not_pressed
+            GetAction_bridge:
+			showColoredMsg f2, TEXT_COLOR, f2size, start_Y_ofpress, start_X_ofpress 
+			pusha
+			call GameMain
+			popa
+			MOV AX,@DATA
+			MOV DS,AX
+			mov es, ax
+			UltraGraphicsMode
             
-			; putWallPaperM 14, 10, 0, 0
+			putWallPaperM 14, 10, 0, 0
 
-			; drawLogo
-			; call WinnerScreen
+			drawLogo
+			call WinnerScreen
 
-			; mov user1score, 0
-			; mov user2score, 0
-			; mov IsUser1Win, 0H
-			; mov IsUser2Win, 0H
+			mov user1score, 0
+			mov user2score, 0
+			mov IsUser1Win, 0H
+			mov IsUser2Win, 0H
 			
 			
-			; putWallPaperM 7, 2, 3*bgSize, 6*bgSize  ; recover the area with the wallpaper
-			; paintAreaM 0, 430d, 640d, 50d, 0H
-			; drawButtons
+			putWallPaperM 7, 2, 3*bgSize, 6*bgSize  ; recover the area with the wallpaper
+			paintAreaM 0, 430d, 640d, 50d, 0H
+			drawButtons
              
-			; jmp finish 
+			jmp finish 
 			
 
-			; ;-------------------------------------------------------------------------------------------------------------;
-			; not_pressed:      ; esc,f1,f2 not pressed
-			; showColoredMsg none, TEXT_COLOR, nonesize, start_Y_ofpress, start_X_ofpress 
+			;-------------------------------------------------------------------------------------------------------------;
+			not_pressed:      ; esc,f1,f2 not pressed
+			showColoredMsg none, TEXT_COLOR, nonesize, start_Y_ofpress, start_X_ofpress 
 			
 			finish: 
 			jmp GetAction_again  ;jmp to again listen again for the next instruction

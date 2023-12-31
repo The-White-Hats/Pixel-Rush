@@ -9,6 +9,7 @@ extrn IsUser1Win:BYTE
 extrn IsUser2Win:BYTE
 extrn user1score:BYTE
 extrn user2score:BYTE
+extrn sender:BYTE
 .MODEL SMALL
 .STACK 32
 ;---------------------------------------
