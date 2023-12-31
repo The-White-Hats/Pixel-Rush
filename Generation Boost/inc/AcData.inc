@@ -11,5 +11,9 @@ f1 db 'Entering Chatting ...                    $'
 f1size equ $-f1-1   
 f2 db 'Generating Tarck ...                    $' 
 f2size equ $-f2-1   
+sentToMe db 'Got a message ...                    $'
+sentToMeSize equ $-sentToMe-1
+agreed db "agreed ...                       $"
+agreedSize equ $-agreed-1
 none db 'Please enter One of the shown keys$' 
 nonesize equ $-none-1    

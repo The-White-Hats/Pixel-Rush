@@ -1,9 +1,9 @@
-serial1=directserial realport:com1
-tasm home
+serial1=directserial realport:com3
+tasm home2
 tasm main
 tasm chat
-tlink home+main+chat
-home.exe
+tlink home2+main+chat
+home2.exe
 del *.EXE
 DEL *.OBJ
 DEL *.MAP

@@ -88,82 +88,155 @@ GetAction PROC
     GetAction_again:      
 			;------------------------move the cursor to the pressed key message location ---------------------------------;
 
-
-			MOV AH, 00H         ;get the pressed key scan code and put it in ah        
-			INT 16H    
-			mov user_lastaction,ah  ; save the pressed key scan code in user_lastaction variable
-
-			;-------------------------------------------------------------------------------------------------------------;
-			cmp user_lastaction,01h          ; compare with ESC scan code  
-			jnz checkF1
-			showColoredMsg closeprogram, TEXT_COLOR, closeprogramsize, start_Y_ofpress, start_X_ofpress     
+			checkreceive:
+			;Check that Data Ready ; check that I recieved something
+			mov dx , 3FDH		; Line Status Register
+			in al , dx 
+			AND al , 1
+			JZ checksend
+			; get what I recieved
+			mov dx , 03F8H
+			in al , dx 
+			mov RecievedValue , al
+			;-----------------------------------check what was sent to me
+			; first check if it was termination code
+			cmp RecievedValue, 01h
+			jnz not_exit
 			jmp exit
+			not_exit:
+			; show something
+			showColoredMsg sentToMe, TEXT_COLOR, sentToMeSize, start_Y_ofpress, start_X_ofpress
+			; then check if it was a confirmation code to some invitation
+			cmp RecievedValue, ConfirmationCode
+			jnz checksend
+			; if he agreed, then save my action that he agreed on
+			mov al, sendvalue
+			mov AgreedValue, al
+			jmp excuteoperation ; now excute the action that we agreed on
+			;------------------------------------------------------------
+			;-------------------------------------send data--------------
+			checksend:
+			;Check that Transmitter Holding Register is Empty
+			mov dx , 3FDH		; Line Status Register
+			In al , dx 			;Read Line Status
+			AND al , 00100000b
+			jz checkreceive
+			; check if a key was pressed
+			mov ah,1
+			int 16h
+			jz checkreceive ; jum if there wasn't a key press
+			; get the pressed key
+			mov ah,0
+			int 16h
+			; check that it is f1, f2 or esc
+			cmp ah, 3bh ; f1
+			jnz not_f1
+			showColoredMsg f1, TEXT_COLOR, f1size, start_Y_ofpress, start_X_ofpress
+			jmp handle_my_keys
+			not_f1:
+			cmp ah, 3ch ; f2
+			jnz not_f2
+			showColoredMsg f2, TEXT_COLOR, f2size, start_Y_ofpress, start_X_ofpress
+			jmp handle_my_keys
+			not_f2:
+			cmp ah, 01h ; esc
+			jz handle_my_keys
+			jmp checkreceive ; if it is neither one of these, then jump
+			handle_my_keys:
+			cmp ah, RecievedValue
+			jnz didnt_agree
+			; if I agreed to the other player request, then do this
+			mov SendValue, ConfirmationCode
+			jmp sendtobuffer
+			didnt_agree:
+			mov SendValue, ah
+			sendtobuffer:
+			mov al, sendvalue
+			mov dx, 03f8h
+			out dx, al
+			cmp sendvalue, 01d ; check if I send a termination code
+			jz exit
+			cmp sendvalue, ConfirmationCode
+			jnz finish ; if we didn't agree on something, then jump back to check recieve
+			mov al, RecievedValue
+			mov AgreedValue, al
+			;-----------------------------------------------excute the operatoin
+			excuteoperation:
+			showColoredMsg agreed, TEXT_COLOR, agreedSize, start_Y_ofpress, start_X_ofpress
+			;------------------------------------------------------------
 			
 
 			;-------------------------------------------------------------------------------------------------------------;
-			checkF1:
-			cmp user_lastaction,3bh         ; compare with F1 scan code 
-			jnz mid_jump_to_checkF2 
-			showColoredMsg f1, TEXT_COLOR, f1size, start_Y_ofpress, start_X_ofpress 
-			pusha
-			call chatRoom
-			popa
-			; restore all the settings
-			MOV AX,@DATA
-			MOV DS,AX
-			mov es, ax
-			UltraGraphicsMode
-			putWallPaperM 14, 10, 0, 0
-
-			jmp dont_mid_jump_to_checkF2
-			mid_jump_to_checkF2: jmp checkF2
-			dont_mid_jump_to_checkF2:
-
-			drawLogo
-			paintAreaM 0, 430d, 640d, 50d, 0H
-			drawButtons
-
-			jmp finish 
+			; cmp user_lastaction,01h          ; compare with ESC scan code  
+			; jnz checkF1
+			; showColoredMsg closeprogram, TEXT_COLOR, closeprogramsize, start_Y_ofpress, start_X_ofpress     
+			; jmp exit
 			
 
-			;-------------------------------------------------------------------------------------------------------------;
-			checkF2:
-			cmp user_lastaction,3ch        ; compare with F2 scan code 
-			jnz tonot_pressed
-			jmp GetAction_bridge
-			    tonot_pressed:
-                jmp not_pressed
-            GetAction_bridge:
-			showColoredMsg f2, TEXT_COLOR, f2size, start_Y_ofpress, start_X_ofpress 
-			pusha
-			call GameMain
-			popa
-			MOV AX,@DATA
-			MOV DS,AX
-			mov es, ax
-			UltraGraphicsMode
+			; ;-------------------------------------------------------------------------------------------------------------;
+			; checkF1:
+			; cmp user_lastaction,3bh         ; compare with F1 scan code 
+			; jnz mid_jump_to_checkF2 
+			; showColoredMsg f1, TEXT_COLOR, f1size, start_Y_ofpress, start_X_ofpress 
+			; pusha
+			; call chatRoom
+			; popa
+			; ; restore all the settings
+			; MOV AX,@DATA
+			; MOV DS,AX
+			; mov es, ax
+			; UltraGraphicsMode
+			; putWallPaperM 14, 10, 0, 0
+
+			; jmp dont_mid_jump_to_checkF2
+			; mid_jump_to_checkF2: jmp checkF2
+			; dont_mid_jump_to_checkF2:
+
+			; drawLogo
+			; paintAreaM 0, 430d, 640d, 50d, 0H
+			; drawButtons
+
+			; jmp finish 
+			
+
+			; ;-------------------------------------------------------------------------------------------------------------;
+			; checkF2:
+			; cmp user_lastaction,3ch        ; compare with F2 scan code 
+			; jnz tonot_pressed
+			; jmp GetAction_bridge
+			;     tonot_pressed:
+      ;           jmp not_pressed
+      ;       GetAction_bridge:
+			; showColoredMsg f2, TEXT_COLOR, f2size, start_Y_ofpress, start_X_ofpress 
+			; pusha
+			; call GameMain
+			; popa
+			; MOV AX,@DATA
+			; MOV DS,AX
+			; mov es, ax
+			; UltraGraphicsMode
             
-			putWallPaperM 14, 10, 0, 0
+			; putWallPaperM 14, 10, 0, 0
 
-			drawLogo
-			call WinnerScreen
+			; drawLogo
+			; call WinnerScreen
 
-			mov user1score, 0
-			mov user2score, 0
-			mov IsUser1Win, 0H
-			mov IsUser2Win, 0H
+			; mov user1score, 0
+			; mov user2score, 0
+			; mov IsUser1Win, 0H
+			; mov IsUser2Win, 0H
 			
 			
-			putWallPaperM 7, 2, 3*bgSize, 6*bgSize  ; recover the area with the wallpaper
-			paintAreaM 0, 430d, 640d, 50d, 0H
-			drawButtons
+			; putWallPaperM 7, 2, 3*bgSize, 6*bgSize  ; recover the area with the wallpaper
+			; paintAreaM 0, 430d, 640d, 50d, 0H
+			; drawButtons
              
-			jmp finish 
+			; jmp finish 
 			
 
-			;-------------------------------------------------------------------------------------------------------------;
-			not_pressed:      ; esc,f1,f2 not pressed
-			showColoredMsg none, TEXT_COLOR, nonesize, start_Y_ofpress, start_X_ofpress 
+			; ;-------------------------------------------------------------------------------------------------------------;
+			; not_pressed:      ; esc,f1,f2 not pressed
+			; showColoredMsg none, TEXT_COLOR, nonesize, start_Y_ofpress, start_X_ofpress 
 			
 			finish: 
 			jmp GetAction_again  ;jmp to again listen again for the next instruction

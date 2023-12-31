@@ -113,19 +113,6 @@ chatRoom proc far
 		jz midfinal
 
 		
-		MoveCursor RecX, RecY, recp
-
-		ShowChar VALUE
-		inc RecX
-		cmp RecX, 79d
-		jnz NEXT
-		mov RecX, 40d
-		inc RecY
-		NEXT:
-		cmp RecY, 25d
-		jnz dontscrollr2
-		call scrollR
-		dontscrollr2:
 
 	;-------------------sender-------------------------;
 
@@ -147,42 +134,7 @@ chatRoom proc far
 	mov ah,0
 	int 16h
 
-	; check if it was enter
-	cmp ah,1ch
-	jnz notEnter
-	inc senY
-	mov senX, 0
-	mov sendval, 10d
-	; check the end of my area
-	cmp senY, 25d
-	jnz dontscrolls
-	call scrollS
-	dontscrolls:
-	jmp sendtobuffer
-
-	; check if it was esc
-	notEnter:
-	cmp value,27d
-	jnz notEsc
-	mov sendval, 27d
-	jmp sendtobuffer
-
-	notEsc:
-	mov sendval, al
-
-	; print the char of the sender
-	MoveCursor senX, senY, senP
-	ShowChar sendval
-	; deal with the new cursor of the sender
-	inc senX
-	cmp senX, 39d
-	jnz NEXT2
-	mov senX, 0
-	inc senY
-	cmp senY, 25d
-	jnz NEXT2
-	call scrollS
-	NEXT2:
+	
 
 	sendtobuffer:
 	mov al, sendval
