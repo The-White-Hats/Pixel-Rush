@@ -33,14 +33,15 @@ GameMain PROC FAR
           GenerateTheTrack:
 
           call              GenerateTrackDirections
-          ;call              GenerateAllObsPowers  
+          call              GenerateAllObsPowers  
           call              TrackTransmission_Send
+          call              ObsPowerTransmission_Send
           jmp LetsPlay
 
           RecieveTrack:
           
-          call              TrackTransmission_Recieve
-
+          call              TrackTransmission_Receive
+          call              ObsPowerTransmission_Receive
           LetsPlay:
           
      ; clear the screen

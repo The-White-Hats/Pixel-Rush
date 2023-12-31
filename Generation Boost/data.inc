@@ -146,7 +146,7 @@
 		 isup_right db 0 ;! 1 up or right 0 oppisite
         ;*----------------------------------Track Directions Generation Variables-------------------------------------------------;
         
-        MAX_PARTS equ 10
+        MAX_PARTS equ 70
         TIME equ 0
 		WRONGTHRESHOLD equ 200
 
@@ -280,9 +280,9 @@
 
 		saveCompilationPowerupsCounter dw 0 ;! offset to add for compilationPowerups array
 		saveCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
-		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
 		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array (Insertion)
 		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array (Insertion)
+		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
         loadInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array (Loading)
         loadInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array (Loading)
 
@@ -324,9 +324,7 @@
     ;*----------------------------------------------------------------------------------------------------;
     ;*--------------------------------------------Transimission Data--------------------------------------;
         isSender db 1 ;? Check if this is the sender  
-        
-        
-        
+              
         
         
         s db 0
