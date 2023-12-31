@@ -65,6 +65,7 @@ inputFile PROC
                  pop dx
 
     ; input file for second user
+                 add  dx, FILE_NAME_LEN
                  openFile
                  jc                  error
 
@@ -582,3 +583,97 @@ CheckForGameFinish PROC
     popa
     ret
 CheckForGameFinish ENDP
+
+    ;-----------------------
+
+carCollision proc
+; set place on screen of cars
+                 setStartPixel       user1_posX, user1_posY
+                 mov                 dx, di
+                 push                dx
+                 setStartPixel       user2_posX, user2_posY
+                 pop                 dx
+                 mov                 bx, di
+; set cars frame
+                 push dx
+                 push bx
+
+                 mov                 al, user2_current_frame
+                 mov                 cl, BUFF_SIZE
+                 mul                 cl
+                 add                 ax, offset car2
+
+                 push                ax
+
+                 mov                 al, user1_current_frame
+                 mov                 cl, BUFF_SIZE
+                 mul                 cl
+                 add                 ax, offset car1
+                 mov                 cx, ax
+
+                 pop                 ax
+
+                 pop bx
+                 pop dx
+                
+                 mov                 si, cx
+                 mov                 di, dx   
+
+                ; si => car1 source , di => car1 distination
+                ; ax => car2 source , bx => car2 distination
+
+                 mov                 cx, CAR_HEIGHT               ; number of lines to draw
+    collision_outerLoop:   
+
+                 mov                 dx, CAR_WIDTH                ; number of pixels to draw
+    collision_innerLoop:   
+                 cmp                 byte ptr [si], 250
+                 jz                  collision_skip_pixel
+                 pusha
+                 mov                 si, ax
+
+
+
+                 mov                 cx, CAR_HEIGHT               ; number of lines to draw
+    collision2_outerLoop:   
+
+                 mov                 dx, CAR_WIDTH                ; number of pixels to draw
+    collision2_innerLoop:   
+                 cmp                 byte ptr [si], 250
+                 jz                  collision2_skip_pixel
+                    
+                 cmp                 di, bx
+                 jnz                 collision2_skip_pixel
+                 
+                 popa
+                 mov                 bp, 1
+                 ret
+
+    collision2_skip_pixel:        
+                 inc                 si
+                 inc                 bx
+
+    collision2_continue:    
+                 dec                 dx
+                 jnz                 collision2_innerLoop
+
+                 add                 bx, SCREEN_WIDTH - CAR_WIDTH   ; move to next line 
+                 loop                collision2_outerLoop
+
+
+                 
+                 popa
+    collision_skip_pixel:        
+                 inc                 si
+                 inc                 di
+
+    collision_continue:    
+                 dec                 dx
+                 jnz                 collision_innerLoop
+
+                 add                 di, SCREEN_WIDTH - CAR_WIDTH   ; move to next line 
+                 loop                collision_outerLoop
+
+                 mov                 bp, 0
+                 ret
+carCollision endp

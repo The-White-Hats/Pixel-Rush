@@ -12,19 +12,28 @@
     CAR_OFFSET      equ 0
 
 
-    FILE_NAME_LEN   equ 9
+    FILE_NAME_LEN   equ 10
 
     START_CAR_SHIFT equ 8
     SPACE_BETWEEN   equ 10
     ;------------Files-------------;
-    carFile         db  'car0.bin', 0
-                    db  'car1.bin', 0
-                    db  'car2.bin', 0
-                    db  'car3.bin', 0
-                    db  'car4.bin', 0
-                    db  'car5.bin', 0
-                    db  'car6.bin', 0
-                    db  'car7.bin', 0
+    carFile         db  'car10.bin', 0
+                    db  'car20.bin', 0
+                    db  'car11.bin', 0
+                    db  'car21.bin', 0
+                    db  'car12.bin', 0
+                    db  'car22.bin', 0
+                    db  'car13.bin', 0
+                    db  'car23.bin', 0
+                    db  'car14.bin', 0
+                    db  'car24.bin', 0
+                    db  'car15.bin', 0
+                    db  'car25.bin', 0
+                    db  'car16.bin', 0
+                    db  'car26.bin', 0
+                    db  'car17.bin', 0
+                    db  'car27.bin', 0
+
 
     errorMsg        db  "Something went wrong with files !!", 10, "$"
     
@@ -307,6 +316,10 @@
         ;! stated in the doc that the car can pass through 1 obstacle (didn't mention limitid time)
         user1_obstacles_passed db 0
         user2_obstacles_passed db 0
+        user1_isColliding db 0
+        user2_isColliding db 0
+        isColliding db 0
+        user_obstacles_passed db 0
 
         user1FirstTimeHuh db 0 ;! 1 means first time, 0 means not first time
         user2FirstTimeHuh db 0 ;! 1 means first time, 0 means not first time
