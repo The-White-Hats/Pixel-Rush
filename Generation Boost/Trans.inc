@@ -456,66 +456,110 @@ sendCommand PROC
     pusha
     call checksend
     mov dx, 03f8h
-    cmp current_command, 0
-    jnz command_start
-    popa
-    ret
-    command_start:
-    mov al, current_command
-    mov current_command, 0
-
-    up:
-    cmp al, 48h
-    jnz s_up_r
-    mov al, 11h
-    jmp s_done
-
-    s_up_r:
-    cmp al, 48h + 80h
-    jnz s_down
-    mov al, 11h + 80h
-    jmp s_done
-
-    s_down:
-    cmp al, 4dh
-    jnz s_down_r
-    mov al, 20h
-    jmp s_done
-
-    s_down_r:
-    cmp al, 4dh + 80h
-    jnz s_right
-    mov al, 20h + 80h
-    jmp s_done
-
-    s_right:
-    cmp al, 50h
-    jnz s_right_r
-    mov al, 1fh
-    jmp s_done
-
-    s_right_r:
-    cmp al, 50h + 80h
-    jnz s_left
-    mov al, 1fh + 80h
-    jmp s_done
-
-    s_left:
-    cmp al, 4bh
-    jnz s_left_r
-    mov al, 1eh
-    jmp s_done
-
-    s_left_r:
-    cmp al, 4bh + 80h
-    jnz s_powerUp
-    mov al, 1eh + 80h
-    jmp s_done
 
     s_powerUp:
     cmp al, 1dh
     jnz s_done
     mov al, 38h
+
+    s_done:
+    out dx, al
+
+    popa
+    ret
+sendCommand ENDP
+
+receiveCommand PROC
+    pusha
+    mov dx , 3FDH		; Line Status Register
+    in al , dx 
+    and al , 1
+    jnz continue_inReceive
+    popa
+    ret
+    continue_inReceive:
+    mov dx , 03F8H
+    in al , dx
+
+    cmp                 al, 3eh                                        ; pressing the f4 key
+    jz                  midKill2
+    
+    cmp                al, 38h
+    jnz                continue_whatever2
+    mov                processed_power_holder, 2
+    mov                al, user2_stored_powerup
+    mov                processed_power, al
+    mov                user2_stored_powerup, 0
+    call               activatePowerUp
+    jmp                dontKill2
+
+    midKill2:     
+    mov                 al, 1H
+    mov                 killSignal, al                                ; Call DOS interrupt to exit
+
+    dontKill2:
+        
+    popa
+    ret
+receiveCommand ENDP
+
+sendCommand PROC
+    pusha
+    call checksend
+    mov dx, 03f8h
+
+    ; up:
+    ; cmp al, 48h
+    ; jnz s_up_r
+    ; mov al, 11h
+    ; jmp s_done
+
+    ; s_up_r:
+    ; cmp al, 48h + 80h
+    ; jnz s_down
+    ; mov al, 11h + 80h
+    ; jmp s_done
+
+    ; s_down:
+    ; cmp al, 4dh
+    ; jnz s_down_r
+    ; mov al, 20h
+    ; jmp s_done
+
+    ; s_down_r:
+    ; cmp al, 4dh + 80h
+    ; jnz s_right
+    ; mov al, 20h + 80h
+    ; jmp s_done
+
+    ; s_right:
+    ; cmp al, 50h
+    ; jnz s_right_r
+    ; mov al, 1fh
+    ; jmp s_done
+
+    ; s_right_r:
+    ; cmp al, 50h + 80h
+    ; jnz s_left
+    ; mov al, 1fh + 80h
+    ; jmp s_done
+
+    ; s_left:
+    ; cmp al, 4bh
+    ; jnz s_left_r
+    ; mov al, 1eh
+    ; jmp s_done
+
+    ; s_left_r:
+    ; cmp al, 4bh + 80h
+    ; jnz s_powerUp
+    ; mov al, 1eh + 80h
+    ; jmp s_done
+
+    lea si, user1_dir_bools
+    mov cx, 4
+    s_again:
+    cmp al, [si]
 
     s_done:
     out dx, al
@@ -560,9 +604,7 @@ receiveCommand PROC
     mov                 al, 1H
     mov                 killSignal, al                                ; Call DOS interrupt to exit
 
-    dontKill2:    
-    mov                 al, 20h                                       ; The non specific EOI (End Of Interrupt)
-    out                 20h, al
+    dontKill2:
         
     popa
     ret

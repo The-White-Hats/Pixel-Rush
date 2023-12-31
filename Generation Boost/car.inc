@@ -1,10 +1,10 @@
 my_isr PROC
-                 in                  al, 60H                                       ; put the scan code of the pressed or unpressed
-
-                 mov current_command, al
+pusha
+pushf
+                 in                 al, 60H                                       ; put the scan code of the pressed or unpressed
                  
-                 cmp                 al, 3eh                                        ; pressing the f4 key
-                 jz                  midKill
+                 cmp                al, 3eh                                        ; pressing the f4 key
+                 jz                 midKill
                   
                  cmp                al, 1dh                                       ; pressing the 'p' key for first player power up
                  jnz                continue_whatever
@@ -30,6 +30,8 @@ my_isr PROC
     dontKill:    
                  mov                 al, 20h                                       ; The non specific EOI (End Of Interrupt)
                  out                 20h, al
+popf
+popa
                  iret
 my_isr endp
 

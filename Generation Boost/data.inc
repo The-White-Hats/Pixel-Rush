@@ -19,7 +19,7 @@
 
     sender db ?
 
-    current_command db 0
+    current_cmd db 0
     done_sending db 1
     ;------------Files-------------;
     carFile         db  'car10.bin', 0
@@ -56,8 +56,7 @@
     ;-----------User's Data---------;
     user1_posX      dw  ?
     user1_posY      dw  ?
-    user1_dir_bools db  7 dup(0)                ; up, right, down, left
-                    db  0                       ; margin
+    user1_dir_bools db  8 dup(0)                ; up, right, down, left
     user1_dir_arr   db  48h, 4dh, 50H, 4BH
     user1_prev_posX dw  ?
     user1_prev_posY dw  ?
@@ -72,8 +71,7 @@
 
     user2_posX      dw  ? 
 	user2_posY      dw  ?
-	user2_dir_bools db  7 dup(0)          	    ; up, right, down, left
-	                dw  0                 	    ; margin
+	user2_dir_bools db  8 dup(0)          	    ; up, right, down, left
 	user2_dir_arr   db  11h, 20h, 1fH, 1eH
 	user2_prev_posX dw  ?
 	user2_prev_posY dw  ?

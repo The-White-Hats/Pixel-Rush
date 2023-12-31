@@ -162,10 +162,12 @@ showMsg macro str
 endm showMsg
 
 delayFunc macro
+    pusha
     mov    ax, 8600H   ; AH = 86h (Delay function), AL = 00h (not used)
     xor    cx, cx      ; CH = high order byte of delay count, CL = not used
     mov    dx, 090FFH  ; DL = low order byte of delay count, DH = not used
     int    15H         ; Call BIOS delay function
+    popa
 endm delayFunc
 
 intialCarPosition macro
@@ -568,8 +570,6 @@ carMainLoop macro
 	mov PrevSec, dh ; contain hundreds of seconds
 
      again:   
-                call receiveCommand  
-                call sendCommand
                 mov ax,0
                 add al,IsUser1Win
                 add al,IsUser2Win
@@ -593,6 +593,7 @@ carMainLoop macro
      user1_check:
      ; update the location of user 1
      ; copy the current states into previous ones
+                 call sendCommand
                  mov               ax, user1_posX
                  mov               user1_prev_posX, ax
                  mov               ax, user1_posY
@@ -702,6 +703,7 @@ carMainLoop macro
      user2_check:
      ; update the location of user 2
      ; copy the current states into previous ones
+     call receiveCommand
                  mov               ax, user2_posX
                  mov               user2_prev_posX, ax
                  mov               ax, user2_posY
