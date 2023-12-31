@@ -91,7 +91,7 @@ chatRoom proc far
 	mov ah, 09h
 	int 21h
 	MoveCursor 40, 0, 0
-	lea dx, user1name
+	lea dx, user2name
 	mov ah, 09h
 	int 21h
 
