@@ -50,7 +50,7 @@ inputFile PROC
                  pop dx
 
     ; input file for second user
-                 add  dx, FILE_NAME_LEN
+                 add  dx, FILE_NAME_LEN2
                  openFile
                  jc                  error
 

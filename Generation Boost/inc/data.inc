@@ -22,35 +22,24 @@
     current_command db 0
     done_sending db 1
     ;------------Files-------------;
-<<<<<<< HEAD:Generation Boost/inc/data.inc
-    carFile         db  '/i/ca0.bin', 0
-                    db  '/i/ca1.bin', 0
-                    db  '/i/ca2.bin', 0
-                    db  '/i/ca3.bin', 0
-                    db  '/i/ca4.bin', 0
-                    db  '/i/ca5.bin', 0
-                    db  '/i/ca6.bin', 0
-                    db  '/i/ca7.bin', 0
-    FILE_NAME_LEN2  equ ($-carFile)/8
-=======
-    carFile         db  'car10.bin', 0
-                    db  'car20.bin', 0
-                    db  'car11.bin', 0
-                    db  'car21.bin', 0
-                    db  'car12.bin', 0
-                    db  'car22.bin', 0
-                    db  'car13.bin', 0
-                    db  'car23.bin', 0
-                    db  'car14.bin', 0
-                    db  'car24.bin', 0
-                    db  'car15.bin', 0
-                    db  'car25.bin', 0
-                    db  'car16.bin', 0
-                    db  'car26.bin', 0
-                    db  'car17.bin', 0
-                    db  'car27.bin', 0
+    carFile         db  '/i/car10.bin', 0
+                    db  '/i/car20.bin', 0
+                    db  '/i/car11.bin', 0
+                    db  '/i/car21.bin', 0
+                    db  '/i/car12.bin', 0
+                    db  '/i/car22.bin', 0
+                    db  '/i/car13.bin', 0
+                    db  '/i/car23.bin', 0
+                    db  '/i/car14.bin', 0
+                    db  '/i/car24.bin', 0
+                    db  '/i/car15.bin', 0
+                    db  '/i/car25.bin', 0
+                    db  '/i/car16.bin', 0
+                    db  '/i/car26.bin', 0
+                    db  '/i/car17.bin', 0
+                    db  '/i/car27.bin', 0
+    FILE_NAME_LEN2  equ ($-carFile)/16
 
->>>>>>> Phase-2:Generation Boost/data.inc
 
     errorMsg        db  "Something went wrong with files !!", 10, "$"
     

@@ -148,11 +148,7 @@ inputAllFiles macro
         call inputFile
         pop  cx
         pop  dx
-<<<<<<< HEAD:Generation Boost/inc/macros.inc
-        add  dx, FILE_NAME_LEN2
-=======
-        add  dx, 2*FILE_NAME_LEN
->>>>>>> Phase-2:Generation Boost/macros.inc
+        add  dx, 2*FILE_NAME_LEN2
         add  bp, BUFF_SIZE
         inc  cx
         cmp  cx, 8
