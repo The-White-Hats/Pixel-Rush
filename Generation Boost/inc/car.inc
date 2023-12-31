@@ -1,23 +1,12 @@
 my_isr PROC
                  in                  al, 60H                                       ; put the scan code of the pressed or unpressed
 
+                 mov current_command, al
+                 
                  cmp                 al, 3eh                                        ; pressing the f4 key
                  jz                  midKill
-
-                 
-                 cmp                 al, 10h                                       ; pressing the 'q' key for second player power up
-                 jnz                check_user1
-                 mov                processed_power_holder, 2
-                 mov                al, user2_stored_powerup
-                 mov                processed_power, al
-                 mov                user2_stored_powerup, 0
-                 call               activatePowerUp
-                 jmp                dontKill
-
-                 
-                 
-    check_user1:  
-                 cmp                al, 19h                                       ; pressing the 'p' key for first player power up
+                  
+                 cmp                al, 1dh                                       ; pressing the 'p' key for first player power up
                  jnz                continue_whatever
                  mov                processed_power_holder, 1
                  mov                al, user1_stored_powerup
@@ -30,10 +19,6 @@ my_isr PROC
     continue_whatever:
                  lea                 si, user1_dir_arr
 	             lea                 di, user1_dir_bools
-	             call                CheckDir
-
-	             lea                 si, user2_dir_arr
-	             lea                 di, user2_dir_bools
 	             call                CheckDir
 
                  jmp                 dontKill
@@ -65,6 +50,7 @@ inputFile PROC
                  pop dx
 
     ; input file for second user
+                 add  dx, FILE_NAME_LEN
                  openFile
                  jc                  error
 
@@ -582,3 +568,97 @@ CheckForGameFinish PROC
     popa
     ret
 CheckForGameFinish ENDP
+
+    ;-----------------------
+
+carCollision proc
+; set place on screen of cars
+                 setStartPixel       user1_posX, user1_posY
+                 mov                 dx, di
+                 push                dx
+                 setStartPixel       user2_posX, user2_posY
+                 pop                 dx
+                 mov                 bx, di
+; set cars frame
+                 push dx
+                 push bx
+
+                 mov                 al, user2_current_frame
+                 mov                 cl, BUFF_SIZE
+                 mul                 cl
+                 add                 ax, offset car2
+
+                 push                ax
+
+                 mov                 al, user1_current_frame
+                 mov                 cl, BUFF_SIZE
+                 mul                 cl
+                 add                 ax, offset car1
+                 mov                 cx, ax
+
+                 pop                 ax
+
+                 pop bx
+                 pop dx
+                
+                 mov                 si, cx
+                 mov                 di, dx   
+
+                ; si => car1 source , di => car1 distination
+                ; ax => car2 source , bx => car2 distination
+
+                 mov                 cx, CAR_HEIGHT               ; number of lines to draw
+    collision_outerLoop:   
+
+                 mov                 dx, CAR_WIDTH                ; number of pixels to draw
+    collision_innerLoop:   
+                 cmp                 byte ptr [si], 250
+                 jz                  collision_skip_pixel
+                 pusha
+                 mov                 si, ax
+
+
+
+                 mov                 cx, CAR_HEIGHT               ; number of lines to draw
+    collision2_outerLoop:   
+
+                 mov                 dx, CAR_WIDTH                ; number of pixels to draw
+    collision2_innerLoop:   
+                 cmp                 byte ptr [si], 250
+                 jz                  collision2_skip_pixel
+                    
+                 cmp                 di, bx
+                 jnz                 collision2_skip_pixel
+                 
+                 popa
+                 mov                 bp, 1
+                 ret
+
+    collision2_skip_pixel:        
+                 inc                 si
+                 inc                 bx
+
+    collision2_continue:    
+                 dec                 dx
+                 jnz                 collision2_innerLoop
+
+                 add                 bx, SCREEN_WIDTH - CAR_WIDTH   ; move to next line 
+                 loop                collision2_outerLoop
+
+
+                 
+                 popa
+    collision_skip_pixel:        
+                 inc                 si
+                 inc                 di
+
+    collision_continue:    
+                 dec                 dx
+                 jnz                 collision_innerLoop
+
+                 add                 di, SCREEN_WIDTH - CAR_WIDTH   ; move to next line 
+                 loop                collision_outerLoop
+
+                 mov                 bp, 0
+                 ret
+carCollision endp

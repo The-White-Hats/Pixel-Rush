@@ -12,11 +12,17 @@
     CAR_OFFSET      equ 0
 
 
-    FILE_NAME_LEN   equ 9
+    FILE_NAME_LEN   equ 10
 
     START_CAR_SHIFT equ 8
     SPACE_BETWEEN   equ 10
+
+    sender db ?
+
+    current_command db 0
+    done_sending db 1
     ;------------Files-------------;
+<<<<<<< HEAD:Generation Boost/inc/data.inc
     carFile         db  '/i/ca0.bin', 0
                     db  '/i/ca1.bin', 0
                     db  '/i/ca2.bin', 0
@@ -26,6 +32,25 @@
                     db  '/i/ca6.bin', 0
                     db  '/i/ca7.bin', 0
     FILE_NAME_LEN2  equ ($-carFile)/8
+=======
+    carFile         db  'car10.bin', 0
+                    db  'car20.bin', 0
+                    db  'car11.bin', 0
+                    db  'car21.bin', 0
+                    db  'car12.bin', 0
+                    db  'car22.bin', 0
+                    db  'car13.bin', 0
+                    db  'car23.bin', 0
+                    db  'car14.bin', 0
+                    db  'car24.bin', 0
+                    db  'car15.bin', 0
+                    db  'car25.bin', 0
+                    db  'car16.bin', 0
+                    db  'car26.bin', 0
+                    db  'car17.bin', 0
+                    db  'car27.bin', 0
+
+>>>>>>> Phase-2:Generation Boost/data.inc
 
     errorMsg        db  "Something went wrong with files !!", 10, "$"
     
@@ -281,9 +306,9 @@
 
 		saveCompilationPowerupsCounter dw 0 ;! offset to add for compilationPowerups array
 		saveCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
-		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
 		saveInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array (Insertion)
 		saveInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array (Insertion)
+		loadCompilationPowerupsClrsCounter dw 0 ;! offset to add for compilationPowerupsClrs array
         loadInGamePowerupsCounter dw 0 ;! offset to add for inGamePowerups array (Loading)
         loadInGamePowerupsClrsCounter dw 0 ;! offset to add for inGamePowerupsClrs array (Loading)
 
@@ -308,6 +333,10 @@
         ;! stated in the doc that the car can pass through 1 obstacle (didn't mention limitid time)
         user1_obstacles_passed db 0
         user2_obstacles_passed db 0
+        user1_isColliding db 0
+        user2_isColliding db 0
+        isColliding db 0
+        user_obstacles_passed db 0
 
         user1FirstTimeHuh db 0 ;! 1 means first time, 0 means not first time
         user2FirstTimeHuh db 0 ;! 1 means first time, 0 means not first time
@@ -321,5 +350,6 @@
 		helper db 1H
 		random db 0
         resetTH db 0
+       
+    ;*----------------------------------------------------------------------------------------------------;            
         s db 0
-    ;-----------------------------------;

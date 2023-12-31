@@ -46,32 +46,32 @@ clearline macro
     int 10h
 endm cearline   
   
-shownum macro
-    local l1     
-    local l2
-     lea bx, s
-     mov cx,10
-     mov dx,0
-     l1:
-       mov dx,0
-       div cx     
-       add dl,30h
-       mov [bx],dl
-       inc bx 
-       cmp ax,0
-     jnz l1     
-     mov byte ptr [bx],'$' 
-     mov cx, bx
-     lea dx,s
-     sub cx,dx  
-     dec bx
-     l2:
-         mov ah,2
-         mov dl,[bx]
-         int 21h
-         dec bx
-     loop l2      
-endm shownum
+; shownum macro
+;     local l1     
+;     local l2
+;      lea bx, s
+;      mov cx,10
+;      mov dx,0
+;      l1:
+;        mov dx,0
+;        div cx     
+;        add dl,30h
+;        mov [bx],dl
+;        inc bx 
+;        cmp ax,0
+;      jnz l1     
+;      mov byte ptr [bx],'$' 
+;      mov cx, bx
+;      lea dx,s
+;      sub cx,dx  
+;      dec bx
+;      l2:
+;          mov ah,2
+;          mov dl,[bx]
+;          int 21h
+;          dec bx
+;      loop l2      
+; endm shownum
 overrideInt9 macro
     ; Disable interrupts
                  cli
@@ -148,7 +148,11 @@ inputAllFiles macro
         call inputFile
         pop  cx
         pop  dx
+<<<<<<< HEAD:Generation Boost/inc/macros.inc
         add  dx, FILE_NAME_LEN2
+=======
+        add  dx, 2*FILE_NAME_LEN
+>>>>>>> Phase-2:Generation Boost/macros.inc
         add  bp, BUFF_SIZE
         inc  cx
         cmp  cx, 8
@@ -184,6 +188,26 @@ intialCarPosition macro
     mov     al, user2_current_frame
     mov     user2_current_dir, al
 
+    cmp sender, 1
+    jz start_draw
+
+    mov     ax, user1_posX
+    xchg    ax, user2_posX
+    xchg    user1_posX, ax
+    
+    mov     ax, user1_posY
+    xchg    ax, user2_posY
+    xchg    user1_posY, ax
+
+    mov     al, user1_current_frame
+    xchg    al, user2_current_frame
+    xchg    user1_current_frame, al
+
+    mov     al, user1_current_dir
+    xchg    al, user2_current_dir
+    xchg    user1_current_dir, al
+
+    start_draw:
     ; save the background of first car
     setStartPixel user1_posX, user1_posY
     mov     si, offset user1_current_background
@@ -386,13 +410,10 @@ add_to_frame macro
     pop ax
 endm
 
-detectCollision macro current_frame, car, user_obstacles_passed
+detectCollision macro current_frame, car
     local collision
-    local Obscollision
-    local user2_collisionCount
-    local endCollision
-    local user2_collision
-    local endendCollision
+    local else
+    local done_obstacle
 
 
 
@@ -420,48 +441,31 @@ detectCollision macro current_frame, car, user_obstacles_passed
 
     ; check for collision with the obstacles
     push              di
-    cmp               user_obstacles_passed, 0
-    jg                Obscollision
     mov               al, current_frame
     mov               si, offset car
     mov               bl, OBSTACLE_COLOR
     call              handleCar
-    jmp endendCollision
 
-    Obscollision:
-    pusha 
-    mov al, car
-    cmp al, car1
-    jnz user2_collision
-    mov user1FirstTimeHuh, 0
-    user2_collision:
-    mov user2FirstTimeHuh, 0
-    popa
+    cmp               user_obstacles_passed, 0
+    jz                collision
 
+
+    cmp               bh, 1
+    jnz               else
+    cmp               isColliding, 0
+    jnz               done_obstacle
+    mov               isColliding, 1
+    jmp               done_obstacle
+
+    else:
+    cmp               isColliding, 1
+    jnz               done_obstacle
+    mov               user_obstacles_passed, 0
+
+    done_obstacle:
+
+    mov bh, 0
     collision:
-    pusha 
-    mov al, car
-    cmp al, car1
-
-    jnz user2_collisionCount
-    cmp user1FirstTimeHuh, 0
-    jnz endCollision
-    cmp user_obstacles_passed, 0
-    jz endCollision
-    dec user_obstacles_passed
-    jmp endCollision
-    user2_collisionCount:
-    cmp user2FirstTimeHuh, 0
-    jnz endCollision
-    cmp user_obstacles_passed, 0
-    jz endCollision
-    dec user_obstacles_passed
-    endCollision:
-    popa
-
-    endendCollision:
-    
-    
     pop               di
 endm detectCollision
 
@@ -567,7 +571,9 @@ carMainLoop macro
 	int 21H    ; puts the millseconds in dl
 	mov PrevSec, dh ; contain hundreds of seconds
 
-     again:      
+     again:   
+                call receiveCommand  
+                call sendCommand
                 mov ax,0
                 add al,IsUser1Win
                 add al,IsUser2Win
@@ -620,9 +626,31 @@ carMainLoop macro
                  call              setBackground
 
      ; check for collision
+                 call              carCollision
+                 cmp bp, 1
+                 jz                middle_jump111
+                 jmp               no_middle_jump111
+                 middle_jump111:
+                 jmp               far ptr user1_collision
+
+                 no_middle_jump111:
                  setStartPixel     user1_posX, user1_posY
                  mov               bh, 0
-                 detectCollision   user1_current_frame, car1, user1_obstacles_passed
+
+
+                 mov al, user1_isColliding
+                 mov isColliding, al
+                 mov al, user1_obstacles_passed
+                 mov user_obstacles_passed, al
+
+                 detectCollision   user1_current_frame, car1
+
+                 mov al, user_obstacles_passed
+                 mov user1_obstacles_passed, al
+                 mov al, isColliding
+                 mov user1_isColliding, al
+
+
                  cmp               bh, 1
 
                  jz                middle_jump11
@@ -630,17 +658,19 @@ carMainLoop macro
                  middle_jump11:
                  jmp               far ptr user1_collision
 
-                 no_middle_jump11:
+                 no_middle_jump11:     
                  detectPowerUp     user1_current_frame, car1, user1_stored_powerup
                  mov               user1_stored_powerup, cl
                  cmp               bh, 1
                  jz                user1_powerUp
+
                  jmp               user1_no_collision
 
 
     user1_powerUp:
                  getPowerUpColor   user1_stored_powerup
                  call              clearPowerUp
+
     user1_no_collision:
      ; save the background
                  setStartPixel     user1_posX, user1_posY
@@ -705,9 +735,31 @@ carMainLoop macro
                  call              setBackground
 
      ; check for collision
+                 call              carCollision
+                 cmp bp, 1
+                 jz                middle_jump222
+                 jmp               no_middle_jump222
+                 middle_jump222:
+                 jmp               far ptr user2_collision
+
+                 no_middle_jump222:
                  setStartPixel     user2_posX, user2_posY
                  mov               bh, 0
-                 detectCollision   user2_current_frame, car2, user2_obstacles_passed
+
+
+                 mov al, user2_isColliding
+                 mov isColliding, al
+                 mov al, user2_obstacles_passed
+                 mov user_obstacles_passed, al
+
+                 detectCollision   user2_current_frame, car2
+
+                 mov al, user_obstacles_passed
+                 mov user2_obstacles_passed, al
+                 mov al, isColliding
+                 mov user2_isColliding, al
+                 
+                 
                  cmp               bh, 1
                  jz                middle_jump22
                  jmp               no_middle_jump22
@@ -757,7 +809,8 @@ carMainLoop macro
                  mov               al, user2_current_frame
                  mov               bh, 1
                  call              handleCar
-     done_all:   
+     done_all: 
+
                 call Timer
                ; check for winner         
                     
@@ -774,6 +827,6 @@ carMainLoop macro
      kill:       
      ; restore the original int 9h
      mov killSignal, 0H
-                 restoreInt9
+     restoreInt9
 
 endm carMainLoop

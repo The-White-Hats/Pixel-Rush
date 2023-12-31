@@ -14,12 +14,42 @@ extrn user2name:BYTE
           include           ./inc/generate.inc
           include           ./inc/car.inc
           include           ./inc/draw.inc
+          include           Trans.inc
 
 GameMain PROC FAR
      ; initialize memory
           mov               ax , @DATA
           mov               ds , ax
+
+          call              InitailizeConnection
+
+     mov ah, 0
+     int 16h
+
+     ;?   check if this user if the sender if true make him generate and send the data 
+     ;?   else make him recieve the data from the other user
+
+          cmp al,'s'
+          jz GenerateTheTrack
+          jmp RecieveTrack 
+
+          GenerateTheTrack:
+          mov sender, 1
+
           call              GenerateTrackDirections
+          call              GenerateAllObsPowers  
+          call              TrackTransmission_Send
+          call              ObsPowerTransmission_Send
+
+          jmp LetsPlay
+
+          RecieveTrack:
+          mov sender, 0
+
+          call              TrackTransmission_Receive
+          call              ObsPowerTransmission_Receive
+
+          LetsPlay:
 
      ; clear the screen
           clear
@@ -52,19 +82,12 @@ GameMain PROC FAR
          
           call              DrawTrack
           call              FinalLine
-
-
      ; draw intial position of the player's cars
           intialCarPosition
 
      ; Main Loop
-          carMainLoop
+         carMainLoop
           
-          ;  pressF4Please:
-          ; MOV AH, 00H         ;get the pressed key scan code and put it in ah        
-		; INT 16H
-          ; cmp ah, 3EH         ;if the pressed key is F4 then jump to the label pressF4Please  
-          ; jnz pressF4Please
          call ResetAllTrackData
          ret
 GameMain ENDP
