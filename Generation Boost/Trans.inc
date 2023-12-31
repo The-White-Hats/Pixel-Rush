@@ -451,3 +451,137 @@ ObsPowerTransmission_Receive PROC
     popa
     ret
 ObsPowerTransmission_Receive ENDP
+
+sendCommand PROC
+    pusha
+    mov done_sending, 0
+    mov al, current_command
+    mov bl, al
+    send_again:
+    mov al, bl
+    call checksend
+    mov dx, 03f8h
+    cmp current_command, 0
+    jnz command_start
+    mov done_sending, 1
+    popa
+    ret
+    command_start:
+
+    up:
+    cmp al, 48h
+    jnz s_up_r
+    mov al, 11h
+    jmp s_done
+
+    s_up_r:
+    cmp al, 48h + 80h
+    jnz s_down
+    mov al, 11h + 80h
+    jmp s_done
+
+    s_down:
+    cmp al, 4dh
+    jnz s_down_r
+    mov al, 20h
+    jmp s_done
+
+    s_down_r:
+    cmp al, 4dh + 80h
+    jnz s_right
+    mov al, 20h + 80h
+    jmp s_done
+
+    s_right:
+    cmp al, 50h
+    jnz s_right_r
+    mov al, 1fh
+    jmp s_done
+
+    s_right_r:
+    cmp al, 50h + 80h
+    jnz s_left
+    mov al, 1fh + 80h
+    jmp s_done
+
+    s_left:
+    cmp al, 4bh
+    jnz s_left_r
+    mov al, 1eh
+    jmp s_done
+
+    s_left_r:
+    cmp al, 4bh + 80h
+    jnz s_powerUp
+    mov al, 1eh + 80h
+    jmp s_done
+
+    s_powerUp:
+    cmp al, 1dh
+    jnz s_done
+    mov al, 38h
+
+    s_done:
+    out dx, al
+
+    mov bh, al
+    call CheckRecieve
+    mov dx , 03F8H
+    in al , dx
+    cmp al, bh
+    jnz send_again
+    mov current_command, 0
+
+    mov done_sending, 1
+
+    popa
+    ret
+sendCommand ENDP
+
+receiveCommand PROC
+    pusha
+    mov dx , 3FDH		; Line Status Register
+    in al , dx 
+    AND al , 1
+    jnz continue_inReceive
+    popa
+    ret
+    continue_inReceive:
+    mov dx , 03F8H
+    in al , dx
+
+    call checksend
+    mov dx, 03f8h
+    out dx, al
+
+    cmp                 al, 3eh                                        ; pressing the f4 key
+    jz                  midKill2
+    
+    cmp                al, 38h                                       ; pressing the 'p' key for first player power up
+    jnz                continue_whatever2
+    mov                processed_power_holder, 1
+    mov                al, user2_stored_powerup
+    mov                processed_power, al
+    mov                user2_stored_powerup, 0
+    call               activatePowerUp
+    jmp                dontKill2          
+    
+
+    continue_whatever2:
+    lea                 si, user2_dir_arr
+    lea                 di, user2_dir_bools
+    call                CheckDir
+
+    jmp                 dontKill2
+
+    midKill2:     
+    mov                 al, 1H
+    mov                 killSignal, al                                ; Call DOS interrupt to exit
+
+    dontKill2:    
+    mov                 al, 20h                                       ; The non specific EOI (End Of Interrupt)
+    out                 20h, al
+        
+    popa
+    ret
+receiveCommand ENDP
