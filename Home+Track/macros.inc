@@ -148,7 +148,7 @@ inputAllFiles macro
         call inputFile
         pop  cx
         pop  dx
-        add  dx, FILE_NAME_LEN
+        add  dx, 2*FILE_NAME_LEN
         add  bp, BUFF_SIZE
         inc  cx
         cmp  cx, 8
