@@ -807,18 +807,6 @@ carMainLoop macro
                  call              handleCar
      done_all: 
 
-                 pusha
-                 mov cx, 7
-                 lea si, user1_dir_bools
-                 lea di, user2_dir_bools
-                 loop17:
-                 mov [si], 0
-                 mov [di], 0
-                 inc si
-                 inc di
-                 loop loop17
-                 popa
-
                 call Timer
                ; check for winner         
                     

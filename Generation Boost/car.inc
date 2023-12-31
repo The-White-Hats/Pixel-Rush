@@ -1,9 +1,6 @@
 my_isr PROC
                  in                  al, 60H                                       ; put the scan code of the pressed or unpressed
 
-                 cmp done_sending, 0
-                 jz dontKill
-
                  mov current_command, al
                  
                  cmp                 al, 3eh                                        ; pressing the f4 key

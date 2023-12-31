@@ -454,19 +454,15 @@ ObsPowerTransmission_Receive ENDP
 
 sendCommand PROC
     pusha
-    mov done_sending, 0
-    mov al, current_command
-    mov bl, al
-    send_again:
-    mov al, bl
     call checksend
     mov dx, 03f8h
     cmp current_command, 0
     jnz command_start
-    mov done_sending, 1
     popa
     ret
     command_start:
+    mov al, current_command
+    mov current_command, 0
 
     up:
     cmp al, 48h
@@ -524,16 +520,6 @@ sendCommand PROC
     s_done:
     out dx, al
 
-    mov bh, al
-    call CheckRecieve
-    mov dx , 03F8H
-    in al , dx
-    cmp al, bh
-    jnz send_again
-    mov current_command, 0
-
-    mov done_sending, 1
-
     popa
     ret
 sendCommand ENDP
@@ -549,10 +535,6 @@ receiveCommand PROC
     continue_inReceive:
     mov dx , 03F8H
     in al , dx
-
-    call checksend
-    mov dx, 03f8h
-    out dx, al
 
     cmp                 al, 3eh                                        ; pressing the f4 key
     jz                  midKill2
