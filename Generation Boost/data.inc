@@ -16,6 +16,11 @@
 
     START_CAR_SHIFT equ 8
     SPACE_BETWEEN   equ 10
+
+    sender db ?
+
+    current_command db 0
+    done_sending db 1
     ;------------Files-------------;
     carFile         db  'car10.bin', 0
                     db  'car20.bin', 0

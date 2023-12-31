@@ -28,24 +28,29 @@ GameMain PROC FAR
 
      ;?   check if this user if the sender if true make him generate and send the data 
      ;?   else make him recieve the data from the other user
+
           cmp al,'s'
           jz GenerateTheTrack
           jmp RecieveTrack 
 
           GenerateTheTrack:
+          mov sender, 1
 
           call              GenerateTrackDirections
           call              GenerateAllObsPowers  
           call              TrackTransmission_Send
           call              ObsPowerTransmission_Send
+
           jmp LetsPlay
 
           RecieveTrack:
-          
+          mov sender, 0
+
           call              TrackTransmission_Receive
           call              ObsPowerTransmission_Receive
+
           LetsPlay:
-          
+
      ; clear the screen
           clear
 

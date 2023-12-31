@@ -1,23 +1,12 @@
 my_isr PROC
                  in                  al, 60H                                       ; put the scan code of the pressed or unpressed
 
+                 mov current_command, al
+                 
                  cmp                 al, 3eh                                        ; pressing the f4 key
                  jz                  midKill
-
-                 
-                 cmp                 al, 10h                                       ; pressing the 'q' key for second player power up
-                 jnz                check_user1
-                 mov                processed_power_holder, 2
-                 mov                al, user2_stored_powerup
-                 mov                processed_power, al
-                 mov                user2_stored_powerup, 0
-                 call               activatePowerUp
-                 jmp                dontKill
-
-                 
-                 
-    check_user1:  
-                 cmp                al, 19h                                       ; pressing the 'p' key for first player power up
+                  
+                 cmp                al, 1dh                                       ; pressing the 'p' key for first player power up
                  jnz                continue_whatever
                  mov                processed_power_holder, 1
                  mov                al, user1_stored_powerup
@@ -30,10 +19,6 @@ my_isr PROC
     continue_whatever:
                  lea                 si, user1_dir_arr
 	             lea                 di, user1_dir_bools
-	             call                CheckDir
-
-	             lea                 si, user2_dir_arr
-	             lea                 di, user2_dir_bools
 	             call                CheckDir
 
                  jmp                 dontKill

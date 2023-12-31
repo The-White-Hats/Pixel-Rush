@@ -184,6 +184,26 @@ intialCarPosition macro
     mov     al, user2_current_frame
     mov     user2_current_dir, al
 
+    cmp sender, 1
+    jz start_draw
+
+    mov     ax, user1_posX
+    xchg    ax, user2_posX
+    xchg    user1_posX, ax
+    
+    mov     ax, user1_posY
+    xchg    ax, user2_posY
+    xchg    user1_posY, ax
+
+    mov     al, user1_current_frame
+    xchg    al, user2_current_frame
+    xchg    user1_current_frame, al
+
+    mov     al, user1_current_dir
+    xchg    al, user2_current_dir
+    xchg    user1_current_dir, al
+
+    start_draw:
     ; save the background of first car
     setStartPixel user1_posX, user1_posY
     mov     si, offset user1_current_background
@@ -426,13 +446,6 @@ detectCollision macro current_frame, car
     jz                collision
 
 
-    ; if (bh)
-    ;     if (!isColliding)
-    ;         mov isColliding, 1
-    ; else
-    ;     if (isColliding)
-    ;         mov user_obstacles_passed, 0
-
     cmp               bh, 1
     jnz               else
     cmp               isColliding, 0
@@ -554,7 +567,9 @@ carMainLoop macro
 	int 21H    ; puts the millseconds in dl
 	mov PrevSec, dh ; contain hundreds of seconds
 
-     again:      
+     again:   
+                call receiveCommand  
+                call sendCommand
                 mov ax,0
                 add al,IsUser1Win
                 add al,IsUser2Win
@@ -790,7 +805,8 @@ carMainLoop macro
                  mov               al, user2_current_frame
                  mov               bh, 1
                  call              handleCar
-     done_all:   
+     done_all: 
+
                 call Timer
                ; check for winner         
                     
@@ -807,6 +823,6 @@ carMainLoop macro
      kill:       
      ; restore the original int 9h
      mov killSignal, 0H
-                 restoreInt9
+     restoreInt9
 
 endm carMainLoop
