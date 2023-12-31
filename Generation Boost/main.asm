@@ -23,10 +23,12 @@ GameMain PROC FAR
 
           call              InitailizeConnection
 
+     mov ah, 0
+     int 16h
 
      ;?   check if this user if the sender if true make him generate and send the data 
      ;?   else make him recieve the data from the other user
-          cmp isSender,1
+          cmp al,'s'
           jz GenerateTheTrack
           jmp RecieveTrack 
 

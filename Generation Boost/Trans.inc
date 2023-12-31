@@ -156,7 +156,6 @@ TrackTransmission_Send ENDP
 
 TrackTransmission_Receive PROC
     pusha
-
         waitfortrack:
          call CheckRecieve
             mov dx , 03F8H
