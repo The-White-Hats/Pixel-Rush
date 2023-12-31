@@ -124,17 +124,17 @@ GetAction PROC
 		mov dx , 3FDH		; Line Status Register
 		in al , dx 
 		AND al , 1
-		JZ checkStartUpchecksend
+		JZ checkStartUpchecksend1
 		; get what I recieved
 		cmp cl, 0
-		jz checkStartUpchecksend
+		jz checkStartUpchecksend1
 		mov dx , 03F8H
 		in al , dx 
 		mov [di] , al
 		inc di
 		dec cl
 
-		checkStartUpchecksend:
+		checkStartUpchecksend1:
 		;Check that Transmitter Holding Register is Empty
 		mov dx , 3FDH		; Line Status Register
 		In al , dx 			;Read Line Status

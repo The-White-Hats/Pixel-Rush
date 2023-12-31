@@ -1,15 +1,17 @@
 .286
 public chatRoom
+extrn user1name:BYTE
+extrn user2name:BYTE
 .model small
 .stack 64
 .data
 value db 0
 sendval db 0
 senX db 0
-senY db 0
+senY db 1
 senP db 0
 RecX db 40d
-RecY db 0
+RecY db 1
 recP db 0
 
 pageScroll equ 12
@@ -22,7 +24,7 @@ pusha
 mov ah, 6d       ; function 6
    mov al,1d        ; scroll by 1 line    
    mov bh, 7h       ; normal video attribute ; the color of the background and forground       
-   mov ch,0       ; upper left Y
+   mov ch,1       ; upper left Y
    mov cl,40d        ; upper left X
    mov dh,24d    ; lower right Y
    mov dl,79d      ; lower right X 
@@ -38,7 +40,7 @@ scrollS proc
 mov ah, 6d          ; function 6
    mov al, 1D       ; scroll by 1 line    
    mov bh, 7h       ; normal video attribute ; the color of the background and forground         
-   mov ch,0   	    ; upper left Y
+   mov ch,1   	    ; upper left Y
    mov cl,0         ; upper left X
    mov dh,24        ; lower right Y
    mov dl,39        ; lower right X 
@@ -84,6 +86,14 @@ chatRoom proc far
 	; 11:8bits
 	out dx,al
 
+	; print the player one name
+	lea dx, user1name
+	mov ah, 09h
+	int 21h
+	MoveCursor 40, 0, 0
+	lea dx, user1name
+	mov ah, 09h
+	int 21h
 
 
 	;--------------------------------------------------------------recieve------------------------------------;
