@@ -85,38 +85,33 @@ WinnerScreen ENDP
 
 GetAction PROC
     pusha
-	mov sendValue, ';'
-	checkStartUp:
-		;Check that Data Ready ; check that I recieved something
-		mov dx , 3FDH		; Line Status Register
-		in al , dx 
-		AND al , 1
-		JZ checkStartUpchecksend
-		; get what I recieved
-		mov dx , 03F8H
-		in al , dx 
-		cmp al, ";"
-		jnz sendRecNames
-		mov sendValue, "-"
+	; mov sendValue, ';'
+	; checkStartUp:
+	; 	;Check that Data Ready ; check that I recieved something
+	; 	mov dx , 3FDH		; Line Status Register
+	; 	in al , dx 
+	; 	AND al , 1
+	; 	JZ checkStartUpchecksend
+	; 	; get what I recieved
+	; 	mov dx , 03F8H
+	; 	in al , dx 
+	; 	cmp al, ";"
+	; 	jnz sendRecNames
+	; 	mov sendValue, "-"
 
-		checkStartUpchecksend:
-		;Check that Transmitter Holding Register is Empty
-		mov dx , 3FDH		; Line Status Register
-		In al , dx 			;Read Line Status
-		AND al , 00100000b
-		jz checkStartUp
+	; 	checkStartUpchecksend:
+	; 	;Check that Transmitter Holding Register is Empty
+	; 	mov dx , 3FDH		; Line Status Register
+	; 	In al , dx 			;Read Line Status
+	; 	AND al , 00100000b
+	; 	jz checkStartUp
 
-		mov al, sendvalue
-		mov dx, 03f8h
-		out dx, al
-		cmp al, '-'
-		jz sendRecNames
-	jmp checkStartUp
-
-	; mov dx, 3fdh
-	; chk: in al, dx
-	; and al, 1
-	; jz chk
+	; 	mov al, sendvalue
+	; 	mov dx, 03f8h
+	; 	out dx, al
+	; 	cmp al, '-'
+	; 	jz sendRecNames
+	; jmp checkStartUp
 	
 	sendRecNames:
 	mov ch, 16
@@ -125,6 +120,22 @@ GetAction PROC
 	lea si, user1name
 	lea di, user2name
 
+	mov dx , 3FDH		; Line Status Register
+	in al , dx 
+	AND al , 1
+	jnz rec
+
+	mov al, [si]
+	mov dx, 03f8h
+	out dx, al
+	inc si
+	dec ch
+
+	mov dx, 3fdh
+	chk: in al, dx
+	and al, 1
+	jz chk
+	jmp rec
 
 	recLoop:
 		; test ch, cl
@@ -139,6 +150,7 @@ GetAction PROC
 		AND al , 1
 		JZ checkStartUpchecksend1
 		; get what I recieved
+		rec:
 		cmp cl, 0
 		jz checkStartUpchecksend1
 		mov dx , 03F8H
