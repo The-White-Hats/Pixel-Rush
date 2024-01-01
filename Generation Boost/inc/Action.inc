@@ -354,6 +354,9 @@ GetAction PROC
 			showColoredMsg none, TEXT_COLOR, nonesize, start_Y_ofpress, start_X_ofpress 
 			
 			finish: 
+			 mov sendvalue,0
+			 mov receivedvalue,0
+			 mov agreedvalue,0
 			jmp GetAction_again  ;jmp to again listen again for the next instruction
         
 			exit:
