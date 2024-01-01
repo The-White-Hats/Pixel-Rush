@@ -355,7 +355,7 @@ GetAction PROC
 			
 			finish: 
 			;  mov sendvalue,0
-			;  mov recievedvalue,0
+			  mov recievedvalue,0
 			  mov agreedvalue,0
 			jmp GetAction_again  ;jmp to again listen again for the next instruction
         

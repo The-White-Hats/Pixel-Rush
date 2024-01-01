@@ -90,11 +90,12 @@ chatRoom proc far
 	lea dx, user1name
 	mov ah, 09h
 	int 21h
+	showchar ':'
 	MoveCursor 40, 0, 0
 	lea dx, user2name
 	mov ah, 09h
 	int 21h
-
+    showchar ':'
 
 	;--------------------------------------------------------------recieve------------------------------------;
 	checkreceive:
