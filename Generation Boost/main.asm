@@ -15,7 +15,7 @@ public sender
           include           ./inc/generate.inc
           include           ./inc/car.inc
           include           ./inc/draw.inc
-          include           Trans.inc
+          include           ./inc/Trans.inc
 
 GameMain PROC FAR
      ; initialize memory
