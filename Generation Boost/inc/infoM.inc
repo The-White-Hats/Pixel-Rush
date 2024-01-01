@@ -9,20 +9,8 @@ GetPlayersNames MACRO
     MoveCursor nameInputX, nameInputY
     getSizedStrM user1name, 15d
     checkFirstChar user1name, nameWarning
-    popa
-
-    ; second player
-    pusha
-    readImageM secondPN
-    draw 220, 305, 199, 15                ; draw second player input msg
-    paintAreaM 212d, 325d, 216d, 50d, 0H  ; paint input area in black
-
-    MoveCursor nameInputX, nameInputY
-    getSizedStrM user2name, 15d
-    checkFirstChar user2name, nameWarning
 
     putWallPaperM 7, 2, 3*bgSize, 6*bgSize  ; recover the area with the wallpaper
-
     paintAreaM 0, 430d, 640d, 50d, 0H
     popa
 ENDM
@@ -34,6 +22,7 @@ showmes macro str
 endm showmes 
 
 showColoredMsg MACRO str, color, strSize, row, column
+pusha
     lea bp, str
     mov cx, strSize
 
@@ -45,6 +34,7 @@ showColoredMsg MACRO str, color, strSize, row, column
     mov dh, row ; row
     mov dl, column ; column
     int 10h
+popa
 ENDM showColoredMsg
 
 showchar macro char

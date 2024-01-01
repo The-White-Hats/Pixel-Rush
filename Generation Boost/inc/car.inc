@@ -1,12 +1,15 @@
 my_isr PROC
-                 in                  al, 60H                                       ; put the scan code of the pressed or unpressed
-
-                 mov current_command, al
+pusha
+pushf
+                 in                 al, 60H                                       ; put the scan code of the pressed or unpressed
                  
-                 cmp                 al, 3eh                                        ; pressing the f4 key
-                 jz                  midKill
+                 cmp sending, 1
+                 jz dontKill
+
+                 cmp                al, 3eh                                        ; pressing the f4 key
+                 jz                 midKill
                   
-                 cmp                al, 1dh                                       ; pressing the 'p' key for first player power up
+                 cmp                al, 1dh                                       ; pressing the 'ctrl' key for first player power up
                  jnz                continue_whatever
                  mov                processed_power_holder, 1
                  mov                al, user1_stored_powerup
@@ -30,6 +33,8 @@ my_isr PROC
     dontKill:    
                  mov                 al, 20h                                       ; The non specific EOI (End Of Interrupt)
                  out                 20h, al
+popf
+popa
                  iret
 my_isr endp
 
@@ -50,7 +55,7 @@ inputFile PROC
                  pop dx
 
     ; input file for second user
-                 add  dx, FILE_NAME_LEN
+                 add  dx, FILE_NAME_LEN2
                  openFile
                  jc                  error
 
@@ -210,6 +215,7 @@ ShowInGamePowerUps ENDP
     ;-----------------------    
 
 activatePowerUp PROC
+       call             sendPower
     ; check for power up type
         cmp processed_power, 0  
         jz activatePowerUp_end

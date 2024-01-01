@@ -19,25 +19,26 @@
 
     sender db ?
 
-    current_command db 0
-    done_sending db 1
+    sending db 0
+    receiving_done db 0
     ;------------Files-------------;
-    carFile         db  'car10.bin', 0
-                    db  'car20.bin', 0
-                    db  'car11.bin', 0
-                    db  'car21.bin', 0
-                    db  'car12.bin', 0
-                    db  'car22.bin', 0
-                    db  'car13.bin', 0
-                    db  'car23.bin', 0
-                    db  'car14.bin', 0
-                    db  'car24.bin', 0
-                    db  'car15.bin', 0
-                    db  'car25.bin', 0
-                    db  'car16.bin', 0
-                    db  'car26.bin', 0
-                    db  'car17.bin', 0
-                    db  'car27.bin', 0
+    carFile         db  '/i/car10.bin', 0
+                    db  '/i/car20.bin', 0
+                    db  '/i/car11.bin', 0
+                    db  '/i/car21.bin', 0
+                    db  '/i/car12.bin', 0
+                    db  '/i/car22.bin', 0
+                    db  '/i/car13.bin', 0
+                    db  '/i/car23.bin', 0
+                    db  '/i/car14.bin', 0
+                    db  '/i/car24.bin', 0
+                    db  '/i/car15.bin', 0
+                    db  '/i/car25.bin', 0
+                    db  '/i/car16.bin', 0
+                    db  '/i/car26.bin', 0
+                    db  '/i/car17.bin', 0
+                    db  '/i/car27.bin', 0
+    FILE_NAME_LEN2  equ ($-carFile)/16
 
 
     errorMsg        db  "Something went wrong with files !!", 10, "$"
@@ -56,8 +57,8 @@
     ;-----------User's Data---------;
     user1_posX      dw  ?
     user1_posY      dw  ?
-    user1_dir_bools db  7 dup(0)                ; up, right, down, left
-                    db  0                       ; margin
+    dt ?
+    user1_dir_bools db  8 dup(0)                ; up, right, down, left
     user1_dir_arr   db  48h, 4dh, 50H, 4BH
     user1_prev_posX dw  ?
     user1_prev_posY dw  ?
@@ -72,8 +73,8 @@
 
     user2_posX      dw  ? 
 	user2_posY      dw  ?
-	user2_dir_bools db  7 dup(0)          	    ; up, right, down, left
-	                dw  0                 	    ; margin
+    dt ?
+	user2_dir_bools db  8 dup(0)          	    ; up, right, down, left
 	user2_dir_arr   db  11h, 20h, 1fH, 1eH
 	user2_prev_posX dw  ?
 	user2_prev_posY dw  ?

@@ -9,7 +9,6 @@
 ;   GetStr str
 ;   TextMode
 ;   GraphicsMode
-;   UltraGraphicsMode
 ;   RemoveBlinking
 ;   PaintScreen Color, LeftTopCorner, RightBottomCorner ; it can be used to clear a certain part of the screan
 ;   MoveCursorUp times
@@ -45,28 +44,27 @@ ENDM
 
 ; This proc print a number with variable lenght up to 65535
 PrintVarLenNum MACRO num
- local l1
- local l2
   MOv AX, num
   MOv DX, 0
   MOV BX, 10
   MOv CX, 0
-  L1:
+  .L1:
   DIV BX
   PUSH DX
   MOV DX, 0
   INC CX
   CMP AX, 0
-  JNE L1
+  JNE .L1
   MOV AH, 2
-  L2:
+  .L2:
   POP DX
   ADD DX, 48
   INT 21H
-  LOOP L2
+  LOOP .L2
 ENDM
 
-MoveCursor MACRO x, y
+MoveCursor MACRO x, y, p
+  mov bh, p
   mov dl, x
   mov dh, y
   mov ah, 2H
@@ -104,12 +102,6 @@ GraphicsMode MACRO
   mov ah, 0       ; AH=0 is the function for setting video mode
   mov al, 13H     ; AL=13H sets 320x200 video graphics mode
   int 10h         ; BIOS interrupt for video services
-ENDM
-
-UltraGraphicsMode MACRO 
-  mov AX, 4F02h
-  mov BX, 0101h  ; 640x400x256
-  int 10h        ; BIOS interrupt for video services
 ENDM
 
 RemoveBlinking MACRO
@@ -165,14 +157,13 @@ MoveCursorDown MACRO times
 ENDM
 
 MoveCursorLeft MACRO times
-  local repeat
   mov cx, times  
-  repeat:
+  .repeat:
   mov ah,3h
   mov bh,0h
   int 10h
   mov ah,02h
   dec dl
   int 10h
-  loop repeat
+  loop .repeat
 ENDM 

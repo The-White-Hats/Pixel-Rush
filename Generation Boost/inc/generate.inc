@@ -2251,6 +2251,7 @@ DrawPower ENDP
 	
 ;*--------------------------------------------display string  in si and with color 'stringcolor'------------------------------------------	
 showColoredMsg MACRO str, color, strSize, row, column
+pusha
     lea bp, str
     mov cx, strSize
 
@@ -2262,6 +2263,7 @@ showColoredMsg MACRO str, color, strSize, row, column
     mov dh, row ; row
     mov dl, column ; column
     int 10h
+popa
 ENDM showColoredMsg
 
 DisplayString PROC
@@ -2315,7 +2317,7 @@ DrawScoreBoard PROC
 		;*1.the row can write up to 40 characters one character takes 8 pixels
 		;*2.so the screen is 40*24 char  (24 by testing)
 		mov ah,2           
-		mov dl,30 
+		mov dl,29 
 		mov dh,23 
 		int 10h
 
@@ -2478,10 +2480,13 @@ DrawScore PROC
 	mov ax,0
 	mov al,user2score
 	call shownum
+	mov ah,02h
+    mov dl,'%'
+    int 21h  
 	popa
 
 	mov ah,2           
-	mov dl,36  ;*1.the row can write up to 40 characters one character takes 8 pixels
+	mov dl,35  ;*1.the row can write up to 40 characters one character takes 8 pixels
 	mov dh,24 ;*2.so the screen is 40*24 char  (24 by testing)
 	int 10h 
 
@@ -2489,6 +2494,9 @@ DrawScore PROC
 	mov ax,0
 	mov al,user1score
 	call shownum
+	mov ah,02h
+    mov dl,'%'
+    int 21h  
 	popa
 	ret
 DrawScore ENDP
@@ -2506,28 +2514,28 @@ UpdatePowerUps PROC
 
 	cmp user1_stored_powerup,1
 	jnz checkuser1_2
-	showColoredMsg Speedname,user1theme,5,23,24
+	showColoredMsg Speedname,user1theme,5,23,23
 	jmp gotouser2
 checkuser1_2:
 
 	cmp user1_stored_powerup,2
 	jnz checkuser1_3
-	showColoredMsg Slowname,user1theme,5,23,24
+	showColoredMsg Slowname,user1theme,5,23,23
 	jmp gotouser2
 checkuser1_3:
 
 	cmp user1_stored_powerup,3
 	jnz checkuser1_4
-	showColoredMsg Obstcaldraw,user1theme,5,23,24
+	showColoredMsg Obstcaldraw,user1theme,5,23,23
 	jmp gotouser2
 checkuser1_4:
 	cmp user1_stored_powerup,4
 	jnz deletepowerupname
-	showColoredMsg Obstcalpass,user1theme,5,23,24
+	showColoredMsg Obstcalpass,user1theme,5,23,23
 jmp gotouser2
 deletepowerupname:
 
-	showColoredMsg Delete_Powerup,user1theme,5,23,24
+	showColoredMsg Delete_Powerup,user1theme,5,23,23
 
    gotouser2:
 

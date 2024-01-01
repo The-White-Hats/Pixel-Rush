@@ -1,8 +1,3 @@
-nameWarning db "Invalid first letter",'$'
-warningX equ 40 - ($ - nameWarning - 1)/2
-warningY equ 22
-warningSize equ $ - 1 - nameWarning
-
 user1name db 16 dup('$')
 name1Size db ?
 
@@ -10,6 +5,12 @@ points1 db 0
 
 user2name db 16 dup('$')
 name2Size db ?
+
+nameWarning db "Invalid first letter",'$'
+warningX equ 40 - ($ - nameWarning - 1)/2
+warningY equ 22
+warningSize equ $ - 1 - nameWarning
+
 
 username1Size dw 0
 username2Size dw 0
@@ -37,3 +38,13 @@ lineHeight equ 16D
 
 goaltime db ?
 waittime db 2
+
+f1SC equ 3bh
+f2SC equ 3ch
+
+f1RecievedMsg db "sent you a chat invitation, to accept plz press F1        $"
+f1RecievedMsgSize equ $-f1RecievedMsg-1
+f2RecievedMsg db "sent you a game invitation, to accept plz press F2        $"
+f2RecievedMsgSize equ $-f2RecievedMsg-1
+
+maloshlazma db 0

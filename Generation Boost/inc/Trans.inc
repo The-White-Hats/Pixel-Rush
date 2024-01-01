@@ -456,61 +456,6 @@ sendCommand PROC
     pusha
     call checksend
     mov dx, 03f8h
-    cmp current_command, 0
-    jnz command_start
-    popa
-    ret
-    command_start:
-    mov al, current_command
-    mov current_command, 0
-
-    up:
-    cmp al, 48h
-    jnz s_up_r
-    mov al, 11h
-    jmp s_done
-
-    s_up_r:
-    cmp al, 48h + 80h
-    jnz s_down
-    mov al, 11h + 80h
-    jmp s_done
-
-    s_down:
-    cmp al, 4dh
-    jnz s_down_r
-    mov al, 20h
-    jmp s_done
-
-    s_down_r:
-    cmp al, 4dh + 80h
-    jnz s_right
-    mov al, 20h + 80h
-    jmp s_done
-
-    s_right:
-    cmp al, 50h
-    jnz s_right_r
-    mov al, 1fh
-    jmp s_done
-
-    s_right_r:
-    cmp al, 50h + 80h
-    jnz s_left
-    mov al, 1fh + 80h
-    jmp s_done
-
-    s_left:
-    cmp al, 4bh
-    jnz s_left_r
-    mov al, 1eh
-    jmp s_done
-
-    s_left_r:
-    cmp al, 4bh + 80h
-    jnz s_powerUp
-    mov al, 1eh + 80h
-    jmp s_done
 
     s_powerUp:
     cmp al, 1dh
@@ -528,7 +473,7 @@ receiveCommand PROC
     pusha
     mov dx , 3FDH		; Line Status Register
     in al , dx 
-    AND al , 1
+    and al , 1
     jnz continue_inReceive
     popa
     ret
@@ -539,31 +484,190 @@ receiveCommand PROC
     cmp                 al, 3eh                                        ; pressing the f4 key
     jz                  midKill2
     
-    cmp                al, 38h                                       ; pressing the 'p' key for first player power up
-    jnz                continue_whatever2
-    mov                processed_power_holder, 1
+    cmp                al, 38h
+    jnz                dontKill2
+    mov                processed_power_holder, 2
     mov                al, user2_stored_powerup
     mov                processed_power, al
     mov                user2_stored_powerup, 0
     call               activatePowerUp
-    jmp                dontKill2          
-    
-
-    continue_whatever2:
-    lea                 si, user2_dir_arr
-    lea                 di, user2_dir_bools
-    call                CheckDir
-
-    jmp                 dontKill2
+    jmp                dontKill2
 
     midKill2:     
     mov                 al, 1H
     mov                 killSignal, al                                ; Call DOS interrupt to exit
 
-    dontKill2:    
-    mov                 al, 20h                                       ; The non specific EOI (End Of Interrupt)
-    out                 20h, al
+    dontKill2:
         
     popa
     ret
 receiveCommand ENDP
+
+sendMove PROC
+    pusha
+
+    mov sending, 1
+
+   call checksend
+
+    s_up:
+    mov al, 0
+    cmp user1_dir_bools[0], 1
+    jnz s_right
+    or al, 1b
+    s_right:
+    cmp user1_dir_bools[2], 1
+    jnz s_down
+    or al, 10b
+    s_down:
+    cmp user1_dir_bools[4], 1
+    jnz s_left
+    or al, 100b
+    s_left:
+    cmp user1_dir_bools[6], 1
+    jnz sm_done
+    or al, 1000b
+
+    sm_done:
+    mov dx, 03f8h
+    out dx, al
+
+    done_sr:
+    mov sending, 0
+    popa
+    ret
+sendMove ENDP
+
+receiveMove PROC
+    pusha
+    mov dx , 3FDH		; Line Status Register
+    in al , dx 
+    AND al , 1
+    jnz continue_inReceive2
+    popa
+    ret
+    continue_inReceive2:
+    mov dx , 03F8H
+    in al , dx     
+    cmp al,3eh   
+    jnz check_nxet
+       mov killSignal, 1H
+      popa
+    ret
+    check_nxet:
+    cmp  al,'^'
+    jnz r_up
+     ;clear
+            mov ax,0
+            mov                processed_power_holder, 2
+            mov                al, user2_stored_powerup
+            ;call shownum
+            mov                processed_power, al
+            mov                user2_stored_powerup, 0
+            cmp processed_power, 0  
+                jz activatePowerUp_end1
+                cmp processed_power, 1
+                jz activatePowerUp_speedUp1
+                cmp processed_power, 2
+                jz activatePowerUp_speedDown1
+                cmp processed_power, 3
+                jz activatePowerUp_dropObs1
+                cmp processed_power, 4
+                jz activatePowerUp_passObs1
+                jmp activatePowerUp_end1
+
+            activatePowerUp_speedUp1:
+                call SpeedUp
+                jmp activatePowerUp_end1
+            activatePowerUp_speedDown1:
+                call SpeedDown
+                jmp activatePowerUp_end1
+            activatePowerUp_dropObs1:
+                call DropObs
+                jmp activatePowerUp_end1
+            activatePowerUp_passObs1:
+                call PassObs
+                jmp activatePowerUp_end1
+            activatePowerUp_end1:
+                mov processed_power, 0
+                mov processed_power_holder, 0
+            popa
+            ret
+    r_up:
+    push ax
+    mov user2_dir_bools[0], 0
+    and al, 1b
+    jz r_right
+    mov user2_dir_bools[0], 1
+
+    r_right:
+    pop ax
+    push ax
+    mov user2_dir_bools[2], 0
+    and al, 10b
+    jz r_down
+    mov user2_dir_bools[2], 1
+
+    r_down:
+    pop ax
+    push ax
+    mov user2_dir_bools[4], 0
+    and al, 100b
+    jz r_left
+    mov user2_dir_bools[4], 1
+
+    r_left:
+    pop ax
+    push ax
+    mov user2_dir_bools[6], 0
+    and al, 1000b
+    jz r_done
+    mov user2_dir_bools[6], 1
+
+    r_done:
+    pop ax
+        
+    popa
+    ret
+receiveMove ENDP
+
+sendPower PROC
+    pusha
+
+    call checksend
+    mov al, '^'
+    mov dx, 03f8h
+    out dx, al
+
+
+    popa
+    ret 
+sendPower ENDP
+
+receivePower PROC
+    push ax
+    push dx
+
+    mov dx , 3FDH		; Line Status Register
+    in al , dx 
+    AND al , 1
+    jnz continue_inReceive3
+      clear
+    pop dx
+    pop ax
+    ret
+
+    continue_inReceive3:
+    mov dx , 03F8H
+    in al , dx    
+    cmp al, '^'
+    jnz receivePower_notPower
+       clear
+   
+
+    receivePower_notPower:
+    pop dx
+    pop ax
+
+    ret 
+receivePower ENDP

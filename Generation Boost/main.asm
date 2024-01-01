@@ -1,20 +1,21 @@
-include macros.inc
+include ./inc/macros.inc
 .286
 public GameMain
 public IsUser1Win,IsUser2Win,user1score,user2score
 extrn user1name:BYTE
 extrn user2name:BYTE
+public sender
 .MODEL SMALL
 .STACK 128
 .DATA
-          include data.inc
-          include logoData.inc
+          include ./inc/data.inc
+          include ./inc/logoData.inc
 
 .CODE
-          include           generate.inc
-          include           car.inc
-          include           draw.inc
-          include           Trans.inc
+          include           ./inc/generate.inc
+          include           ./inc/car.inc
+          include           ./inc/draw.inc
+          include           ./inc/Trans.inc
 
 GameMain PROC FAR
      ; initialize memory
@@ -23,19 +24,15 @@ GameMain PROC FAR
 
           call              InitailizeConnection
 
-     mov ah, 0
-     int 16h
 
      ;?   check if this user if the sender if true make him generate and send the data 
      ;?   else make him recieve the data from the other user
 
-          cmp al,'s'
+          cmp sender,1
           jz GenerateTheTrack
           jmp RecieveTrack 
 
           GenerateTheTrack:
-          mov sender, 1
-
           call              GenerateTrackDirections
           call              GenerateAllObsPowers  
           call              TrackTransmission_Send
@@ -44,7 +41,6 @@ GameMain PROC FAR
           jmp LetsPlay
 
           RecieveTrack:
-          mov sender, 0
 
           call              TrackTransmission_Receive
           call              ObsPowerTransmission_Receive
