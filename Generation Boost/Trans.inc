@@ -548,7 +548,13 @@ receiveMove PROC
     ret
     continue_inReceive2:
     mov dx , 03F8H
-    in al , dx        
+    in al , dx     
+    cmp al,3eh   
+    jnz check_nxet
+       mov killSignal, 1H
+      popa
+    ret
+    check_nxet:
     cmp  al,'^'
     jnz r_up
      ;clear

@@ -826,14 +826,20 @@ carMainLoop macro
                 call CheckForGameFinish    
                 
                 skipallofthis:
+
+                call receiveMove
+                
                 cmp               killSignal, 0H
                 jnz               kill
-
                
-
+            
                 jmp               again
 
-     kill:       
+     kill:  
+     call checksend 
+     mov al,3eh
+     mov dx, 03f8h
+     out dx, al    
      ; restore the original int 9h
      mov killSignal, 0H
      restoreInt9
