@@ -103,7 +103,7 @@ chatRoom proc far
 		mov dx , 3FDH		; Line Status Register
 		in al , dx 
 		AND al , 1
-		JZ checksend
+		JZ CheckSendBridge
 
 	;If Ready read the VALUE in Receive data register
 		mov dx , 03F8H
@@ -121,13 +121,33 @@ chatRoom proc far
 		JMP NEXT
 		; check if it was esc
 		notEnterRe:
-		cmp al, 27d
+		cmp al, 3dh
 		jz midfinal
-
+		;check if it was backspace
+		cmp al, 8H
+		jnz notBackspace3
+		cmp recx, 40d
+		jz dontDexRecx
+		pusha
+		MoveCursor RecX, RecY, recp		
+		popa
+		dec recX
+		dec recX
+		showchar 8h
+		dontDexRecx:
+		showchar 0
+		showchar 8h
+		jmp skipShowingTheBAckspace2
+		notBackspace3:
 		
-		MoveCursor RecX, RecY, recp
+		jmp dontCheckRecBridge
+		CheckRecBridge: jmp checkreceive
+		CheckSendBridge: jmp checksend
+		dontCheckRecBridge:
 
+		MoveCursor RecX, RecY, recp
 		ShowChar VALUE
+		skipShowingTheBAckspace2:
 		inc RecX
 		cmp RecX, 79d
 		jnz NEXT
@@ -139,6 +159,10 @@ chatRoom proc far
 		call scrollR
 		dontscrollr2:
 
+		jmp notmid
+		midfinal: jmp endfinal
+		notmid:
+
 	;-------------------sender-------------------------;
 
 	checksend:
@@ -146,15 +170,11 @@ chatRoom proc far
 	mov dx , 3FDH		; Line Status Register
 	In al , dx 			;Read Line Status
 	AND al , 00100000b
-	jz checkreceive
+	jz CheckRecBridge
 
 	mov ah,1
 	int 16h
-	jz checkreceive
-
-	jmp notmid
-	midfinal: jmp endfinal
-	notmid:
+	jz CheckRecBridge
 
 	mov ah,0
 	int 16h
@@ -174,18 +194,33 @@ chatRoom proc far
 
 	; check if it was esc
 	notEnter:
-	cmp value,27d
+	cmp ah, 3dH
 	jnz notEsc
-	mov sendval, 27d
+	mov sendval, 3dh
 	jmp sendtobuffer
 
 	notEsc:
+	; check if it was backspace
+	cmp al, 8H
+	jnz notBackspace2
+	cmp senx, 0
+	jz dontDexSenx
+	dec senX
+	dec senX
+	showchar 8h
+	dontDexSenx:
+	showchar 0
+	showchar 8h
+	mov sendval, al
+	jmp skipShowingTheBAckspace3
+	notBackspace2:
 	mov sendval, al
 
 	; print the char of the sender
 	MoveCursor senX, senY, senP
 	ShowChar sendval
 	; deal with the new cursor of the sender
+	skipShowingTheBAckspace3:
 	inc senX
 	cmp senX, 39d
 	jnz NEXT2
@@ -200,7 +235,7 @@ chatRoom proc far
 	mov al, sendval
 	mov dx, 03f8h
 	out dx, al
-	cmp sendval, 27d
+	cmp sendval, 3dh
 	jz endfinal
 
 	jmp checkreceive
@@ -213,10 +248,10 @@ chatRoom proc far
 	mov value, 0
 	mov sendval, 0
 	mov senX, 0
-	mov senY, 0
+	mov senY, 1
 	mov senP, 0
 	mov RecX, 40d
-	mov RecY, 0
+	mov RecY, 1
 	mov recP, 0
 	ret
 chatRoom endp
