@@ -162,10 +162,12 @@ showMsg macro str
 endm showMsg
 
 delayFunc macro
+    pusha
     mov    ax, 8600H   ; AH = 86h (Delay function), AL = 00h (not used)
     xor    cx, cx      ; CH = high order byte of delay count, CL = not used
-    mov    dx, 090FFH  ; DL = low order byte of delay count, DH = not used
+    mov    dx, 080FFH  ; DL = low order byte of delay count, DH = not used
     int    15H         ; Call BIOS delay function
+    popa
 endm delayFunc
 
 intialCarPosition macro
@@ -273,6 +275,7 @@ update_user1_pos MACRO
     dec ah
     
     finish_update1:
+    call    sendMove
 
     update_dir1
 
@@ -287,6 +290,8 @@ update_user2_pos MACRO
     ; I am considering up as positive y and down as negative y
     mov ax, 0101h ; ah -> x, al -> y
     mov bx, word ptr user2_speed
+
+    call    receiveMove
 
     up2:
     cmp user2_dir_bools, 00H
@@ -568,8 +573,9 @@ carMainLoop macro
 	mov PrevSec, dh ; contain hundreds of seconds
 
      again:   
-                call receiveCommand  
-                call sendCommand
+                ; call sendCommand
+                ; call receiveCommand
+
                 mov ax,0
                 add al,IsUser1Win
                 add al,IsUser2Win
@@ -657,6 +663,11 @@ carMainLoop macro
                  no_middle_jump11:     
                  detectPowerUp     user1_current_frame, car1, user1_stored_powerup
                  mov               user1_stored_powerup, cl
+
+;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                 ;
+;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
                  cmp               bh, 1
                  jz                user1_powerUp
 
@@ -765,6 +776,8 @@ carMainLoop macro
                  no_middle_jump22:
                  detectPowerUp     user2_current_frame, car2, user2_stored_powerup
                  mov               user2_stored_powerup, cl
+               ;  call               receivePower
+
                  cmp               bh, 1
                  jz                user2_powerUp
                  jmp               user2_no_collision
@@ -813,14 +826,20 @@ carMainLoop macro
                 call CheckForGameFinish    
                 
                 skipallofthis:
+
+                call receiveMove
+                
                 cmp               killSignal, 0H
                 jnz               kill
-
                
-
+            
                 jmp               again
 
-     kill:       
+     kill:  
+     call checksend 
+     mov al,3eh
+     mov dx, 03f8h
+     out dx, al    
      ; restore the original int 9h
      mov killSignal, 0H
      restoreInt9
