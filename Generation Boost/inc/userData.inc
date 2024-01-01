@@ -42,9 +42,9 @@ waittime db 2
 f1SC equ 3bh
 f2SC equ 3ch
 
-f1RecievedMsg db "sent you a chat invitation, to accept plz press F1$"
+f1RecievedMsg db "sent you a chat invitation, to accept plz press F1        $"
 f1RecievedMsgSize equ $-f1RecievedMsg-1
-f2RecievedMsg db "sent you a game invitation to accept plz press F2$"
+f2RecievedMsg db "sent you a game invitation, to accept plz press F2        $"
 f2RecievedMsgSize equ $-f2RecievedMsg-1
 
 maloshlazma db 0
