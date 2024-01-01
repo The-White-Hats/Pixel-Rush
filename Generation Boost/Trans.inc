@@ -508,7 +508,7 @@ sendMove PROC
 
     mov sending, 1
 
-    call checksend
+   call checksend
 
     s_up:
     mov al, 0
@@ -549,7 +549,44 @@ receiveMove PROC
     continue_inReceive2:
     mov dx , 03F8H
     in al , dx        
-    
+    cmp  al,'^'
+    jnz r_up
+     ;clear
+            mov ax,0
+            mov                processed_power_holder, 2
+            mov                al, user2_stored_powerup
+            ;call shownum
+            mov                processed_power, al
+            mov                user2_stored_powerup, 0
+            cmp processed_power, 0  
+                jz activatePowerUp_end1
+                cmp processed_power, 1
+                jz activatePowerUp_speedUp1
+                cmp processed_power, 2
+                jz activatePowerUp_speedDown1
+                cmp processed_power, 3
+                jz activatePowerUp_dropObs1
+                cmp processed_power, 4
+                jz activatePowerUp_passObs1
+                jmp activatePowerUp_end1
+
+            activatePowerUp_speedUp1:
+                call SpeedUp
+                jmp activatePowerUp_end1
+            activatePowerUp_speedDown1:
+                call SpeedDown
+                jmp activatePowerUp_end1
+            activatePowerUp_dropObs1:
+                call DropObs
+                jmp activatePowerUp_end1
+            activatePowerUp_passObs1:
+                call PassObs
+                jmp activatePowerUp_end1
+            activatePowerUp_end1:
+                mov processed_power, 0
+                mov processed_power_holder, 0
+            popa
+            ret
     r_up:
     push ax
     mov user2_dir_bools[0], 0
@@ -587,3 +624,44 @@ receiveMove PROC
     popa
     ret
 receiveMove ENDP
+
+sendPower PROC
+    pusha
+
+    call checksend
+    mov al, '^'
+    mov dx, 03f8h
+    out dx, al
+
+
+    popa
+    ret 
+sendPower ENDP
+
+receivePower PROC
+    push ax
+    push dx
+
+    mov dx , 3FDH		; Line Status Register
+    in al , dx 
+    AND al , 1
+    jnz continue_inReceive3
+      clear
+    pop dx
+    pop ax
+    ret
+
+    continue_inReceive3:
+    mov dx , 03F8H
+    in al , dx    
+    cmp al, '^'
+    jnz receivePower_notPower
+       clear
+   
+
+    receivePower_notPower:
+    pop dx
+    pop ax
+
+    ret 
+receivePower ENDP

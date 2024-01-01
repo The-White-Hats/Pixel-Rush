@@ -9,7 +9,7 @@ pushf
                  cmp                al, 3eh                                        ; pressing the f4 key
                  jz                 midKill
                   
-                 cmp                al, 1dh                                       ; pressing the 'p' key for first player power up
+                 cmp                al, 1dh                                       ; pressing the 'ctrl' key for first player power up
                  jnz                continue_whatever
                  mov                processed_power_holder, 1
                  mov                al, user1_stored_powerup
@@ -215,6 +215,7 @@ ShowInGamePowerUps ENDP
     ;-----------------------    
 
 activatePowerUp PROC
+       call             sendPower
     ; check for power up type
         cmp processed_power, 0  
         jz activatePowerUp_end

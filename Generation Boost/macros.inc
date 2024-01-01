@@ -645,7 +645,7 @@ carMainLoop macro
                  mov al, user1_obstacles_passed
                  mov user_obstacles_passed, al
 
-                 ;detectCollision   user1_current_frame, car1
+                 detectCollision   user1_current_frame, car1
 
                  mov al, user_obstacles_passed
                  mov user1_obstacles_passed, al
@@ -663,6 +663,11 @@ carMainLoop macro
                  no_middle_jump11:     
                  detectPowerUp     user1_current_frame, car1, user1_stored_powerup
                  mov               user1_stored_powerup, cl
+
+;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                 ;
+;!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
                  cmp               bh, 1
                  jz                user1_powerUp
 
@@ -754,7 +759,7 @@ carMainLoop macro
                  mov al, user2_obstacles_passed
                  mov user_obstacles_passed, al
 
-                 ;detectCollision   user2_current_frame, car2
+                 detectCollision   user2_current_frame, car2
 
                  mov al, user_obstacles_passed
                  mov user2_obstacles_passed, al
@@ -771,6 +776,8 @@ carMainLoop macro
                  no_middle_jump22:
                  detectPowerUp     user2_current_frame, car2, user2_stored_powerup
                  mov               user2_stored_powerup, cl
+               ;  call               receivePower
+
                  cmp               bh, 1
                  jz                user2_powerUp
                  jmp               user2_no_collision
