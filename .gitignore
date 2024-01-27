@@ -7,7 +7,7 @@
 *.EXE
 *.MAP
 *.CRF
-rndm3.asm
 *.png
+*.jpg
 *.py
 .vscode/
