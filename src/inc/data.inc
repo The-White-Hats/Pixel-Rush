@@ -12,27 +12,27 @@
     CAR_OFFSET      equ 0
 
 
-    FILE_NAME_LEN   equ 10
+    FILE_NAME_LEN   equ 14
 
     START_CAR_SHIFT equ 8
     SPACE_BETWEEN   equ 10
     ;------------Files-------------;
-    carFile         db  'car10.bin', 0
-                    db  'car20.bin', 0
-                    db  'car11.bin', 0
-                    db  'car21.bin', 0
-                    db  'car12.bin', 0
-                    db  'car22.bin', 0
-                    db  'car13.bin', 0
-                    db  'car23.bin', 0
-                    db  'car14.bin', 0
-                    db  'car24.bin', 0
-                    db  'car15.bin', 0
-                    db  'car25.bin', 0
-                    db  'car16.bin', 0
-                    db  'car26.bin', 0
-                    db  'car17.bin', 0
-                    db  'car27.bin', 0
+    carFile         db  './i/car10.bin', 0
+                    db  './i/car20.bin', 0
+                    db  './i/car11.bin', 0
+                    db  './i/car21.bin', 0
+                    db  './i/car12.bin', 0
+                    db  './i/car22.bin', 0
+                    db  './i/car13.bin', 0
+                    db  './i/car23.bin', 0
+                    db  './i/car14.bin', 0
+                    db  './i/car24.bin', 0
+                    db  './i/car15.bin', 0
+                    db  './i/car25.bin', 0
+                    db  './i/car16.bin', 0
+                    db  './i/car26.bin', 0
+                    db  './i/car17.bin', 0
+                    db  './i/car27.bin', 0
 
 
     errorMsg        db  "Something went wrong with files !!", 10, "$"
