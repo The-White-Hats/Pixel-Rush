@@ -25,12 +25,12 @@ ENDM
 
 drawButtons MACRO
     pusha
-    readImageM F1button
-    draw 165, 305, 60, 34
+    ; readImageM F1button
+    ; draw 165, 305, 60, 34
     readImageM F2button
-    draw 290, 305, 60, 34
+    draw 200, 325, 60, 34
     readImageM Exitbutton
-    draw 415, 305, 60, 34
+    draw 385, 325, 60, 34
     popa
 ENDM
 

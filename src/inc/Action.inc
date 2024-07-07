@@ -95,17 +95,17 @@ GetAction PROC
 
 			;-------------------------------------------------------------------------------------------------------------;
 			cmp user_lastaction,01h          ; compare with ESC scan code  
-			jnz checkF1
+			jnz checkF2
 			showColoredMsg closeprogram, TEXT_COLOR, closeprogramsize, start_Y_ofpress, start_X_ofpress     
 			jmp exit
 			
 
 			;-------------------------------------------------------------------------------------------------------------;
-			checkF1:
-			cmp user_lastaction,3bh         ; compare with F1 scan code 
-			jnz checkF2 
-			showColoredMsg f1, TEXT_COLOR, f1size, start_Y_ofpress, start_X_ofpress 
-			jmp finish 
+			; checkF1:
+			; cmp user_lastaction,3bh         ; compare with F1 scan code 
+			; jnz checkF2 
+			; showColoredMsg f1, TEXT_COLOR, f1size, start_Y_ofpress, start_X_ofpress 
+			; jmp finish 
 			
 
 			;-------------------------------------------------------------------------------------------------------------;
