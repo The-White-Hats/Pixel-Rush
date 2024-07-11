@@ -18,17 +18,17 @@ LIGHT_ORANGE equ 27h
 ORANGE_RED equ 2ch
 TEXT_COLOR equ YELLOW
 
-logoUL db '/i/Ul.bin', 0
-logoLL db '/i/LL.bin', 0
-logoUR db '/i/UR.bin', 0
-logoLR db '/i/LR.bin', 0
-hackers db '/i/HK.bin', 0
-firstPN db '/i/P1N.bin', 0
-secondPN db '/i/P2N.bin', 0
-F1button db '/i/F1B.bin',  0
-F2button db '/i/F2B.bin',  0
-Exitbutton db '/i/ExB.bin',  0
-wallpaper db '/i/w1.bin', 0
+logoUL      db './i/Ul.bin' , 0
+logoLL      db './i/LL.bin' , 0
+logoUR      db './i/UR.bin' , 0
+logoLR      db './i/LR.bin' , 0
+hackers     db './i/HK.bin' , 0
+firstPN     db './i/P1N.bin', 0
+secondPN    db './i/P2N.bin', 0
+F1button    db './i/F1B.bin', 0
+F2button    db './i/F2B.bin', 0
+Exitbutton  db './i/ExB.bin', 0
+wallpaper   db './i/w1.bin' , 0
 
 BackgroundColor equ 2AH
 ScreenWidth equ 640d

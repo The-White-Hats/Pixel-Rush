@@ -252,13 +252,13 @@ D = {
     (45, 49, 65): 247
 }
 
-print("INPUT IMAGE NAME")
-fileName = input()
-
-with Image.open(fileName) as img:
-    img.load()
-
 while(True):
+    print("INPUT IMAGE NAME")
+    fileName = input()
+
+    with Image.open(fileName) as img:
+        img.load()
+
     print("#" * 500)
     print("MENU OPTIONS : " , end="\n\n\n")
 
@@ -269,6 +269,9 @@ while(True):
     print("\n")
 
     option = int(input("Option : "))
+
+    if option == 3:
+        exit()
 
     if option == 2:
         print("INPUT HOW MANY TIMES DO YOU WANT TO REDUCE IT")
