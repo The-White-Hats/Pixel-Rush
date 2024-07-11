@@ -17,22 +17,22 @@
     START_CAR_SHIFT equ 8
     SPACE_BETWEEN   equ 10
     ;------------Files-------------;
-    carFile         db  './i/car10.bin', 0
-                    db  './i/car20.bin', 0
-                    db  './i/car11.bin', 0
-                    db  './i/car21.bin', 0
-                    db  './i/car12.bin', 0
-                    db  './i/car22.bin', 0
-                    db  './i/car13.bin', 0
-                    db  './i/car23.bin', 0
-                    db  './i/car14.bin', 0
-                    db  './i/car24.bin', 0
-                    db  './i/car15.bin', 0
-                    db  './i/car25.bin', 0
-                    db  './i/car16.bin', 0
-                    db  './i/car26.bin', 0
-                    db  './i/car17.bin', 0
-                    db  './i/car27.bin', 0
+    carFile         db  './i/red10.bin', 0
+                    db  './i/blu20.bin', 0
+                    db  './i/red11.bin', 0
+                    db  './i/blu21.bin', 0
+                    db  './i/red12.bin', 0
+                    db  './i/blu22.bin', 0
+                    db  './i/red13.bin', 0
+                    db  './i/blu23.bin', 0
+                    db  './i/red14.bin', 0
+                    db  './i/blu24.bin', 0
+                    db  './i/red15.bin', 0
+                    db  './i/blu25.bin', 0
+                    db  './i/red16.bin', 0
+                    db  './i/blu26.bin', 0
+                    db  './i/red17.bin', 0
+                    db  './i/blu27.bin', 0
 
 
     errorMsg        db  "Something went wrong with files !!", 10, "$"
