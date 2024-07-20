@@ -45,7 +45,7 @@ Every element of Pixel Rush is crafted with beautiful custom pixel art, creating
     ```
 2. Open the repository in VS Code
 
-3. Download both VSCode and MASM/TASM extensions
+3. Download both "VSCode DOSBox" and "MASM/TASM" extensions
 
 
 ## 🚀 **Get Started**
