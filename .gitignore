@@ -7,7 +7,6 @@
 *.EXE
 *.MAP
 *.CRF
-*.png
 *.jpg
 *.py
 .vscode/

@@ -1,8 +1,3 @@
-<style>
-    * {
-        background-color:#0A0900;
-    }
-</style>
 # <p style="text-align:center;">🔥 **Pixel Rush: Rush to your Destiny** 🔥</p>
 
 Welcome to **Pixel Rush**, the ultimate two-player racing game that brings pixel art to life! Get ready to dive into the fast-paced world of racing where every race is a new adventure!
