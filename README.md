@@ -14,10 +14,10 @@ Pixel Rush is a thrilling two-player racing game built entirely with x86 assembl
 
 - **Dynamic Tracks**: Every race features a newly generated track, ensuring no two races are ever the same!
 - **Exciting Power-ups**:
-  - **<p style="color:cyan; display:inline;">Turbo </p>**: Boost your speed and leave your opponent in the dust!
-  - **<p style="color:blue; display:inline;">Slow Opponent </p>**: Temporarily slow down your rival to gain the upper hand.
-  - **<p style="color:purple; display:inline;">Rock </p>**: Place obstacles in your opponent’s path to throw them off.
-  - **<p style="color:yellow; display:inline;">Ghost </p>**: Pass through obstacles effortlessly with this special power-up.
+  - **<span style="color:cyan; display:inline;">Turbo </span>**: Boost your speed and leave your opponent in the dust!
+  - **<span style="color:blue; display:inline;">Slow Opponent </span>**: Temporarily slow down your rival to gain the upper hand.
+  - **<span style="color:purple; display:inline;">Rock </span>**: Place obstacles in your opponent’s path to throw them off.
+  - **<span style="color:yellow; display:inline;">Ghost </span>**: Pass through obstacles effortlessly with this special power-up.
 - **Multiplayer Mode**: Play on the same computer or connect with friends on different computers and in that case you will have a built-in chat mode for seamless communication.
 
 ## 🎨 **Stunning Pixel Art**
