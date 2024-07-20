@@ -1,3 +1,8 @@
+<style>
+    * {
+        background-color:#0A0900;
+    }
+</style>
 # <p style="text-align:center;">🔥 **Pixel Rush: Rush to your Destiny** 🔥</p>
 
 Welcome to **Pixel Rush**, the ultimate two-player racing game that brings pixel art to life! Get ready to dive into the fast-paced world of racing where every race is a new adventure!
@@ -15,9 +20,9 @@ Pixel Rush is a thrilling two-player racing game built entirely with x86 assembl
 - **Dynamic Tracks**: Every race features a newly generated track, ensuring no two races are ever the same!
 - **Exciting Power-ups**:
   - **<p style="color:cyan; display:inline;">Turbo </p>**: Boost your speed and leave your opponent in the dust!
-  - **<p style="color:purple; display:inline;">Slow Opponent </p>**: Temporarily slow down your rival to gain the upper hand.
-  - **<p style="color:red; display:inline;">Spawn Obstacle </p>**: Place obstacles in your opponent’s path to throw them off.
-  - **<p style="color:yellow; display:inline;">Phase Through Obstacle </p>**: Pass through obstacles effortlessly with this special power-up.
+  - **<p style="color:blue; display:inline;">Slow Opponent </p>**: Temporarily slow down your rival to gain the upper hand.
+  - **<p style="color:purple; display:inline;">Rock </p>**: Place obstacles in your opponent’s path to throw them off.
+  - **<p style="color:yellow; display:inline;">Ghost </p>**: Pass through obstacles effortlessly with this special power-up.
 - **Multiplayer Mode**: Play on the same computer or connect with friends on different computers and in that case you will have a built-in chat mode for seamless communication.
 
 ## 🎨 **Stunning Pixel Art**
